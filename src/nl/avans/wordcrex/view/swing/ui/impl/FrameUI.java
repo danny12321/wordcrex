@@ -27,9 +27,9 @@ public class FrameUI extends UI {
         g.setColor(Colors.DARKERER_BLUE);
         g.fillRect(0, 0, SwingView.SIZE, GamePanel.TASKBAR_SIZE);
         g.setColor(Colors.DARK_BLUE);
-        g.setFont(GamePanel.BIG_FONT);
+        g.setFont(this.game.getBigFont());
         g.drawString("WORDCREX", 40, 25);
-        g.setFont(GamePanel.NORMAL_FONT);
+        g.setFont(this.game.getNormalFont());
     }
 
     @Override

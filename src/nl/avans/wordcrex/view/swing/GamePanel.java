@@ -11,6 +11,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -18,8 +20,8 @@ import java.util.stream.Collectors;
 
 public class GamePanel extends JPanel implements MouseListener, MouseMotionListener {
     public static final int TASKBAR_SIZE = 32;
-    public static final Font NORMAL_FONT = new Font("monospaced", Font.BOLD, 16);
-    public static final Font BIG_FONT = new Font("monospaced", Font.BOLD, 24);
+    private Font normalFont;
+    private Font bigFont;
 
     private final JFrame frame;
     private final SwingController controller;
@@ -31,7 +33,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.setFocusable(true);
         this.setForeground(Color.WHITE);
         this.setBackground(Colors.DARKER_BLUE);
-        this.setFont(GamePanel.NORMAL_FONT);
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         this.setFocusTraversalKeysEnabled(false);
@@ -41,7 +42,28 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.controller = controller;
         this.interfaces = new CopyOnWriteArrayList<>();
 
+        try {
+            this.normalFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("assets/RobotoMono.ttf")).deriveFont(16f);
+            this.bigFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("assets/RobotoMono.ttf")).deriveFont(24f);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("assets/RobotoMono.ttf")));
+            System.out.println("Registered RobotoMono");
+        } catch (IOException | FontFormatException e) {
+            System.err.println(e.getMessage());
+            this.close();
+        }
+
+        this.setFont(this.normalFont);
+
         this.openUI(new GameUI());
+    }
+
+    public Font getNormalFont() {
+        return this.normalFont;
+    }
+
+    public Font getBigFont() {
+        return this.bigFont;
     }
 
     public void openUI(UI ui) {

@@ -12,9 +12,11 @@ import java.util.List;
 
 public class StatisticsUI extends UI {
     private int scroll;
+    private GamePanel game;
 
     @Override
     public void initialize(GamePanel game, SwingController controller) {
+        this.game = game;
     }
 
     @Override
@@ -26,9 +28,9 @@ public class StatisticsUI extends UI {
         g.setColor(Color.WHITE);
         StringUtil.drawCenteredString(g, 0, 128 - this.scroll, SwingView.SIZE - GamePanel.TASKBAR_SIZE, "nierennakker");
         g.setColor(Colors.DARKER_BLUE);
-        g.setFont(GamePanel.BIG_FONT);
+        g.setFont(this.game.getBigFont());
         g.drawString("N", 232, 89 - this.scroll);
-        g.setFont(GamePanel.NORMAL_FONT);
+        g.setFont(this.game.getNormalFont());
     }
 
     @Override
