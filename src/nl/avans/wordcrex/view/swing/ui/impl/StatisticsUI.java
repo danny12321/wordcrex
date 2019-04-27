@@ -27,7 +27,7 @@ public class StatisticsUI extends UI {
         StringUtil.drawCenteredString(g, 0, 128 - this.scroll, SwingView.SIZE - GamePanel.TASKBAR_SIZE, "nierennakker");
         g.setColor(Colors.DARKER_BLUE);
         g.setFont(GamePanel.BIG_FONT);
-        g.drawString("N", 233, 89 - this.scroll);
+        g.drawString("N", 232, 89 - this.scroll);
         g.setFont(GamePanel.NORMAL_FONT);
     }
 

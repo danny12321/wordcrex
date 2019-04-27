@@ -83,6 +83,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         var g = (Graphics2D) graphics;
 
+        g.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+
         this.interfaces.forEach((ui) -> ui.draw(g));
     }
 
