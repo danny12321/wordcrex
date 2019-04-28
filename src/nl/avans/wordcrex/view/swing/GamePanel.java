@@ -20,14 +20,14 @@ import java.util.stream.Collectors;
 
 public class GamePanel extends JPanel implements MouseListener, MouseMotionListener {
     public static final int TASKBAR_SIZE = 32;
-    private Font normalFont;
-    private Font bigFont;
 
     private final JFrame frame;
     private final SwingController controller;
     private final List<UI> interfaces;
 
     private Point movePosition;
+    private Font normalFont;
+    private Font bigFont;
 
     public GamePanel(JFrame frame, SwingController controller) {
         this.setFocusable(true);
@@ -43,18 +43,19 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.interfaces = new CopyOnWriteArrayList<>();
 
         try {
-            this.normalFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("assets/RobotoMono.ttf")).deriveFont(16f);
-            this.bigFont = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("assets/RobotoMono.ttf")).deriveFont(24f);
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("assets/RobotoMono.ttf")));
-            System.out.println("Registered RobotoMono");
+            var font = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("assets/RobotoMono.ttf"));
+
+            this.normalFont = font.deriveFont(16.0f);
+            this.bigFont = font.deriveFont(Font.BOLD, 24.0f);
+
+            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
         } catch (IOException | FontFormatException e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
+
             this.close();
         }
 
         this.setFont(this.normalFont);
-
         this.openUI(new GameUI());
     }
 
