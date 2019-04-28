@@ -91,6 +91,8 @@ public class GamesUI extends UI {
 
     @Override
     public int mouseMove(int x, int y) {
+        this.active = null;
+
         if (x >= SwingView.SIZE - GamePanel.TASKBAR_SIZE || y <= GamePanel.TASKBAR_SIZE) {
             return Cursor.DEFAULT_CURSOR;
         }
@@ -116,8 +118,6 @@ public class GamesUI extends UI {
                 return Cursor.HAND_CURSOR;
             }
         }
-
-        this.active = null;
 
         return Cursor.DEFAULT_CURSOR;
     }
