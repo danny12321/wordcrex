@@ -85,4 +85,8 @@ public class ScrollUI extends UI {
     public void mouseRelease(int x, int y) {
         this.dragging = false;
     }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
 }

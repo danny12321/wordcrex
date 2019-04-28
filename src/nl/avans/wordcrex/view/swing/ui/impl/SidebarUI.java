@@ -10,7 +10,7 @@ import java.awt.*;
 import java.util.List;
 
 public class SidebarUI extends UI {
-    private final ButtonUI games = new ButtonUI("GAMES", 32, 64, 192, 32, () -> this.game.openUI(new GameUI()));
+    private final ButtonUI games = new ButtonUI("GAMES", 32, 64, 192, 32, () -> this.game.openUI(new GamesUI()));
     private final ButtonUI statistics = new ButtonUI("STATISTICS", 32, 112, 192, 32, () -> this.game.openUI(new StatisticsUI()));
     private final ButtonUI observe = new ButtonUI("OBSERVE", 32, 160, 192, 32, () -> System.out.println("Observe"));
     private final ButtonUI words = new ButtonUI("WORDS", 32, 208, 192, 32, () -> System.out.println("Words"));
@@ -27,7 +27,7 @@ public class SidebarUI extends UI {
 
     @Override
     public void draw(Graphics2D g) {
-        this.updateButton(this.games, GameUI.class);
+        this.updateButton(this.games, GamesUI.class);
         this.updateButton(this.statistics, StatisticsUI.class);
         this.updateButton(this.observe, null);
         this.updateButton(this.words, null);
