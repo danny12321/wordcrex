@@ -107,7 +107,7 @@ public class InputUI extends UI {
         this.active = this.hover;
 
         if (this.active && this.character != 0) {
-            this.cursor = Math.max(0, Math.min(this.input.length(), (x - this.x + this.offset) / this.character));
+            this.cursor = Math.max(0, Math.min(this.input.length(), Math.round((x - this.x + this.offset) / (float) this.character)));
         }
     }
 
