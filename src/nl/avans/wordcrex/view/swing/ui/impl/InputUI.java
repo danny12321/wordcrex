@@ -52,6 +52,7 @@ public class InputUI extends UI {
         var rect = new Rectangle2D.Float(this.x, this.y, this.width, this.height);
         var text = this.placeholder == null ? this.input.toString() : String.valueOf(this.placeholder).repeat(this.input.length());
         var position = metrics.stringWidth(this.input.substring(0, this.cursor)) - 1;
+        var line = (this.height - metrics.getHeight()) / 2 + metrics.getAscent();
 
         if (position - this.offset >= this.width - 16) {
             this.offset = position - this.width + 16;
@@ -61,11 +62,15 @@ public class InputUI extends UI {
 
         g.setColor(Colors.DARK_BLUE);
         g.fillRect(this.x, this.y, this.width, this.height);
-        g.setColor(Colors.DARK_YELLOW);
-        g.drawString(this.label, this.x, this.y - 8);
+
+        if (this.input.length() == 0) {
+            g.setColor(Colors.DARKERER_BLUE);
+            g.drawString(this.label, this.x + 16, this.y + line);
+        }
+
         g.setClip(rect);
         g.setColor(Color.WHITE);
-        g.drawString(text, this.x - this.offset, this.y + (this.height - metrics.getHeight()) / 2 + metrics.getAscent());
+        g.drawString(text, this.x - this.offset, this.y + line);
 
         if (this.active && this.update % 30 <= 15) {
             g.fillRect(this.x + position - this.offset, this.y + this.height / 2 - 12, 2, 24);
