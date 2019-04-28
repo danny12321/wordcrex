@@ -24,7 +24,7 @@ public class LoginUI extends UI {
         return List.of(
             new InputUI("USERNAME", 64, 178, 384, 48),
             new InputUI("PASSWORD", '*', 64, 242, 384, 48),
-            new ButtonUI("LOG IN", 64, 306, 384, 48, () -> this.game.openUI(new GameUI()))
+            new ButtonUI("LOG IN", 64, 306, 384, 48, () -> this.game.openUI(new GamesUI()))
         );
     }
 }
