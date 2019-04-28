@@ -67,7 +67,7 @@ public class ButtonUI extends UI {
     }
 
     @Override
-    public void mouseClick() {
+    public void mouseClick(int x, int y) {
         if (this.hover) {
             this.runnable.run();
         }

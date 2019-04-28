@@ -82,7 +82,7 @@ public class ScrollUI extends UI {
     }
 
     @Override
-    public void mouseRelease() {
+    public void mouseRelease(int x, int y) {
         this.dragging = false;
     }
 }

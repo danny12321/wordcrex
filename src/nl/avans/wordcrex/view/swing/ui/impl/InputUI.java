@@ -96,7 +96,7 @@ public class InputUI extends UI {
     }
 
     @Override
-    public void mouseClick() {
+    public void mousePress(int x, int y) {
         if (!this.active && this.hover) {
             this.update = 0;
         } else if (this.active && !this.hover) {
