@@ -10,8 +10,8 @@ import java.awt.*;
 
 public class ButtonUI extends UI {
     private String text;
-    private final int x;
-    private final int y;
+    private int x;
+    private int y;
     private final int width;
     private final int height;
     private final Color background;
@@ -56,16 +56,18 @@ public class ButtonUI extends UI {
     }
 
     @Override
-    public boolean mouseMove(int x, int y) {
+    public int mouseMove(int x, int y) {
         if (!this.visible || !this.active) {
-            return false;
+            return Cursor.DEFAULT_CURSOR;
         }
 
-        return this.hover = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+        this.hover = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+
+        return this.hover ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR;
     }
 
     @Override
-    public void mouseClick() {
+    public void mouseClick(int x, int y) {
         if (this.hover) {
             this.runnable.run();
         }
@@ -73,6 +75,11 @@ public class ButtonUI extends UI {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public void move(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
     public void setActive(boolean active) {

@@ -2,15 +2,12 @@ package nl.avans.wordcrex.view.swing;
 
 import nl.avans.wordcrex.controller.swing.SwingController;
 import nl.avans.wordcrex.view.swing.ui.impl.FrameUI;
-import nl.avans.wordcrex.view.swing.ui.impl.GameUI;
 import nl.avans.wordcrex.view.swing.ui.UI;
+import nl.avans.wordcrex.view.swing.ui.impl.LoginUI;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-public class GamePanel extends JPanel implements MouseListener, MouseMotionListener {
+public class GamePanel extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
     public static final int TASKBAR_SIZE = 32;
 
     private final JFrame frame;
@@ -35,6 +32,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.setBackground(Colors.DARKER_BLUE);
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
+        this.addKeyListener(this);
         this.setFocusTraversalKeysEnabled(false);
         this.setDoubleBuffered(true);
 
@@ -56,7 +54,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
 
         this.setFont(this.normalFont);
-        this.openUI(new GameUI());
+        this.openUI(new LoginUI());
     }
 
     public Font getNormalFont() {
@@ -128,7 +126,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        this.getUnblocked().forEach(UI::mouseClick);
+        this.getUnblocked().forEach((ui) -> ui.mouseClick(e.getX(), e.getY()));
     }
 
     @Override
@@ -147,7 +145,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             this.movePosition = null;
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         } else {
-            this.getUnblocked().forEach(UI::mouseRelease);
+            this.getUnblocked().forEach((ui) -> ui.mouseRelease(e.getX(), e.getY()));
         }
     }
 
@@ -172,14 +170,27 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        var active = this.getUnblocked().stream()
-            .filter((ui) -> ui.mouseMove(e.getX(), e.getY()))
-            .count();
+        var cursor = this.getUnblocked().stream()
+            .mapToInt((ui) -> ui.mouseMove(e.getX(), e.getY()))
+            .filter((c) -> c != Cursor.DEFAULT_CURSOR)
+            .findFirst()
+            .orElse(Cursor.DEFAULT_CURSOR);
 
-        if (active > 0) {
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        } else {
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
+        this.setCursor(Cursor.getPredefinedCursor(cursor));
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        this.getUnblocked().forEach((ui) -> ui.keyType(e.getKeyChar()));
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        this.getUnblocked().forEach((ui) -> ui.keyPress(e.getExtendedKeyCode(), e.getModifiersEx()));
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        this.getUnblocked().forEach((ui) -> ui.keyRelease(e.getKeyChar()));
     }
 }
