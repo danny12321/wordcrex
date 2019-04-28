@@ -17,8 +17,8 @@ public abstract class UI {
     public void update() {
     }
 
-    public boolean mouseMove(int x, int y) {
-        return false;
+    public int mouseMove(int x, int y) {
+        return Cursor.DEFAULT_CURSOR;
     }
 
     public void mouseClick() {
@@ -31,6 +31,15 @@ public abstract class UI {
     }
 
     public void mouseDrag(int x, int y) {
+    }
+
+    public void keyType(char character) {
+    }
+
+    public void keyPress(int code) {
+    }
+
+    public void keyRelease() {
     }
 
     public List<UI> getChildren() {

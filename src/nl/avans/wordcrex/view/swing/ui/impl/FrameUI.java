@@ -22,13 +22,16 @@ public class FrameUI extends UI {
 
     @Override
     public void draw(Graphics2D g) {
+        var offset = this.game.isOpen(LoginUI.class) ? -GamePanel.TASKBAR_SIZE : 0;
+
         this.menu.setText(this.sidebar.isOpen() ? "x" : "+");
+        this.menu.move(offset, 0);
 
         g.setColor(Colors.DARKERER_BLUE);
         g.fillRect(0, 0, SwingView.SIZE, GamePanel.TASKBAR_SIZE);
         g.setColor(Colors.DARK_BLUE);
         g.setFont(this.game.getBigFont());
-        g.drawString("WORDCREX", 40, 25);
+        g.drawString("WORDCREX", 40 + offset, 25);
         g.setFont(this.game.getNormalFont());
     }
 

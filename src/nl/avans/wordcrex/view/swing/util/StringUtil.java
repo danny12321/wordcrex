@@ -6,7 +6,7 @@ public class StringUtil {
     public static void drawCenteredString(Graphics2D g, int x, int y, int width, int height, String text) {
         var metrics = g.getFontMetrics(g.getFont());
 
-        StringUtil.drawCenteredString(g, x, y + ((height - metrics.getHeight()) / 2) + metrics.getAscent(), width, text);
+        StringUtil.drawCenteredString(g, x, y + (height - metrics.getHeight()) / 2 + metrics.getAscent(), width, text);
     }
 
     public static void drawCenteredString(Graphics2D g, int x, int y, int width, String text) {
