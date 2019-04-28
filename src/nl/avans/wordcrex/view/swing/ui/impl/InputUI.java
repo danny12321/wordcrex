@@ -6,8 +6,12 @@ import nl.avans.wordcrex.view.swing.GamePanel;
 import nl.avans.wordcrex.view.swing.ui.UI;
 
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 
 public class InputUI extends UI {
     private final StringBuilder input = new StringBuilder();
@@ -116,7 +120,7 @@ public class InputUI extends UI {
     }
 
     @Override
-    public void keyPress(int code) {
+    public void keyPress(int code, int modifiers) {
         if (!this.active) {
             return;
         }
@@ -134,6 +138,12 @@ public class InputUI extends UI {
         } else if (code == KeyEvent.VK_RIGHT) {
             this.cursor = Math.min(this.input.length(), this.cursor + 1);
             this.update = 0;
+        } else if ((modifiers & InputEvent.CTRL_DOWN_MASK) != 0 && code == KeyEvent.VK_V) {
+            var clipboard = this.getClipboard();
+
+            this.input.insert(this.cursor, clipboard);
+            this.cursor += clipboard.length();
+            this.update = 0;
         }
     }
 
@@ -141,6 +151,15 @@ public class InputUI extends UI {
         var block = Character.UnicodeBlock.of(c);
 
         return !Character.isISOControl(c) && c != KeyEvent.CHAR_UNDEFINED && block != null && block != Character.UnicodeBlock.SPECIALS;
+    }
+
+    public String getClipboard() {
+        try {
+            return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+        } catch (UnsupportedFlavorException | IOException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     public void move(int x, int y) {

@@ -186,7 +186,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void keyPressed(KeyEvent e) {
-        this.getUnblocked().forEach((ui) -> ui.keyPress(e.getExtendedKeyCode()));
+        this.getUnblocked().forEach((ui) -> ui.keyPress(e.getExtendedKeyCode(), e.getModifiersEx()));
     }
 
     @Override

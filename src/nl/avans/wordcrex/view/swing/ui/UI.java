@@ -36,7 +36,7 @@ public abstract class UI {
     public void keyType(char character) {
     }
 
-    public void keyPress(int code) {
+    public void keyPress(int code, int modifiers) {
     }
 
     public void keyRelease() {
