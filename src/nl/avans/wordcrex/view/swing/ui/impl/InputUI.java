@@ -28,6 +28,7 @@ public class InputUI extends UI {
     private int cursor;
     private int update;
     private int offset;
+    private int character;
 
     public InputUI(int x, int y, int width, int height) {
         this("", x, y, width, height);
@@ -64,6 +65,8 @@ public class InputUI extends UI {
             this.offset = position - 16;
         }
 
+        this.character = metrics.charWidth(' ');
+
         g.setColor(Colors.DARK_BLUE);
         g.fillRect(this.x, this.y, this.width, this.height);
 
@@ -99,11 +102,13 @@ public class InputUI extends UI {
     public void mousePress(int x, int y) {
         if (!this.active && this.hover) {
             this.update = 0;
-        } else if (this.active && !this.hover) {
-            this.cursor = this.input.length();
         }
 
         this.active = this.hover;
+
+        if (this.active && this.character != 0) {
+            this.cursor = Math.max(0, Math.min(this.input.length(), (x - this.x + this.offset) / this.character));
+        }
     }
 
     @Override
