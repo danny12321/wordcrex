@@ -24,7 +24,7 @@ public class SwingView extends JFrame implements View<SwingController> {
 
     @Override
     public void draw() {
-        this.panel.paintImmediately(0, 0, SwingView.SIZE, SwingView.SIZE);
+        this.panel.repaint();
     }
 
     @Override

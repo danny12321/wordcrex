@@ -8,7 +8,6 @@ import nl.avans.wordcrex.view.swing.ui.impl.LoginUI;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.interfaces = new CopyOnWriteArrayList<>();
 
         try {
-            var font = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("assets/RobotoMono.ttf"));
+            var font = Font.createFont(Font.TRUETYPE_FONT, GamePanel.class.getResourceAsStream("/fonts/RobotoMono.ttf"));
 
             this.normalFont = font.deriveFont(16.0f);
             this.bigFont = font.deriveFont(Font.BOLD, 24.0f);

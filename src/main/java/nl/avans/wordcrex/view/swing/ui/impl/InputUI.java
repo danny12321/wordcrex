@@ -12,6 +12,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 public class InputUI extends UI {
     private final StringBuilder input = new StringBuilder();
@@ -22,6 +23,7 @@ public class InputUI extends UI {
     private int y;
     private final int width;
     private final int height;
+    private final Consumer<String> consumer;
 
     private boolean hover;
     private boolean active;
@@ -30,25 +32,27 @@ public class InputUI extends UI {
     private int offset;
     private int character;
 
-    public InputUI(int x, int y, int width, int height) {
-        this("", x, y, width, height);
+    public InputUI(int x, int y, int width, int height, Consumer<String> consumer) {
+        this("", x, y, width, height, consumer);
     }
 
-    public InputUI(String label, int x, int y, int width, int height) {
-        this(label, null, x, y, width, height);
+    public InputUI(String label, int x, int y, int width, int height, Consumer<String> consumer) {
+        this(label, null, x, y, width, height, consumer);
     }
 
-    public InputUI(String label, Character placeholder, int x, int y, int width, int height) {
+    public InputUI(String label, Character placeholder, int x, int y, int width, int height, Consumer<String> consumer) {
         this.label = label;
         this.placeholder = placeholder;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.consumer = consumer;
     }
 
     @Override
     public void initialize(GamePanel game, SwingController controller) {
+        this.consumer.accept("");
     }
 
     @Override
@@ -122,6 +126,8 @@ public class InputUI extends UI {
             this.cursor++;
             this.update = 0;
         }
+
+        this.consumer.accept(this.input.toString());
     }
 
     @Override
@@ -150,6 +156,8 @@ public class InputUI extends UI {
             this.cursor += clipboard.length();
             this.update = 0;
         }
+
+        this.consumer.accept(this.input.toString());
     }
 
     private boolean isPrintableChar(char c) {

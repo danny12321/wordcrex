@@ -4,17 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
-    public final String name;
+    public final String username;
     public final String firstName;
     public final String lastName;
 
-    private final List<Role> roles;
+    private final List<Role> roles = new ArrayList<>();
 
-    public Player(String name, String firstName, String lastName) {
-        this.name = name;
+    public Player(String username, String firstName, String lastName) {
+        this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.roles = new ArrayList<>();
+    }
+
+    public void addRole(Role role) {
+        this.roles.add(role);
     }
 
     public String getDisplayName() {
@@ -22,6 +25,6 @@ public class Player {
             return this.firstName + " " + this.lastName;
         }
 
-        return this.name;
+        return this.username;
     }
 }

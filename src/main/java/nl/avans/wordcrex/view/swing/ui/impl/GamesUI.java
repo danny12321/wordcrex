@@ -43,6 +43,7 @@ public class GamesUI extends UI {
     public void draw(Graphics2D g) {
         var offset = 0;
         var height = 96;
+        var count = 0;
         Game.Status last = null;
 
         for (var i = 0; i < this.games.size(); i++) {
@@ -82,11 +83,13 @@ public class GamesUI extends UI {
 
             if (i < this.games.size() - 1 && this.games.get(i + 1).getStatus() == last) {
                 g.setColor(Colors.DARKERER_BLUE);
-                g.fillRect(GamePanel.TASKBAR_SIZE * 2 + 42, position + height - 2, 248, 4);
+                g.fillRect(GamePanel.TASKBAR_SIZE * 2 + 42, position + height - 2, 268, 4);
             }
+
+            count++;
         }
 
-        this.scroller.setHeight(this.games.size() * height + offset);
+        this.scroller.setHeight(count * height + offset);
     }
 
     @Override
@@ -106,7 +109,9 @@ public class GamesUI extends UI {
             var position = height * i + offset - this.scroll + GamePanel.TASKBAR_SIZE;
             var status = game.getStatus();
 
-            if (status != last) {
+            if (status.name.isEmpty()) {
+                break;
+            } else if (status != last) {
                 last = status;
                 offset += 64;
                 position += 64;
@@ -125,7 +130,7 @@ public class GamesUI extends UI {
     @Override
     public void mouseClick(int x, int y) {
         if (this.active != null) {
-            System.out.println(this.active.getOpponent().getDisplayName());
+            this.game.openUI(new IngameUI());
         }
     }
 
