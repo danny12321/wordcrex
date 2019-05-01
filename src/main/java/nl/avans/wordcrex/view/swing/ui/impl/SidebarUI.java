@@ -15,14 +15,19 @@ public class SidebarUI extends UI {
     private final ButtonUI observe = new ButtonUI("OBSERVE", 32, 160, 192, 32, () -> System.out.println("Observe"));
     private final ButtonUI words = new ButtonUI("WORDS", 32, 208, 192, 32, () -> System.out.println("Words"));
     private final ButtonUI manage = new ButtonUI("MANAGE", 32, 256, 192, 32, () -> System.out.println("Manage"));
-    private final ButtonUI logout = new ButtonUI("LOGOUT", 32, 448, 192, 32, () -> this.game.openUI(new LoginUI()));
+    private final ButtonUI logout = new ButtonUI("LOGOUT", 32, 448, 192, 32, () -> {
+        this.controller.logout();
+        this.game.openUI(new LoginUI());
+    });
 
     private GamePanel game;
+    private SwingController controller;
     private boolean open;
 
     @Override
     public void initialize(GamePanel game, SwingController controller) {
         this.game = game;
+        this.controller = controller;
     }
 
     @Override

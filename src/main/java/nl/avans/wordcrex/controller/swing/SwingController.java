@@ -2,10 +2,13 @@ package nl.avans.wordcrex.controller.swing;
 
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.data.Database;
+import nl.avans.wordcrex.model.Match;
 import nl.avans.wordcrex.model.Model;
+import nl.avans.wordcrex.model.Player;
 import nl.avans.wordcrex.view.swing.SwingView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SwingController implements Controller<SwingView>, Runnable {
@@ -63,5 +66,17 @@ public class SwingController implements Controller<SwingView>, Runnable {
 
     public boolean login(String username, String password) {
         return this.model.login(this.database, username, password);
+    }
+
+    public void logout() {
+        this.model.logout();
+    }
+
+    public Player getPlayer() {
+        return this.model.getPlayer();
+    }
+
+    public List<Match> getMatches() {
+        return this.model.getMatches();
     }
 }
