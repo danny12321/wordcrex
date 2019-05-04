@@ -34,7 +34,7 @@ public class StatisticsUI extends UI {
         StringUtil.drawCenteredString(g, 0, 128 - this.scroll, SwingView.SIZE - GamePanel.TASKBAR_SIZE, this.player.getDisplayName());
         g.setColor(Colors.DARKER_BLUE);
         g.setFont(this.game.getBigFont());
-        g.drawString(this.player.getInitial(), 232, 89 - this.scroll);
+        StringUtil.drawCenteredString(g, 218, 58 - this.scroll, 42, 42, this.player.getInitial());
         g.setFont(this.game.getNormalFont());
     }
 
