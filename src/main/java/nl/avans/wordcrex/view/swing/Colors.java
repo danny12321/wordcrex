@@ -9,4 +9,5 @@ public class Colors {
     public static final Color DARK_YELLOW = new Color(255, 185, 0);
     public static final Color DARKER_YELLOW = new Color(173, 136, 19);
     public static final Color DARK_RED = new Color(205, 0, 0);
+    public static final Color OVERLAY = new Color(0, 0, 0, 100);
 }

@@ -13,6 +13,7 @@ import java.util.List;
 
 public class GamesUI extends UI {
     private final ScrollUI scroller = new ScrollUI(SwingView.SIZE * 2, (scroll) -> this.scroll = scroll);
+    private final DialogUI dialog = new DialogUI();
 
     private int scroll;
     private GamePanel game;
@@ -126,14 +127,28 @@ public class GamesUI extends UI {
     @Override
     public void mouseClick(int x, int y) {
         if (this.active != null) {
-            this.game.openUI(new IngameUI());
+            if (this.active.status == Match.Status.PENDING) {
+                this.dialog.show("Accept?", "Yes", "No", (positive) -> {
+                    if (positive) {
+                        this.controller.acceptMatch(this.active);
+                        this.game.openUI(new IngameUI(this.active));
+                    } else {
+                        this.controller.rejectMatch(this.active);
+                    }
+                });
+
+                return;
+            }
+
+            this.game.openUI(new IngameUI(this.active));
         }
     }
 
     @Override
     public List<UI> getChildren() {
         return List.of(
-            this.scroller
+            this.scroller,
+            this.dialog
         );
     }
 }

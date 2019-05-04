@@ -7,4 +7,5 @@
 out/
 bin/
 build/
+classes/
 *.iml

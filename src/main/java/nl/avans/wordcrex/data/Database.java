@@ -1,5 +1,6 @@
 package nl.avans.wordcrex.data;
 
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
@@ -15,17 +16,9 @@ public class Database {
         this.source = source;
     }
 
-    public static Database connect() {
-        var source = new HikariDataSource();
-
-        // todo: change to shared db
-        source.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
-        source.setUsername("username");
-        source.setPassword("password");
-        source.setMaximumPoolSize(10);
-        source.addDataSourceProperty("databaseName", "wordcrex");
-        source.addDataSourceProperty("portNumber", "5432");
-        source.addDataSourceProperty("serverName", "localhost");
+    public static Database connect(String configName) {
+        var config = new HikariConfig("/db/" + configName + ".properties");
+        var source = new HikariDataSource(config);
 
         return new Database(source);
     }

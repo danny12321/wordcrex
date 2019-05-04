@@ -21,6 +21,7 @@ repositories {
 dependencies {
     implementation("com.zaxxer:HikariCP:3.3.1")
     implementation("org.postgresql:postgresql:42.2.5")
+    implementation("org.mariadb.jdbc:mariadb-java-client:2.4.1")
 }
 
 tasks.withType<Jar> {

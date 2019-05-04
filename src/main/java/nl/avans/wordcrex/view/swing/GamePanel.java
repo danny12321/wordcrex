@@ -10,12 +10,15 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class GamePanel extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
     public static final int TASKBAR_SIZE = 32;
+
+    private static final RenderingHints RENDERING_HINTS = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
     private final JFrame frame;
     private final SwingController controller;
@@ -103,9 +106,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         var g = (Graphics2D) graphics;
 
-        g.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+        g.setRenderingHints(GamePanel.RENDERING_HINTS);
 
-        this.interfaces.forEach((ui) -> ui.draw(g));
+        this.interfaces
+            .stream()
+            .sorted(Comparator.comparingInt((ui) -> ui.treeMatch(UI::forceTop) ? 1 : 0))
+            .forEach((ui) -> ui.draw(g));
     }
 
     private List<UI> getUnblocked() {

@@ -12,14 +12,20 @@ import java.util.List;
 import java.util.Map;
 
 public class SwingController implements Controller<SwingView>, Runnable {
+    private final String databaseConfig;
+
     private boolean running = true;
     private Database database;
     private SwingView view;
     private Model model;
 
+    public SwingController(String databaseConfig) {
+        this.databaseConfig = databaseConfig;
+    }
+
     @Override
     public void initialize(SwingView view, Model model) {
-        this.database = Database.connect();
+        this.database = Database.connect(this.databaseConfig);
         this.view = view;
         this.model = model;
 
@@ -70,6 +76,14 @@ public class SwingController implements Controller<SwingView>, Runnable {
 
     public void logout() {
         this.model.logout();
+    }
+
+    public void acceptMatch(Match match) {
+
+    }
+
+    public void rejectMatch(Match match) {
+
     }
 
     public Player getPlayer() {
