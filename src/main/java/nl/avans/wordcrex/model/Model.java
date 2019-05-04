@@ -25,7 +25,7 @@ public class Model extends Observable<ModelUpdate> {
         var matches = new ArrayList<Match>();
 
         this.database.select(
-            "SELECT m.id, m.status, h.id host_id, h.username host_username, h.first_name host_first_name, h.last_name host_last_name, o.id opponent_id, o.username opponent_username, o.first_name opponent_first_name, o.last_name opponent_last_name FROM match m JOIN \"user\" h ON m.host_id = h.id JOIN \"user\" o ON m.opponent_id = o.id WHERE m.host_id = ? OR m.opponent_id = ? ORDER BY m.status",
+            "SELECT m.id, m.status, h.id host_id, h.username host_username, h.first_name host_first_name, h.last_name host_last_name, o.id opponent_id, o.username opponent_username, o.first_name opponent_first_name, o.last_name opponent_last_name FROM \"match\" m JOIN \"user\" h ON m.host_id = h.id JOIN \"user\" o ON m.opponent_id = o.id WHERE m.host_id = ? OR m.opponent_id = ? ORDER BY m.status",
             (statement) -> {
                 statement.setInt(1, this.player.id);
                 statement.setInt(2, this.player.id);
