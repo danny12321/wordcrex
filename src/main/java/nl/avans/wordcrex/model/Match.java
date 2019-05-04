@@ -15,8 +15,7 @@ public class Match {
 
     public enum Status {
         PENDING("INVITES", 0),
-        PLAYING("YOUR TURN", 1),
-        WAITING("THEIR TURN", 2),
+        PLAYING("PLAYING", 1),
         OVER("GAME OVER", 3),
         REJECTED("", 4);
 
