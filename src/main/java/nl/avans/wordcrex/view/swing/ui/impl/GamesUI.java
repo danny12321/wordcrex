@@ -39,6 +39,11 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
         var count = 0;
         Match.Status last = null;
 
+        if (this.matches.isEmpty()) {
+            g.setColor(Color.WHITE);
+            StringUtil.drawCenteredString(g, 0, 0, SwingView.SIZE - GamePanel.TASKBAR_SIZE, SwingView.SIZE, "No matches");
+        }
+
         for (var i = 0; i < this.matches.size(); i++) {
             var match = this.matches.get(i);
             var position = height * i + offset - this.scroll + GamePanel.TASKBAR_SIZE;
