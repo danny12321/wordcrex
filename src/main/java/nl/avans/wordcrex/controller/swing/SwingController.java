@@ -1,14 +1,12 @@
 package nl.avans.wordcrex.controller.swing;
 
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.model.Match;
 import nl.avans.wordcrex.model.Model;
 import nl.avans.wordcrex.model.Player;
 import nl.avans.wordcrex.model.update.ModelUpdate;
 import nl.avans.wordcrex.view.swing.SwingView;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -77,5 +75,9 @@ public class SwingController implements Controller<SwingView>, Runnable {
 
     public void observe(Consumer<ModelUpdate> observer) {
         this.model.observe(observer);
+    }
+
+    public void remove(Consumer<ModelUpdate> observer) {
+        this.model.remove(observer);
     }
 }

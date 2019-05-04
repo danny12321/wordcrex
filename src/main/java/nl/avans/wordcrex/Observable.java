@@ -9,6 +9,10 @@ public class Observable<T> {
 
     private T last;
 
+    public Observable(T initial) {
+        this.last = initial;
+    }
+
     protected void next(T next) {
         this.observers.forEach((o) -> o.accept(next));
         this.last = next;
@@ -21,5 +25,9 @@ public class Observable<T> {
     public void observe(Consumer<T> observer) {
         this.observers.add(observer);
         observer.accept(this.last);
+    }
+
+    public void remove(Consumer<T> observer) {
+        this.observers.remove(observer);
     }
 }

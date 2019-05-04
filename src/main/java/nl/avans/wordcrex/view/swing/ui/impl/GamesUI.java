@@ -33,6 +33,11 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
     }
 
     @Override
+    public void cleanup() {
+        this.controller.remove(this);
+    }
+
+    @Override
     public void draw(Graphics2D g) {
         var offset = 0;
         var height = 96;
@@ -130,19 +135,22 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
     }
 
     private boolean canSelect(Match match) {
-        return match.host != this.controller.getPlayer();
+        return match.status == Match.Status.PLAYING || (match.status == Match.Status.PENDING && match.host != this.controller.getPlayer());
     }
 
     @Override
     public void mouseClick(int x, int y) {
-        var match = this.matches.stream().filter((m) -> m.id == this.active).findFirst().orElse(null);
+        var match = this.matches.stream()
+            .filter((m) -> m.id == this.active)
+            .findFirst()
+            .orElse(null);
 
         if (match != null) {
             if (match.status == Match.Status.PENDING) {
                 this.dialog.show("Accept?", "Yes", "No", (positive) -> {
                     if (positive) {
                         match.setStatus(Match.Status.PLAYING);
-                        this.game.openUI(new IngameUI(match));
+                        this.game.openUI(new IngameUI(this.active));
                     } else {
                         match.setStatus(Match.Status.REJECTED);
                     }
@@ -151,7 +159,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
                 return;
             }
 
-            this.game.openUI(new IngameUI(match));
+            this.game.openUI(new IngameUI(this.active));
         }
     }
 

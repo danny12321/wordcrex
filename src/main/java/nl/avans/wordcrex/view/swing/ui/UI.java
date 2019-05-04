@@ -6,13 +6,15 @@ import nl.avans.wordcrex.view.swing.GamePanel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public abstract class UI {
     private final List<UI> parents = new ArrayList<>();
 
     public abstract void initialize(GamePanel game, SwingController controller);
+
+    public void cleanup() {
+    }
 
     public abstract void draw(Graphics2D g);
 
@@ -61,7 +63,8 @@ public abstract class UI {
     }
 
     public boolean treeMatch(Predicate<UI> predicate) {
-        return predicate.test(this) || this.parents.stream().anyMatch(predicate);
+        return predicate.test(this) || this.parents.stream()
+            .anyMatch(predicate);
     }
 
     public void addParent(UI parent) {

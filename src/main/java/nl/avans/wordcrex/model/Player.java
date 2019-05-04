@@ -1,6 +1,5 @@
 package nl.avans.wordcrex.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
@@ -8,18 +7,14 @@ public class Player {
     public final String username;
     public final String firstName;
     public final String lastName;
+    public final List<Role> roles;
 
-    private final List<Role> roles = new ArrayList<>();
-
-    public Player(int id, String username, String firstName, String lastName) {
+    public Player(int id, String username, String firstName, String lastName, List<Role> roles) {
         this.id = id;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
-    }
-
-    public void addRole(Role role) {
-        this.roles.add(role);
+        this.roles = roles;
     }
 
     public String getDisplayName() {

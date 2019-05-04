@@ -6,16 +6,16 @@ public enum Role {
     MODERATOR("moderator"),
     ADMINISTRATOR("administrator");
 
-    public final String name;
+    public final String role;
 
-    Role(String name) {
-        this.name = name;
+    Role(String role) {
+        this.role = role;
     }
 
-    public static Role byName(String name) {
-        for (var role : Role.values()) {
-            if (role.name.equals(name)) {
-                return role;
+    public static Role byRole(String role) {
+        for (var r : Role.values()) {
+            if (r.role.equals(role)) {
+                return r;
             }
         }
 

@@ -1,8 +1,8 @@
 package nl.avans.wordcrex.view.swing;
 
 import nl.avans.wordcrex.controller.swing.SwingController;
-import nl.avans.wordcrex.view.swing.ui.impl.FrameUI;
 import nl.avans.wordcrex.view.swing.ui.UI;
+import nl.avans.wordcrex.view.swing.ui.impl.FrameUI;
 import nl.avans.wordcrex.view.swing.ui.impl.LoginUI;
 
 import javax.swing.*;
@@ -68,7 +68,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
     public void openUI(UI ui) {
+        this.interfaces.forEach(UI::cleanup);
         this.interfaces.clear();
+
         this.addUI(ui, new ArrayList<>());
         this.addUI(new FrameUI(), new ArrayList<>());
     }

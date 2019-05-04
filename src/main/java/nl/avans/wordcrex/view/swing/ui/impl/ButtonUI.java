@@ -52,7 +52,7 @@ public class ButtonUI extends UI {
         g.setColor(this.hover || !this.active ? this.backgroundHover : this.background);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(this.foreground);
-        StringUtil.drawCenteredString(g, this.x, this.y, this.width,this.height, this.text);
+        StringUtil.drawCenteredString(g, this.x, this.y, this.width, this.height, this.text);
     }
 
     @Override
@@ -70,7 +70,6 @@ public class ButtonUI extends UI {
     public void mouseClick(int x, int y) {
         if (this.hover) {
             this.runnable.run();
-            this.hover = false;
         }
     }
 
@@ -85,9 +84,17 @@ public class ButtonUI extends UI {
 
     public void setActive(boolean active) {
         this.active = active;
+
+        if (!this.active) {
+            this.hover = false;
+        }
     }
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+
+        if (!this.active) {
+            this.hover = false;
+        }
     }
 }
