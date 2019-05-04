@@ -70,6 +70,7 @@ public class ButtonUI extends UI {
     public void mouseClick(int x, int y) {
         if (this.hover) {
             this.runnable.run();
+            this.hover = false;
         }
     }
 
