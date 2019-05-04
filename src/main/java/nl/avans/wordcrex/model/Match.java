@@ -1,16 +1,39 @@
 package nl.avans.wordcrex.model;
 
+import nl.avans.wordcrex.data.Database;
+
 public class Match {
+    private final Database database;
+
     public final int id;
     public final Player host;
     public final Player opponent;
-    public final Status status;
+    public Status status;
 
-    public Match(int id, Player host, Player opponent, Status status) {
+    public Match(Database database, int id, Player host, Player opponent, Status status) {
+        this.database = database;
         this.id = id;
         this.host = host;
         this.opponent = opponent;
         this.status = status;
+    }
+
+    public void setStatus(Status status) {
+        if (status == null) {
+            return;
+        }
+
+        var updated = this.database.update(
+            "UPDATE match SET status = ? WHERE id = ?",
+            (statement) -> {
+                statement.setInt(1, status.status);
+                statement.setInt(2, this.id);
+            }
+        );
+
+        if (updated > 0) {
+            this.status = status;
+        }
     }
 
     public enum Status {

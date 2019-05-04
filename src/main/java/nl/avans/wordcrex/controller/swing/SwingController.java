@@ -1,7 +1,6 @@
 package nl.avans.wordcrex.controller.swing;
 
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.model.Match;
 import nl.avans.wordcrex.model.Model;
 import nl.avans.wordcrex.model.Player;
@@ -12,20 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 public class SwingController implements Controller<SwingView>, Runnable {
-    private final String databaseConfig;
-
     private boolean running = true;
-    private Database database;
     private SwingView view;
     private Model model;
 
-    public SwingController(String databaseConfig) {
-        this.databaseConfig = databaseConfig;
-    }
-
     @Override
     public void initialize(SwingView view, Model model) {
-        this.database = Database.connect(this.databaseConfig);
         this.view = view;
         this.model = model;
 
@@ -37,7 +28,7 @@ public class SwingController implements Controller<SwingView>, Runnable {
     @Override
     public void run() {
         var loops = Map.<Double, Runnable>of(
-            4.0d, () -> this.model.poll(this.database),
+            4.0d, this.model::poll,
             30.0d, this.view::update,
             60.0d, this.view::draw
         );
@@ -71,19 +62,11 @@ public class SwingController implements Controller<SwingView>, Runnable {
     }
 
     public boolean login(String username, String password) {
-        return this.model.login(this.database, username, password);
+        return this.model.login(username, password);
     }
 
     public void logout() {
         this.model.logout();
-    }
-
-    public void acceptMatch(Match match) {
-
-    }
-
-    public void rejectMatch(Match match) {
-
     }
 
     public Player getPlayer() {

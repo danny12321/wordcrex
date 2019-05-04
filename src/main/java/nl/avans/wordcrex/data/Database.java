@@ -27,7 +27,7 @@ public class Database {
         return this.source.getConnection();
     }
 
-    public boolean execute(String sql, SqlConsumer<PreparedStatement> prepare, SqlConsumer<ResultSet> consumer) {
+    public boolean select(String sql, SqlConsumer<PreparedStatement> prepare, SqlConsumer<ResultSet> consumer) {
         var results = false;
 
         try (var connection = this.getConnection();
@@ -46,5 +46,20 @@ public class Database {
         }
 
         return results;
+    }
+
+    public int update(String sql, SqlConsumer<PreparedStatement> prepare) {
+        var updated = 0;
+
+        try (var connection = this.getConnection();
+             var statement = connection.prepareStatement(sql)) {
+            prepare.accept(statement);
+
+            updated = statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return updated;
     }
 }

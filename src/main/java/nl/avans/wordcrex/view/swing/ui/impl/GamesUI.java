@@ -130,10 +130,10 @@ public class GamesUI extends UI {
             if (this.active.status == Match.Status.PENDING) {
                 this.dialog.show("Accept?", "Yes", "No", (positive) -> {
                     if (positive) {
-                        this.controller.acceptMatch(this.active);
+                        this.active.setStatus(Match.Status.PLAYING);
                         this.game.openUI(new IngameUI(this.active));
                     } else {
-                        this.controller.rejectMatch(this.active);
+                        this.active.setStatus(Match.Status.REJECTED);
                     }
                 });
 
