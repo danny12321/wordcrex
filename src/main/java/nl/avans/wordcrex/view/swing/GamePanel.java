@@ -25,6 +25,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private final List<UI> interfaces;
 
     private Point movePosition;
+    private Font smallFont;
     private Font normalFont;
     private Font bigFont;
 
@@ -45,6 +46,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         try {
             var font = Font.createFont(Font.TRUETYPE_FONT, GamePanel.class.getResourceAsStream("/fonts/RobotoMono.ttf"));
 
+            this.smallFont = font.deriveFont(10.0f);
             this.normalFont = font.deriveFont(16.0f);
             this.bigFont = font.deriveFont(Font.BOLD, 24.0f);
 
@@ -57,6 +59,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         this.setFont(this.normalFont);
         this.openUI(new LoginUI());
+    }
+
+    public Font getSmallFont() {
+        return this.smallFont;
     }
 
     public Font getNormalFont() {

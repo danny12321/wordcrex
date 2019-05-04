@@ -57,7 +57,7 @@ public class InputUI extends UI {
 
     @Override
     public void draw(Graphics2D g) {
-        var metrics = g.getFontMetrics(g.getFont());
+        var metrics = g.getFontMetrics();
         var rect = new Rectangle2D.Float(this.x, this.y, this.width, this.height);
         var text = this.placeholder == null ? this.input.toString() : String.valueOf(this.placeholder).repeat(this.input.length());
         var position = metrics.stringWidth(this.input.substring(0, this.cursor)) - 1;
