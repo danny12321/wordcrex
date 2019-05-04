@@ -1,18 +1,20 @@
 package nl.avans.wordcrex.model;
 
+import nl.avans.wordcrex.Observable;
 import nl.avans.wordcrex.data.Database;
+import nl.avans.wordcrex.model.update.ModelUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Model {
+public class Model extends Observable<ModelUpdate> {
     private final Database database;
-    private final List<Match> matches = new ArrayList<>();
 
     private Player player;
 
     public Model(Database database) {
         this.database = database;
+        this.next(new ModelUpdate(List.of()));
     }
 
     public void poll() {
@@ -21,6 +23,7 @@ public class Model {
         }
 
         var matches = new ArrayList<Match>();
+
         this.database.select(
             "SELECT m.id, m.status, h.id host_id, h.username host_username, h.first_name host_first_name, h.last_name host_last_name, o.id opponent_id, o.username opponent_username, o.first_name opponent_first_name, o.last_name opponent_last_name FROM match m JOIN \"user\" h ON m.host_id = h.id JOIN \"user\" o ON m.opponent_id = o.id WHERE m.host_id = ? OR m.opponent_id = ? ORDER BY m.status",
             (statement) -> {
@@ -30,7 +33,7 @@ public class Model {
             (result) -> {
                 var id = result.getInt("id");
                 var status = result.getInt("status");
-                var current = this.matches.stream().filter((m) -> m.id == id && m.status.status == status).findFirst().orElse(null);
+                var current = this.getLast().matches.stream().filter((m) -> m.id == id && m.status.status == status).findFirst().orElse(null);
 
                 if (current != null) {
                     matches.add(current);
@@ -46,8 +49,8 @@ public class Model {
                 matches.add(new Match(this.database, id, host, opponent, Match.Status.byStatus(status)));
             }
         );
-        this.matches.clear();
-        this.matches.addAll(matches);
+
+        this.next(new ModelUpdate(List.copyOf(matches)));
     }
 
     public boolean login(String username, String password) {
@@ -86,14 +89,10 @@ public class Model {
 
     public void logout() {
         this.player = null;
-        this.matches.clear();
+        this.next(new ModelUpdate(List.of()));
     }
 
     public Player getPlayer() {
         return this.player;
-    }
-
-    public List<Match> getMatches() {
-        return List.copyOf(this.matches);
     }
 }

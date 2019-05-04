@@ -18,7 +18,7 @@ public class Board extends Observable<BoardUpdate> {
             var x = i % size;
             var y = i / size;
 
-            this.tiles[i] = new Tile(null);
+            this.tiles[i] = new Tile(x == 0 && y == 0 ? Multiplier.W4 : null);
         }
 
         this.update();

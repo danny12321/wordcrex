@@ -14,6 +14,10 @@ public class Observable<T> {
         this.last = next;
     }
 
+    protected T getLast() {
+        return this.last;
+    }
+
     public void observe(Consumer<T> observer) {
         this.observers.add(observer);
         observer.accept(this.last);

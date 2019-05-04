@@ -2,6 +2,7 @@ package nl.avans.wordcrex.view.swing.ui.impl;
 
 import nl.avans.wordcrex.controller.swing.SwingController;
 import nl.avans.wordcrex.model.Match;
+import nl.avans.wordcrex.model.update.ModelUpdate;
 import nl.avans.wordcrex.view.swing.Colors;
 import nl.avans.wordcrex.view.swing.GamePanel;
 import nl.avans.wordcrex.view.swing.SwingView;
@@ -10,32 +11,36 @@ import nl.avans.wordcrex.view.swing.util.StringUtil;
 
 import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class GamesUI extends UI {
+public class GamesUI extends UI implements Consumer<ModelUpdate> {
     private final ScrollUI scroller = new ScrollUI(SwingView.SIZE * 2, (scroll) -> this.scroll = scroll);
     private final DialogUI dialog = new DialogUI();
 
     private int scroll;
     private GamePanel game;
     private SwingController controller;
-    private Match active;
+    private int active = -1;
+
+    private List<Match> matches = List.of();
 
     @Override
     public void initialize(GamePanel game, SwingController controller) {
         this.game = game;
         this.controller = controller;
+
+        this.controller.observe(this);
     }
 
     @Override
     public void draw(Graphics2D g) {
-        var matches = this.controller.getMatches();
         var offset = 0;
         var height = 96;
         var count = 0;
         Match.Status last = null;
 
-        for (var i = 0; i < matches.size(); i++) {
-            var match = matches.get(i);
+        for (var i = 0; i < this.matches.size(); i++) {
+            var match = this.matches.get(i);
             var position = height * i + offset - this.scroll + GamePanel.TASKBAR_SIZE;
 
             if (match.status != last) {
@@ -53,7 +58,7 @@ public class GamesUI extends UI {
                 position += 64;
             }
 
-            if (this.active == match) {
+            if (this.active == i) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(0, position, SwingView.SIZE - GamePanel.TASKBAR_SIZE, height);
             }
@@ -70,7 +75,7 @@ public class GamesUI extends UI {
             g.setColor(Color.WHITE);
             g.drawString((match.host == this.controller.getPlayer() ? "To " : "From ") + other.getDisplayName(), GamePanel.TASKBAR_SIZE * 2 + 42, position + 52);
 
-            if (i < matches.size() - 1 && matches.get(i + 1).status == last) {
+            if (i < this.matches.size() - 1 && this.matches.get(i + 1).status == last) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(GamePanel.TASKBAR_SIZE * 2 + 42, position + height - 2, 268, 4);
             }
@@ -83,19 +88,18 @@ public class GamesUI extends UI {
 
     @Override
     public int mouseMove(int x, int y) {
-        this.active = null;
+        this.active = -1;
 
         if (x >= SwingView.SIZE - GamePanel.TASKBAR_SIZE || y <= GamePanel.TASKBAR_SIZE) {
             return Cursor.DEFAULT_CURSOR;
         }
 
-        var matches = this.controller.getMatches();
         var offset = 0;
         var height = 96;
         Match.Status last = null;
 
-        for (var i = 0; i < matches.size(); i++) {
-            var match = matches.get(i);
+        for (var i = 0; i < this.matches.size(); i++) {
+            var match = this.matches.get(i);
             var position = height * i + offset - this.scroll + GamePanel.TASKBAR_SIZE;
 
             if (match.status.name.isEmpty()) {
@@ -111,7 +115,7 @@ public class GamesUI extends UI {
                     break;
                 }
 
-                this.active = match;
+                this.active = i;
 
                 return Cursor.HAND_CURSOR;
             }
@@ -126,21 +130,23 @@ public class GamesUI extends UI {
 
     @Override
     public void mouseClick(int x, int y) {
-        if (this.active != null) {
-            if (this.active.status == Match.Status.PENDING) {
+        if (this.active >= 0 && this.active < this.matches.size()) {
+            var match = this.matches.get(this.active);
+
+            if (match.status == Match.Status.PENDING) {
                 this.dialog.show("Accept?", "Yes", "No", (positive) -> {
                     if (positive) {
-                        this.active.setStatus(Match.Status.PLAYING);
-                        this.game.openUI(new IngameUI(this.active));
+                        match.setStatus(Match.Status.PLAYING);
+                        this.game.openUI(new IngameUI(match));
                     } else {
-                        this.active.setStatus(Match.Status.REJECTED);
+                        match.setStatus(Match.Status.REJECTED);
                     }
                 });
 
                 return;
             }
 
-            this.game.openUI(new IngameUI(this.active));
+            this.game.openUI(new IngameUI(match));
         }
     }
 
@@ -150,5 +156,10 @@ public class GamesUI extends UI {
             this.scroller,
             this.dialog
         );
+    }
+
+    @Override
+    public void accept(ModelUpdate update) {
+        this.matches = update.matches;
     }
 }
