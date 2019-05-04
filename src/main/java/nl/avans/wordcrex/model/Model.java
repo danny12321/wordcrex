@@ -56,7 +56,7 @@ public class Model {
             String firstName;
             String lastName;
         };
-        var successful = this.database.select(
+        var selected = this.database.select(
             "SELECT u.id, u.first_name, u.last_name FROM \"user\" u WHERE u.username = ? AND u.password = ?",
             (statement) -> {
                 statement.setString(1, username);
@@ -69,7 +69,7 @@ public class Model {
             }
         );
 
-        if (!successful) {
+        if (selected == 0) {
             return false;
         }
 

@@ -27,25 +27,24 @@ public class Database {
         return this.source.getConnection();
     }
 
-    public boolean select(String sql, SqlConsumer<PreparedStatement> prepare, SqlConsumer<ResultSet> consumer) {
-        var results = false;
+    public int select(String sql, SqlConsumer<PreparedStatement> prepare, SqlConsumer<ResultSet> consumer) {
+        var selected = 0;
 
         try (var connection = this.getConnection();
              var statement = connection.prepareStatement(sql)) {
             prepare.accept(statement);
 
             try (var result = statement.executeQuery()) {
-                if (results = result.next()) {
-                    do {
-                        consumer.accept(result);
-                    } while (result.next());
+                while (result.next()) {
+                    consumer.accept(result);
+                    selected++;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return results;
+        return selected;
     }
 
     public int update(String sql, SqlConsumer<PreparedStatement> prepare) {
