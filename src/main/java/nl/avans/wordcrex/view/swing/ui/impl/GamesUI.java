@@ -20,7 +20,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
     private int scroll;
     private GamePanel game;
     private SwingController controller;
-    private int active = -1;
+    private int active = 0;
 
     private List<Match> matches = List.of();
 
@@ -58,7 +58,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
                 position += 64;
             }
 
-            if (this.active == i) {
+            if (this.active == match.id) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(0, position, SwingView.SIZE - GamePanel.TASKBAR_SIZE, height);
             }
@@ -88,7 +88,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
 
     @Override
     public int mouseMove(int x, int y) {
-        this.active = -1;
+        this.active = 0;
 
         if (x >= SwingView.SIZE - GamePanel.TASKBAR_SIZE || y <= GamePanel.TASKBAR_SIZE) {
             return Cursor.DEFAULT_CURSOR;
@@ -115,7 +115,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
                     break;
                 }
 
-                this.active = i;
+                this.active = match.id;
 
                 return Cursor.HAND_CURSOR;
             }
@@ -130,9 +130,9 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
 
     @Override
     public void mouseClick(int x, int y) {
-        if (this.active >= 0 && this.active < this.matches.size()) {
-            var match = this.matches.get(this.active);
+        var match = this.matches.stream().filter((m) -> m.id == this.active).findFirst().orElse(null);
 
+        if (match != null) {
             if (match.status == Match.Status.PENDING) {
                 this.dialog.show("Accept?", "Yes", "No", (positive) -> {
                     if (positive) {
