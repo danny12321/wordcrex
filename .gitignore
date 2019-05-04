@@ -1,8 +1,11 @@
 .vscode/
 .eclipse/
 .idea/
+.gradle/
 .project
 .classpath
 out/
 bin/
+build/
+classes/
 *.iml
