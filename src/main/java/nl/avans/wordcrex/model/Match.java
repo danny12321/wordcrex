@@ -24,7 +24,7 @@ public class Match {
         }
 
         this.database.update(
-            "UPDATE \"match\" SET status = ? WHERE id = ?",
+            "UPDATE `match` SET status = ? WHERE id = ?",
             (statement) -> {
                 statement.setInt(1, status.status);
                 statement.setInt(2, this.id);

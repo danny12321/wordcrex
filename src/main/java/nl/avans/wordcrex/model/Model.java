@@ -25,7 +25,7 @@ public class Model extends Observable<ModelUpdate> {
         var matches = new ArrayList<Match>();
 
         this.database.select(
-            "SELECT m.id, m.status, h.id host_id, h.username host_username, h.first_name host_first_name, h.last_name host_last_name, o.id opponent_id, o.username opponent_username, o.first_name opponent_first_name, o.last_name opponent_last_name FROM \"match\" m JOIN \"user\" h ON m.host_id = h.id JOIN \"user\" o ON m.opponent_id = o.id WHERE m.host_id = ? OR m.opponent_id = ? ORDER BY m.status",
+            "SELECT m.id, m.status, h.id host_id, h.username host_username, h.first_name host_first_name, h.last_name host_last_name, o.id opponent_id, o.username opponent_username, o.first_name opponent_first_name, o.last_name opponent_last_name FROM `match` m JOIN `user` h ON m.host_id = h.id JOIN `user` o ON m.opponent_id = o.id WHERE m.host_id = ? OR m.opponent_id = ? ORDER BY m.status",
             (statement) -> {
                 statement.setInt(1, this.player.id);
                 statement.setInt(2, this.player.id);
@@ -60,7 +60,7 @@ public class Model extends Observable<ModelUpdate> {
             String lastName;
         };
         var selected = this.database.select(
-            "SELECT u.id, u.first_name, u.last_name FROM \"user\" u WHERE u.username = ? AND u.password = ?",
+            "SELECT u.id, u.first_name, u.last_name FROM `user` u WHERE u.username = ? AND u.password = ?",
             (statement) -> {
                 statement.setString(1, username);
                 statement.setString(2, password);
@@ -79,7 +79,7 @@ public class Model extends Observable<ModelUpdate> {
         this.player = new Player(ref.id, username, ref.firstName, ref.lastName);
 
         this.database.select(
-            "SELECT r.role FROM role r JOIN user_roles ur ON r.id = ur.role_id JOIN \"user\" u ON ur.user_id = u.id AND u.username = ?",
+            "SELECT r.role FROM role r JOIN user_roles ur ON r.id = ur.role_id JOIN `user` u ON ur.user_id = u.id AND u.username = ?",
             (statement) -> statement.setString(1, username),
             (result) -> this.player.addRole(Role.byName(result.getString("role")))
         );
