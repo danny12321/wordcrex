@@ -39,6 +39,16 @@ public class Player {
 
     public Map<String, String> getStatistics() {
         var statistics = new HashMap<String, String>();
-        return Map.of();
+
+        statistics.put("Games won", "20");
+        statistics.put("Games lost", "5");
+        statistics.put("Games tied", "2");
+        statistics.put("Games forfeited", "1");
+        statistics.put("Highest game score", "420");
+        statistics.put("Highest word score", "woordje (80)");
+        statistics.put("Highest game bonus", "0");
+        statistics.put("Total seven letter bonus", "0");
+
+        return statistics;
     }
 }
