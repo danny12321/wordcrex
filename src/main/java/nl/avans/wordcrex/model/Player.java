@@ -1,7 +1,9 @@
 package nl.avans.wordcrex.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Player {
     public final int id;
@@ -10,6 +12,7 @@ public class Player {
     public final String lastName;
 
     private final List<Role> roles = new ArrayList<>();
+
 
     public Player(int id, String username, String firstName, String lastName) {
         this.id = id;
@@ -28,5 +31,14 @@ public class Player {
         }
 
         return this.username;
+    }
+
+    public String getInitial() {
+        return this.getDisplayName().substring(0, 1).toUpperCase();
+    }
+
+    public Map<String, String> getStatistics() {
+        var statistics = new HashMap<String, String>();
+        return Map.of();
     }
 }

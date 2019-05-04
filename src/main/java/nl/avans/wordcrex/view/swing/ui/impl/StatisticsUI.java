@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.view.swing.ui.impl;
 
 import nl.avans.wordcrex.controller.swing.SwingController;
+import nl.avans.wordcrex.model.Player;
 import nl.avans.wordcrex.view.swing.Colors;
 import nl.avans.wordcrex.view.swing.GamePanel;
 import nl.avans.wordcrex.view.swing.SwingView;
@@ -13,23 +14,27 @@ import java.util.List;
 public class StatisticsUI extends UI {
     private int scroll;
     private GamePanel game;
+    private Player player;
 
     @Override
     public void initialize(GamePanel game, SwingController controller) {
         this.game = game;
+        this.player = controller.getPlayer();
+
     }
 
     @Override
     public void draw(Graphics2D g) {
+
         g.setColor(Colors.DARK_BLUE);
         g.fillRect(0, GamePanel.TASKBAR_SIZE - this.scroll, SwingView.SIZE - GamePanel.TASKBAR_SIZE, 128);
         g.setColor(Colors.DARK_YELLOW);
         g.fillOval(218, 58 - this.scroll, 42, 42);
         g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, 0, 128 - this.scroll, SwingView.SIZE - GamePanel.TASKBAR_SIZE, "nierennakker");
+        StringUtil.drawCenteredString(g, 0, 128 - this.scroll, SwingView.SIZE - GamePanel.TASKBAR_SIZE, this.player.getDisplayName());
         g.setColor(Colors.DARKER_BLUE);
         g.setFont(this.game.getBigFont());
-        g.drawString("N", 232, 89 - this.scroll);
+        g.drawString(this.player.getInitial(), 232, 89 - this.scroll);
         g.setFont(this.game.getNormalFont());
     }
 

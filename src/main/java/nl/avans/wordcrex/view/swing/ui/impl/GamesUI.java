@@ -74,7 +74,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
             g.fillOval(GamePanel.TASKBAR_SIZE, position + 27, 42, 42);
             g.setFont(this.game.getBigFont());
             g.setColor(Colors.DARKER_BLUE);
-            StringUtil.drawCenteredString(g, GamePanel.TASKBAR_SIZE, position + 27, 42, 42, other.getDisplayName().substring(0, 1).toUpperCase());
+            StringUtil.drawCenteredString(g, GamePanel.TASKBAR_SIZE, position + 27, 42, 42, other.getInitial());
             g.setFont(this.game.getNormalFont());
 
             g.setColor(Color.WHITE);
