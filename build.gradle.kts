@@ -21,6 +21,7 @@ repositories {
 dependencies {
     implementation("com.zaxxer:HikariCP:3.3.1")
     implementation("org.mariadb.jdbc:mariadb-java-client:2.4.1")
+    implementation("org.slf4j:slf4j-simple:1.7.26")
 }
 
 tasks.withType<Jar> {
