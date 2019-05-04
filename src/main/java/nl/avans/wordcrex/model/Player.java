@@ -13,7 +13,6 @@ public class Player {
 
     private final List<Role> roles = new ArrayList<>();
 
-
     public Player(int id, String username, String firstName, String lastName) {
         this.id = id;
         this.username = username;
