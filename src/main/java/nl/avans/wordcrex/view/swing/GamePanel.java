@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 public class GamePanel extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
@@ -137,6 +138,16 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             .collect(Collectors.toList());
     }
 
+    private void updateCursor(ToIntFunction<UI> mapper) {
+        var cursor = this.getUnblocked().stream()
+            .mapToInt(mapper)
+            .filter((c) -> c != Cursor.DEFAULT_CURSOR)
+            .findFirst()
+            .orElse(Cursor.DEFAULT_CURSOR);
+
+        this.setCursor(Cursor.getPredefinedCursor(cursor));
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {
         this.getUnblocked().forEach((ui) -> ui.mouseClick(e.getX(), e.getY()));
@@ -158,7 +169,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             this.movePosition = null;
             this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         } else {
-            this.getUnblocked().forEach((ui) -> ui.mouseRelease(e.getX(), e.getY()));
+            this.updateCursor((ui) -> ui.mouseRelease(e.getX(), e.getY()));
         }
     }
 
@@ -177,19 +188,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
             this.frame.setLocation(current.x - this.movePosition.x, current.y - this.movePosition.y);
         } else {
-            this.getUnblocked().forEach((ui) -> ui.mouseDrag(e.getX(), e.getY()));
+            this.updateCursor((ui) -> ui.mouseDrag(e.getX(), e.getY()));
         }
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        var cursor = this.getUnblocked().stream()
-            .mapToInt((ui) -> ui.mouseMove(e.getX(), e.getY()))
-            .filter((c) -> c != Cursor.DEFAULT_CURSOR)
-            .findFirst()
-            .orElse(Cursor.DEFAULT_CURSOR);
-
-        this.setCursor(Cursor.getPredefinedCursor(cursor));
+        this.updateCursor((ui) -> ui.mouseMove(e.getX(), e.getY()));
     }
 
     @Override
@@ -204,6 +209,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     @Override
     public void keyReleased(KeyEvent e) {
-        this.getUnblocked().forEach((ui) -> ui.keyRelease(e.getKeyChar()));
+        this.getUnblocked().forEach((ui) -> ui.keyRelease(e.getExtendedKeyCode(), e.getModifiersEx()));
     }
 }

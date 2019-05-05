@@ -31,10 +31,12 @@ public abstract class UI {
     public void mousePress(int x, int y) {
     }
 
-    public void mouseRelease(int x, int y) {
+    public int mouseRelease(int x, int y) {
+        return Cursor.DEFAULT_CURSOR;
     }
 
-    public void mouseDrag(int x, int y) {
+    public int mouseDrag(int x, int y) {
+        return Cursor.DEFAULT_CURSOR;
     }
 
     public void keyType(char character) {
@@ -43,7 +45,7 @@ public abstract class UI {
     public void keyPress(int code, int modifiers) {
     }
 
-    public void keyRelease(char character) {
+    public void keyRelease(int code, int modifiers) {
     }
 
     public List<UI> getChildren() {

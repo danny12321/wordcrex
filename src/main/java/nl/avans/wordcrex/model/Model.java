@@ -85,7 +85,7 @@ public class Model extends Observable<ModelUpdate> {
         var roles = new ArrayList<Role>();
 
         this.database.select(
-            "SELECT r.role FROM role r JOIN user_roles ur ON r.id = ur.role_id JOIN `user` u ON ur.user_id = u.id AND u.username = ?",
+            "SELECT r.role FROM role r JOIN user_role ur ON r.id = ur.role_id JOIN `user` u ON ur.user_id = u.id AND u.username = ?",
             (statement) -> statement.setString(1, username),
             (result) -> roles.add(Role.byRole(result.getString("role")))
         );

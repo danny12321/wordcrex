@@ -116,6 +116,16 @@ public class InputUI extends UI {
     }
 
     @Override
+    public int mouseDrag(int x, int y) {
+        return this.hover ? Cursor.TEXT_CURSOR : Cursor.DEFAULT_CURSOR;
+    }
+
+    @Override
+    public int mouseRelease(int x, int y) {
+        return this.hover ? Cursor.TEXT_CURSOR : Cursor.DEFAULT_CURSOR;
+    }
+
+    @Override
     public void keyType(char character) {
         if (!this.active) {
             return;

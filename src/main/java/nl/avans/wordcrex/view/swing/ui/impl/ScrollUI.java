@@ -70,7 +70,7 @@ public class ScrollUI extends UI {
     }
 
     @Override
-    public void mouseDrag(int x, int y) {
+    public int mouseDrag(int x, int y) {
         if (this.dragging) {
             var extra = this.height - SwingView.SIZE + GamePanel.TASKBAR_SIZE;
             var height = SwingView.SIZE - GamePanel.TASKBAR_SIZE;
@@ -78,12 +78,18 @@ public class ScrollUI extends UI {
 
             this.offset = (int) Math.min(height - scroller, Math.max(0, y - this.from));
             this.scroll.accept((int) (this.offset / (height - scroller) * extra));
+
+            return Cursor.MOVE_CURSOR;
         }
+
+        return Cursor.DEFAULT_CURSOR;
     }
 
     @Override
-    public void mouseRelease(int x, int y) {
+    public int mouseRelease(int x, int y) {
         this.dragging = false;
+
+        return this.hover ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR;
     }
 
     public void setHeight(int height) {
