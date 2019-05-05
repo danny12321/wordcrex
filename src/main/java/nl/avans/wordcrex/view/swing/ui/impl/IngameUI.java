@@ -176,8 +176,8 @@ public class IngameUI extends UI {
         }
 
         public void move(int x, int y) {
-            this.x = x;
-            this.y = y;
+            this.x = Math.min(SwingView.SIZE - 24, Math.max(0, x));
+            this.y = Math.min(SwingView.SIZE - 24, Math.max(GamePanel.TASKBAR_SIZE, y));
         }
     }
 }
