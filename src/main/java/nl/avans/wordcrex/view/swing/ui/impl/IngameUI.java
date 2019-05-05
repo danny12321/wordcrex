@@ -40,7 +40,7 @@ public class IngameUI extends UI {
         this.tiles.clear();
 
         for (var i = 0; i < this.round.deck.size(); i++) {
-            this.tiles.add(new Tile(this.game, this.round.deck.get(i), 142 + i * 34, 464));
+            this.tiles.add(new Tile(this.game, this.round.deck.get(i), 142 + i * 34, 462));
         }
     };
     private final List<Tile> tiles = new ArrayList<>();
@@ -52,8 +52,11 @@ public class IngameUI extends UI {
     private Round round;
     private Tile hover;
     private boolean dragging;
-    private int x;
-    private int y;
+    private int mouseX;
+    private int mouseY;
+    private int offsetX;
+    private int offsetY;
+    private int target;
 
     public IngameUI(int id) {
         this.id = id;
@@ -90,7 +93,22 @@ public class IngameUI extends UI {
         g.setColor(Color.WHITE);
         g.drawString(full, offset, 60);
         g.setColor(Colors.DARKERER_BLUE);
-        g.fillRect(76, 79, 360, 360);
+        g.fillRect(76, 76, 360, 360);
+
+        if (this.dragging) {
+            if (this.mouseX > 76 && this.mouseX < 436 && this.mouseY > 76 && this.mouseY < 436) {
+                var size = 360 / GamePanel.GRID_SIZE;
+                var x = Math.floorDiv(this.mouseX - 76, size);
+                var y = Math.floorDiv(this.mouseY - 76, size);
+
+                this.target = x * GamePanel.GRID_SIZE + y;
+
+                g.setColor(Colors.DARK_BLUE);
+                g.fillRect(76 + x * size, 76 + y * size, 24, 24);
+            } else {
+                this.target = -1;
+            }
+        }
 
         this.tiles.forEach((tile) -> tile.draw(g));
     }
@@ -113,17 +131,22 @@ public class IngameUI extends UI {
     @Override
     public void mousePress(int x, int y) {
         this.dragging = this.hover != null;
+        this.mouseX = x;
+        this.mouseY = y;
 
         if (this.dragging) {
-            this.x = x - this.hover.getX();
-            this.y = y - this.hover.getY();
+            this.offsetX = x - this.hover.getX();
+            this.offsetY = y - this.hover.getY();
         }
     }
 
     @Override
     public int mouseDrag(int x, int y) {
+        this.mouseX = x;
+        this.mouseY = y;
+
         if (this.dragging) {
-            this.hover.move(x - this.x, y - this.y);
+            this.hover.move(x - this.offsetX, y - this.offsetY);
 
             return Cursor.MOVE_CURSOR;
         }
@@ -133,6 +156,10 @@ public class IngameUI extends UI {
 
     @Override
     public int mouseRelease(int x, int y) {
+        if (this.dragging) {
+            this.hover.setPosition(this.target);
+        }
+
         this.dragging = false;
 
         return this.hover != null ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR;
@@ -141,16 +168,22 @@ public class IngameUI extends UI {
     class Tile {
         private final GamePanel game;
         private final Character character;
+        private final int initialX;
+        private final int initialY;
 
         private int x;
         private int y;
         private boolean hover;
+        private int position;
 
         Tile(GamePanel game, Character character, int x, int y) {
             this.game = game;
             this.character = character;
+            this.initialX = x;
+            this.initialY = y;
             this.x = x;
             this.y = y;
+            this.position = -1;
         }
 
         public void draw(Graphics2D g) {
@@ -173,6 +206,28 @@ public class IngameUI extends UI {
 
         public int getY() {
             return this.y;
+        }
+
+        public int getPosition() {
+            return this.position;
+        }
+
+        public void setPosition(int position) {
+            this.position = position;
+
+            if (position == -1) {
+                this.x = this.initialX;
+                this.y = this.initialY;
+
+                return;
+            }
+
+            var size = 360 / GamePanel.GRID_SIZE;
+            var targetX = position / 15;
+            var targetY = position % 15;
+
+            this.x = 76 + targetX * size;
+            this.y = 76 + targetY * size;
         }
 
         public void move(int x, int y) {

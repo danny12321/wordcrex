@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 public class GamePanel extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
     public static final int TASKBAR_SIZE = 32;
+    public static final int GRID_SIZE = 15;
 
     private static final RenderingHints RENDERING_HINTS = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
