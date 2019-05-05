@@ -20,7 +20,7 @@ public class ButtonUI extends UI {
     private final Runnable runnable;
 
     private boolean hover;
-    private boolean active = true;
+    private boolean enabled = true;
     private boolean visible = true;
 
     public ButtonUI(String text, int x, int y, int width, int height, Runnable runnable) {
@@ -49,7 +49,7 @@ public class ButtonUI extends UI {
             return;
         }
 
-        g.setColor(this.hover || !this.active ? this.backgroundHover : this.background);
+        g.setColor(this.hover || !this.enabled ? this.backgroundHover : this.background);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(this.foreground);
         StringUtil.drawCenteredString(g, this.x, this.y, this.width, this.height, this.text);
@@ -57,7 +57,7 @@ public class ButtonUI extends UI {
 
     @Override
     public int mouseMove(int x, int y) {
-        if (!this.visible || !this.active) {
+        if (!this.visible || !this.enabled) {
             return Cursor.DEFAULT_CURSOR;
         }
 
@@ -92,10 +92,10 @@ public class ButtonUI extends UI {
         this.y = y;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
 
-        if (!this.active) {
+        if (!this.enabled) {
             this.hover = false;
         }
     }
@@ -103,7 +103,7 @@ public class ButtonUI extends UI {
     public void setVisible(boolean visible) {
         this.visible = visible;
 
-        if (!this.active) {
+        if (!this.enabled) {
             this.hover = false;
         }
     }

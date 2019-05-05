@@ -7,6 +7,7 @@ import nl.avans.wordcrex.model.update.ModelUpdate;
 import nl.avans.wordcrex.view.swing.SwingView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -67,6 +68,10 @@ public class SwingController implements Controller<SwingView>, Runnable {
 
     public void logout() {
         this.model.logout();
+    }
+
+    public boolean checkWords(List<String> words) {
+        return this.model.checkWords(words);
     }
 
     public User getCurrentUser() {

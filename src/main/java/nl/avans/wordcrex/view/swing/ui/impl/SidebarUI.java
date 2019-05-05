@@ -50,7 +50,7 @@ public class SidebarUI extends UI {
         button.setVisible(this.open);
 
         if (cls != null) {
-            button.setActive(!this.game.isOpen(cls));
+            button.setEnabled(!this.game.isOpen(cls));
         }
     }
 

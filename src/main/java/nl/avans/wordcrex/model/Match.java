@@ -9,15 +9,17 @@ import java.util.List;
 
 public class Match extends Observable<MatchUpdate> {
     private final Database database;
+    private final Model model;
 
     public final int id;
     public final User host;
     public final User opponent;
     public final Status status;
 
-    public Match(Database database, int id, User host, User opponent, Status status) {
+    public Match(Database database, Model model, int id, User host, User opponent, Status status) {
         super(new MatchUpdate(List.of()));
         this.database = database;
+        this.model = model;
         this.id = id;
         this.host = host;
         this.opponent = opponent;
@@ -39,7 +41,7 @@ public class Match extends Observable<MatchUpdate> {
                     deck.add(Character.byCharacter(part));
                 }
 
-                rounds.add(new Round(result.getInt("id"), result.getInt("round"), List.copyOf(deck)));
+                rounds.add(new Round(this.database, this.model, result.getInt("id"), result.getInt("round"), this, List.copyOf(deck)));
             }
         );
 

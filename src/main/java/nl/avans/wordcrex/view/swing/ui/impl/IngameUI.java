@@ -14,9 +14,13 @@ import nl.avans.wordcrex.view.swing.ui.UI;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class IngameUI extends UI {
+    private final ButtonUI playButton = new ButtonUI(">", 22, 76, 32, 32, () -> this.round.playTurn(20, this.getPlaced()));
     private final Consumer<ModelUpdate> modelObserver = (update) -> {
         var next = update.matches.stream()
             .filter((m) -> m.id == this.id)
@@ -37,19 +41,23 @@ public class IngameUI extends UI {
     };
     private final Consumer<MatchUpdate> matchObserver = (update) -> {
         this.round = update.rounds.get(update.rounds.size() - 1);
-        this.tiles.clear();
+        this.characters = this.round.getCharacters().entrySet().stream()
+            .map((entry) -> new Tile(this.game, entry.getValue(), entry.getKey()))
+            .collect(Collectors.toList());
+        this.deck.clear();
 
         for (var i = 0; i < this.round.deck.size(); i++) {
-            this.tiles.add(new Tile(this.game, this.round.deck.get(i), 142 + i * 34, 462));
+            this.deck.add(new Tile(this.game, this.round.deck.get(i), 142 + i * 34, 462));
         }
     };
-    private final List<Tile> tiles = new ArrayList<>();
+    private final List<Tile> deck = new ArrayList<>();
 
     private int id;
     private GamePanel game;
     private SwingController controller;
     private Match match;
     private Round round;
+    private List<Tile> characters;
     private Tile hover;
     private boolean dragging;
     private int mouseX;
@@ -68,6 +76,7 @@ public class IngameUI extends UI {
         this.controller = controller;
 
         this.controller.observe(this.modelObserver);
+        this.playButton.setEnabled(false);
     }
 
     @Override
@@ -110,12 +119,13 @@ public class IngameUI extends UI {
             }
         }
 
-        this.tiles.forEach((tile) -> tile.draw(g));
+        this.characters.forEach((tile) -> tile.draw(g));
+        this.deck.forEach((tile) -> tile.draw(g));
     }
 
     @Override
     public int mouseMove(int x, int y) {
-        for (var tile : this.tiles) {
+        for (var tile : this.deck) {
             if (tile.inside(x, y)) {
                 this.hover = tile;
 
@@ -157,12 +167,40 @@ public class IngameUI extends UI {
     @Override
     public int mouseRelease(int x, int y) {
         if (this.dragging) {
-            this.hover.setPosition(this.target);
+            this.hover.setPosition(this.hasCharacter(this.target) ? -1 : this.target);
+            this.checkWords();
         }
 
         this.dragging = false;
 
         return this.hover != null ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR;
+    }
+
+    @Override
+    public List<UI> getChildren() {
+        return List.of(
+            this.playButton,
+            new ButtonUI("o", 22, 124, 32, 32, () -> System.out.println("chat")),
+            new ButtonUI("f", 22, 172, 32, 32, () -> System.out.println("forfeit"))
+        );
+    }
+
+    private boolean hasCharacter(int position) {
+        return Stream.concat(this.characters.stream(), this.deck.stream())
+            .anyMatch((tile) -> tile.getPosition() == position);
+    }
+
+    private void checkWords() {
+        var placed = this.getPlaced();
+        var valid = !placed.isEmpty();
+
+        this.playButton.setEnabled(valid);
+    }
+
+    private Map<Integer, Character> getPlaced() {
+        return this.deck.stream()
+            .filter((tile) -> tile.position != -1)
+            .collect(Collectors.toMap((tile) -> tile.position, (tile) -> tile.character));
     }
 
     class Tile {
@@ -175,6 +213,13 @@ public class IngameUI extends UI {
         private int y;
         private boolean hover;
         private int position;
+        private boolean enabled = true;
+
+        Tile(GamePanel game, Character character, int position) {
+            this(game, character, 0, 0);
+            this.setPosition(position);
+            this.enabled = false;
+        }
 
         Tile(GamePanel game, Character character, int x, int y) {
             this.game = game;
@@ -187,7 +232,7 @@ public class IngameUI extends UI {
         }
 
         public void draw(Graphics2D g) {
-            g.setColor(this.hover ? Color.LIGHT_GRAY : Color.WHITE);
+            g.setColor(this.hover || !this.enabled ? Color.LIGHT_GRAY : Color.WHITE);
             g.fillRect(this.x, this.y, 24, 24);
             g.setColor(Colors.DARK_BLUE);
             g.drawString(this.character.getText(), this.x + 3, this.y + 21);

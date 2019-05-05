@@ -5,6 +5,7 @@ import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.model.update.ModelUpdate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Model extends Observable<ModelUpdate> {
@@ -50,7 +51,7 @@ public class Model extends Observable<ModelUpdate> {
                 var host = hostId == this.user.id ? this.user : new User(hostId, result.getString("host_username"), result.getString("host_first_name"), result.getString("host_last_name"), List.of());
                 var opponent = opponentId == this.user.id ? this.user : new User(opponentId, result.getString("opponent_username"), result.getString("opponent_first_name"), result.getString("opponent_last_name"), List.of());
 
-                matches.add(new Match(this.database, id, host, opponent, Match.Status.byStatus(status)));
+                matches.add(new Match(this.database, this, id, host, opponent, Match.Status.byStatus(status)));
             }
         );
 
@@ -98,6 +99,23 @@ public class Model extends Observable<ModelUpdate> {
     public void logout() {
         this.user = null;
         this.next(new ModelUpdate(List.of()));
+    }
+
+    public boolean checkWords(List<String> words) {
+        var items = new ArrayList<>(words);
+        Collections.fill(items, "?");
+
+        var selected = this.database.select(
+            "SELECT w.id FROM word w WHERE w.word IN (" + String.join(", ", items) + ") AND w.status = 1",
+            (statement) -> {
+                for (var i = 0; i < items.size(); i++) {
+                    statement.setString(i + 1, items.get(i));
+                }
+            },
+            (result) -> {}
+        );
+
+        return selected == words.size();
     }
 
     public User getUser() {
