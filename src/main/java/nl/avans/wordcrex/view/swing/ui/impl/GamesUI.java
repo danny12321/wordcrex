@@ -73,7 +73,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
                 g.fillRect(0, position, SwingView.SIZE - GamePanel.TASKBAR_SIZE, height);
             }
 
-            var other = match.host == this.controller.getPlayer() ? match.opponent : match.host;
+            var other = match.host == this.controller.getCurrentUser() ? match.opponent : match.host;
 
             g.setColor(Colors.DARK_YELLOW);
             g.fillOval(GamePanel.TASKBAR_SIZE, position + 27, 42, 42);
@@ -83,7 +83,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
             g.setFont(this.game.getNormalFont());
 
             g.setColor(Color.WHITE);
-            g.drawString((match.host == this.controller.getPlayer() ? "To " : "From ") + other.getDisplayName(), GamePanel.TASKBAR_SIZE * 2 + 42, position + 52);
+            g.drawString((match.host == this.controller.getCurrentUser() ? "To " : "From ") + other.getDisplayName(), GamePanel.TASKBAR_SIZE * 2 + 42, position + 52);
 
             if (i < this.matches.size() - 1 && this.matches.get(i + 1).status == last) {
                 g.setColor(Colors.DARKERER_BLUE);
@@ -135,7 +135,7 @@ public class GamesUI extends UI implements Consumer<ModelUpdate> {
     }
 
     private boolean canSelect(Match match) {
-        return match.status == Match.Status.PLAYING || (match.status == Match.Status.PENDING && match.host != this.controller.getPlayer());
+        return match.status == Match.Status.PLAYING || (match.status == Match.Status.PENDING && match.host != this.controller.getCurrentUser());
     }
 
     @Override

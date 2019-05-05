@@ -10,7 +10,7 @@ import java.util.List;
 public class Model extends Observable<ModelUpdate> {
     private final Database database;
 
-    private Player player;
+    private User user;
 
     public Model(Database database) {
         super(new ModelUpdate(List.of()));
@@ -18,7 +18,7 @@ public class Model extends Observable<ModelUpdate> {
     }
 
     public void poll() {
-        if (this.player == null) {
+        if (this.user == null) {
             return;
         }
 
@@ -28,8 +28,8 @@ public class Model extends Observable<ModelUpdate> {
         this.database.select(
             "SELECT m.id, m.status, h.id host_id, h.username host_username, h.first_name host_first_name, h.last_name host_last_name, o.id opponent_id, o.username opponent_username, o.first_name opponent_first_name, o.last_name opponent_last_name FROM `match` m JOIN `user` h ON m.host_id = h.id JOIN `user` o ON m.opponent_id = o.id WHERE m.host_id = ? OR m.opponent_id = ? ORDER BY m.status",
             (statement) -> {
-                statement.setInt(1, this.player.id);
-                statement.setInt(2, this.player.id);
+                statement.setInt(1, this.user.id);
+                statement.setInt(2, this.user.id);
             },
             (result) -> {
                 var id = result.getInt("id");
@@ -47,8 +47,8 @@ public class Model extends Observable<ModelUpdate> {
 
                 var hostId = result.getInt("host_id");
                 var opponentId = result.getInt("opponent_id");
-                var host = hostId == this.player.id ? this.player : new Player(hostId, result.getString("host_username"), result.getString("host_first_name"), result.getString("host_last_name"), List.of());
-                var opponent = opponentId == this.player.id ? this.player : new Player(opponentId, result.getString("opponent_username"), result.getString("opponent_first_name"), result.getString("opponent_last_name"), List.of());
+                var host = hostId == this.user.id ? this.user : new User(hostId, result.getString("host_username"), result.getString("host_first_name"), result.getString("host_last_name"), List.of());
+                var opponent = opponentId == this.user.id ? this.user : new User(opponentId, result.getString("opponent_username"), result.getString("opponent_first_name"), result.getString("opponent_last_name"), List.of());
 
                 matches.add(new Match(this.database, id, host, opponent, Match.Status.byStatus(status)));
             }
@@ -90,17 +90,17 @@ public class Model extends Observable<ModelUpdate> {
             (result) -> roles.add(Role.byRole(result.getString("role")))
         );
 
-        this.player = new Player(ref.id, username, ref.firstName, ref.lastName, List.copyOf(roles));
+        this.user = new User(ref.id, username, ref.firstName, ref.lastName, List.copyOf(roles));
 
         return true;
     }
 
     public void logout() {
-        this.player = null;
+        this.user = null;
         this.next(new ModelUpdate(List.of()));
     }
 
-    public Player getPlayer() {
-        return this.player;
+    public User getUser() {
+        return this.user;
     }
 }

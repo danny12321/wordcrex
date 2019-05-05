@@ -11,11 +11,11 @@ public class Match extends Observable<MatchUpdate> {
     private final Database database;
 
     public final int id;
-    public final Player host;
-    public final Player opponent;
+    public final User host;
+    public final User opponent;
     public final Status status;
 
-    public Match(Database database, int id, Player host, Player opponent, Status status) {
+    public Match(Database database, int id, User host, User opponent, Status status) {
         super(new MatchUpdate(List.of()));
         this.database = database;
         this.id = id;

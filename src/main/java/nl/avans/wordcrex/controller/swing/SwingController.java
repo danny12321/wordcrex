@@ -2,7 +2,7 @@ package nl.avans.wordcrex.controller.swing;
 
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Model;
-import nl.avans.wordcrex.model.Player;
+import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.update.ModelUpdate;
 import nl.avans.wordcrex.view.swing.SwingView;
 
@@ -69,8 +69,8 @@ public class SwingController implements Controller<SwingView>, Runnable {
         this.model.logout();
     }
 
-    public Player getPlayer() {
-        return this.model.getPlayer();
+    public User getCurrentUser() {
+        return this.model.getUser();
     }
 
     public void observe(Consumer<ModelUpdate> observer) {
