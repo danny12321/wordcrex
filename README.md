@@ -1,8 +1,8 @@
 # Wordcrex
-The repository for Project Software Development, re-creating the application Wordcrex in Java.
+Repository for the second project at the Avans University of Applied Sciences, re-creating the mobile game Wordcrex in Java.
 
 ## Requirements
-- Git ([Windows](https://git-scm.com/download/win) | [Linux](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) | [MacOS](https://git-scm.com/download/mac)) installed
+- Git ([Windows](https://git-scm.com/download/win) | [Linux](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) | [macOS](https://git-scm.com/download/mac)) installed
 - [JDK 11 or higher](https://www.oracle.com/technetwork/java/javase/downloads/index.html) installed
 - [MySQL server](https://dev.mysql.com/downloads/mysql/) running locally
 
@@ -30,13 +30,13 @@ dataSource.portNumber=3306
 dataSource.serverName=localhost
 ```
 
-Edit the file according to your MySQL server config and import the `wordcrex.sql` to fill your local database.
+Edit the file according to your MySQL server config and import the `db.sql` to fill your local database.
 > Make sure you add the name of the `.properties` file to the program arguments. Otherwise it will use `prod.properties`
 
 ---
 
 Now you should be able to run/debug the project and it should open the application login screen.  
-You can login with the default data from the `wordcrex.sql` database.  
+You can login by creating an entry in the `user` table within your local database.  
 
 ## Resources
 - See [the application design on Figma](https://www.figma.com/proto/DVMqm1dfQfkmF8OwhxuPGqnc/Wordcrex?node-id=0%3A1&scaling=scale-down)
