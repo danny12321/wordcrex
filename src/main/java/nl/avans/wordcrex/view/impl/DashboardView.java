@@ -2,7 +2,6 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
-import nl.avans.wordcrex.model.Match;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
@@ -126,16 +125,11 @@ public class DashboardView extends View<DashboardController> {
 
     @Override
     public void mouseClick(int x, int y) {
-        var match = this.controller.getMatches().stream()
-            .filter((m) -> m.id == this.hover)
-            .findFirst()
-            .orElse(null);
-
-        if (match == null || match.status != Match.Status.PLAYING) {
+        if (this.hover == 0) {
             return;
         }
 
-        this.controller.navigateMatch(match);
+        this.controller.navigateMatch(this.hover);
     }
 
     @Override

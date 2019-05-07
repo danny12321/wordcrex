@@ -91,7 +91,13 @@ public class User implements Pollable<User> {
     }
 
     public String getInitial() {
-        return this.getDisplayName().substring(0, 1).toUpperCase();
+        var displayName = this.getDisplayName();
+
+        if (displayName.isEmpty()) {
+            return "?";
+        }
+
+        return displayName.substring(0, 1).toUpperCase();
     }
 
     public User login(String username, String password) {

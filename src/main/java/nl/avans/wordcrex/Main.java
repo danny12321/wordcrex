@@ -7,16 +7,20 @@ import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.Loop;
+import nl.avans.wordcrex.util.Pollable;
+import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.FrameWidget;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Main extends JPanel {
@@ -55,7 +59,7 @@ public class Main extends JPanel {
         this.addMouseListener(listener);
         this.addMouseMotionListener(listener);
         this.addKeyListener(listener);
-        this.openController(new LoginController(this, this.model));
+        this.openController(LoginController.class);
         this.start();
     }
 
@@ -68,12 +72,24 @@ public class Main extends JPanel {
         this.frame.dispatchEvent(new WindowEvent(this.frame, WindowEvent.WINDOW_CLOSING));
     }
 
-    public void openController(Controller controller) {
-        this.controller = controller;
+    public void openController(Class<? extends Controller<User>> cls) {
+        this.openController(cls, Function.identity());
+    }
+
+    public <T extends Pollable<T>> void openController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
+        this.controller = this.createController(cls, fn.apply(this.model));
         this.widgets.clear();
 
         this.addWidget(this.controller.createView(), new ArrayList<>());
         this.addWidget(new FrameWidget(this), new ArrayList<>());
+    }
+
+    private <T extends Pollable<T>> Controller<T> createController(Class<? extends Controller<T>> cls, T model) {
+        try {
+            return cls.getConstructor(Main.class, model.getClass()).newInstance(this, model);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void addWidget(Widget widget, List<Widget> parents) {
@@ -86,7 +102,7 @@ public class Main extends JPanel {
         children.forEach((child) -> this.addWidget(child, parents));
     }
 
-    public boolean isOpen(Class<? extends Widget> cls) {
+    public boolean isOpen(Class<? extends View<?>> cls) {
         return this.widgets.stream()
             .anyMatch(cls::isInstance);
     }
@@ -96,13 +112,11 @@ public class Main extends JPanel {
             return;
         }
 
-        var next = this.controller.poll();
+        this.controller.poll();
+    }
 
-        if (next == null) {
-            return;
-        }
-
-        this.model = next.persist(this.model);
+    public <T extends Pollable<T>> void updateModel(T model) {
+        this.model = model.persist(this.model);
     }
 
     public User getRootModel() {

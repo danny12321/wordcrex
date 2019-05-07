@@ -23,7 +23,7 @@ public class LoginController extends Controller<User> {
             return false;
         }
 
-        this.main.openController(new DashboardController(this.main, this.getModel()));
+        this.main.openController(DashboardController.class);
 
         return true;
     }

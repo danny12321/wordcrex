@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Match;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.DashboardView;
 
@@ -31,7 +32,7 @@ public class DashboardController extends Controller<User> {
         return this.getModel().matches;
     }
 
-    public void navigateMatch(Match match) {
-        this.main.openController(new MatchController(this.main, match));
+    public void navigateMatch(int id) {
+        this.main.openController(MatchController.class, StreamUtil.getModelProperty((user) -> user.matches, (match) -> match.id == id));
     }
 }

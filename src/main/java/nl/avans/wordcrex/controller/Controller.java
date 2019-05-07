@@ -20,10 +20,8 @@ public abstract class Controller<T extends Pollable<T>> {
         return this.model;
     }
 
-    public T poll() {
+    public void poll() {
         this.replace(Pollable::poll);
-
-        return this.model;
     }
 
     protected void replace(Function<T, T> mutate) {
@@ -31,6 +29,10 @@ public abstract class Controller<T extends Pollable<T>> {
 
         if (next == null) {
             return;
+        }
+
+        if (this.model != next) {
+            this.main.updateModel(next);
         }
 
         this.model = next;
