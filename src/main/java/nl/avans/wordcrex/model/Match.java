@@ -1,36 +1,53 @@
 package nl.avans.wordcrex.model;
 
-import nl.avans.wordcrex.Observable;
 import nl.avans.wordcrex.data.Database;
-import nl.avans.wordcrex.model.update.MatchUpdate;
+import nl.avans.wordcrex.util.Pollable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class Match extends Observable<MatchUpdate> {
+public class Match implements Pollable<Match> {
     private final Database database;
-    private final Model model;
 
     public final int id;
     public final User host;
     public final User opponent;
     public final Status status;
+    public final List<Round> rounds;
 
-    public Match(Database database, Model model, int id, User host, User opponent, Status status) {
-        super(new MatchUpdate(List.of()));
+    public Match(Database database, int id, User host, User opponent, Status status) {
+        this(database, id, host, opponent, status, List.of());
+    }
+
+    public Match(Match match, Status status, List<Round> rounds) {
+        this(match.database, match.id, match.host, match.opponent, status, rounds);
+    }
+
+    public Match(Database database, int id, User host, User opponent, Status status, List<Round> rounds) {
         this.database = database;
-        this.model = model;
         this.id = id;
         this.host = host;
         this.opponent = opponent;
         this.status = status;
+        this.rounds = rounds;
     }
 
-    public void poll() {
-        var last = this.getLast();
+    @Override
+    public Match poll() {
+        var ref = new Object() {
+            Status status;
+        };
+        this.database.select(
+            "SELECT m.status FROM `match` m WHERE m.id = ?",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> ref.status = Status.byStatus(result.getInt("status"))
+        );
+
         var rounds = new ArrayList<Round>();
 
-        var selected = this.database.select(
+        this.database.select(
             "SELECT r.id, r.round, r.deck FROM round r WHERE r.match_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
@@ -41,29 +58,24 @@ public class Match extends Observable<MatchUpdate> {
                     deck.add(Character.byCharacter(part));
                 }
 
-                rounds.add(new Round(this.database, this.model, result.getInt("id"), result.getInt("round"), this, List.copyOf(deck)));
+                rounds.add(new Round(this.database, result.getInt("id"), result.getInt("round"), this, List.copyOf(deck)));
             }
         );
 
-        if (selected == last.rounds.size()) {
-            return;
-        }
-
-        this.next(new MatchUpdate(List.copyOf(rounds)));
+        return new Match(this, ref.status, List.copyOf(rounds));
     }
 
-    public void setStatus(Status status) {
-        if (status == null) {
-            return;
-        }
+    @Override
+    public User persist(User user) {
+        var matches = user.matches.stream()
+            .map((match) -> match.id == this.id ? this : match)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
-        this.database.update(
-            "UPDATE `match` SET status = ? WHERE id = ?",
-            (statement) -> {
-                statement.setInt(1, status.status);
-                statement.setInt(2, this.id);
-            }
-        );
+        return new User(user, user.roles, matches);
+    }
+
+    public User getAuthenticatedUser() {
+        return this.host.isAuthenticated() ? this.host : this.opponent;
     }
 
     public enum Status {

@@ -3,41 +3,39 @@ package nl.avans.wordcrex.model;
 import java.util.Random;
 
 public enum Character {
-    A('a', 2, 7),
-    B('b', 3, 2),
-    C('c', 6, 2),
-    D('d', 2, 5),
-    E('e', 1, 10),
-    F('f', 6, 2),
-    G('g', 4, 3),
-    H('h', 5, 2),
-    I('i', 2, 4),
-    J('j', 5, 2),
-    K('k', 4, 3),
-    L('l', 4, 3),
-    M('m', 3, 3),
-    N('n', 1, 11),
-    O('o', 2, 6),
-    P('p', 5, 2),
-    Q('q', 20, 1),
-    R('r', 2, 5),
-    S('s', 3, 5),
-    T('t', 2, 5),
-    U('u', 3, 3),
-    V('v', 5, 2),
-    W('w', 6, 2),
-    X('x', 8, 1),
-    Y('y', 9, 1),
-    Z('z', 6, 2);
+    A('a', 2),
+    B('b', 3),
+    C('c', 6),
+    D('d', 2),
+    E('e', 1),
+    F('f', 6),
+    G('g', 4),
+    H('h', 5),
+    I('i', 2),
+    J('j', 5),
+    K('k', 4),
+    L('l', 4),
+    M('m', 3),
+    N('n', 1),
+    O('o', 2),
+    P('p', 5),
+    Q('q', 20),
+    R('r', 2),
+    S('s', 3),
+    T('t', 2),
+    U('u', 3),
+    V('v', 5),
+    W('w', 6),
+    X('x', 8),
+    Y('y', 9),
+    Z('z', 6);
 
     public final char character;
     public final int points;
-    public final int amount;
 
-    Character(char character, int points, int amount) {
+    Character(char character, int points) {
         this.character = character;
         this.points = points;
-        this.amount = amount;
     }
 
     public String getText() {
