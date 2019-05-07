@@ -7,10 +7,11 @@ import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.StatisticsView;
 
 import java.util.Map;
+import java.util.function.Function;
 
 public class StatisticsController extends Controller<User> {
-    public StatisticsController(Main main, User model) {
-        super(main, model);
+    public StatisticsController(Main main, Function<User, User> fn) {
+        super(main, fn);
     }
 
     @Override

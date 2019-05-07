@@ -6,9 +6,11 @@ import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.LoginView;
 
+import java.util.function.Function;
+
 public class LoginController extends Controller<User> {
-    public LoginController(Main main, User model) {
-        super(main, model);
+    public LoginController(Main main, Function<User, User> fn) {
+        super(main, fn);
     }
 
     @Override

@@ -9,10 +9,11 @@ import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.DashboardView;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class DashboardController extends Controller<User> {
-    public DashboardController(Main main, User model) {
-        super(main, model);
+    public DashboardController(Main main, Function<User, User> fn) {
+        super(main, fn);
     }
 
     @Override

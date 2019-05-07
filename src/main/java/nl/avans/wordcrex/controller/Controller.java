@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.controller;
 
 import nl.avans.wordcrex.Main;
+import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.Pollable;
 import nl.avans.wordcrex.view.View;
 
@@ -9,15 +10,15 @@ import java.util.function.Function;
 public abstract class Controller<T extends Pollable<T>> {
     protected final Main main;
 
-    private T model;
+    private Function<User, T> fn;
 
-    public Controller(Main main, T model) {
+    public Controller(Main main, Function<User, T> fn) {
         this.main = main;
-        this.model = model;
+        this.fn = fn;
     }
 
     protected T getModel() {
-        return this.model;
+        return this.fn.apply(this.main.getModel());
     }
 
     public void poll() {
@@ -25,17 +26,14 @@ public abstract class Controller<T extends Pollable<T>> {
     }
 
     protected void replace(Function<T, T> mutate) {
-        var next = mutate.apply(this.model);
+        var model = this.getModel();
+        var next = mutate.apply(model);
 
-        if (next == null) {
+        if (next == null || model == next) {
             return;
         }
 
-        if (this.model != next) {
-            this.main.updateModel(next);
-        }
-
-        this.model = next;
+        this.main.updateModel(next);
     }
 
     public abstract View<? extends Controller<T>> createView();

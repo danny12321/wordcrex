@@ -77,16 +77,16 @@ public class Main extends JPanel {
     }
 
     public <T extends Pollable<T>> void openController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
-        this.controller = this.createController(cls, fn.apply(this.model));
+        this.controller = this.createController(cls, fn);
         this.widgets.clear();
 
         this.addWidget(this.controller.createView(), new ArrayList<>());
         this.addWidget(new FrameWidget(this), new ArrayList<>());
     }
 
-    private <T extends Pollable<T>> Controller<T> createController(Class<? extends Controller<T>> cls, T model) {
+    private <T extends Pollable<T>> Controller<T> createController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
         try {
-            return cls.getConstructor(Main.class, model.getClass()).newInstance(this, model);
+            return cls.getConstructor(Main.class, Function.class).newInstance(this, fn);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
@@ -115,11 +115,11 @@ public class Main extends JPanel {
         this.controller.poll();
     }
 
-    public <T extends Pollable<T>> void updateModel(T model) {
+    public void updateModel(Pollable<?> model) {
         this.model = model.persist(this.model);
     }
 
-    public User getRootModel() {
+    public User getModel() {
         return this.model;
     }
 
