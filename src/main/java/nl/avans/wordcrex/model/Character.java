@@ -42,6 +42,16 @@ public enum Character {
         return String.valueOf(this.character).toUpperCase();
     }
 
+    public static Character byCharacter(String character) {
+        for (var c : Character.values()) {
+            if (c.getText().equals(character.toUpperCase())) {
+                return c;
+            }
+        }
+
+        return null;
+    }
+
     public static Character random() {
         var random = new Random();
         var characters = Character.values();

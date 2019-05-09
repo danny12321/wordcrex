@@ -1,9 +1,7 @@
-package nl.avans.wordcrex.view.swing.ui.impl;
+package nl.avans.wordcrex.widget.impl;
 
-import nl.avans.wordcrex.controller.swing.SwingController;
-import nl.avans.wordcrex.view.swing.Colors;
-import nl.avans.wordcrex.view.swing.GamePanel;
-import nl.avans.wordcrex.view.swing.ui.UI;
+import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -14,13 +12,13 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-public class InputUI extends UI {
+public class InputWidget extends Widget {
     private final StringBuilder input = new StringBuilder();
 
     private final String label;
     private final Character placeholder;
-    private int x;
-    private int y;
+    private final int x;
+    private final int y;
     private final int width;
     private final int height;
     private final Consumer<String> consumer;
@@ -32,15 +30,11 @@ public class InputUI extends UI {
     private int offset;
     private int character;
 
-    public InputUI(int x, int y, int width, int height, Consumer<String> consumer) {
-        this("", x, y, width, height, consumer);
-    }
-
-    public InputUI(String label, int x, int y, int width, int height, Consumer<String> consumer) {
+    public InputWidget(String label, int x, int y, int width, int height, Consumer<String> consumer) {
         this(label, null, x, y, width, height, consumer);
     }
 
-    public InputUI(String label, Character placeholder, int x, int y, int width, int height, Consumer<String> consumer) {
+    public InputWidget(String label, Character placeholder, int x, int y, int width, int height, Consumer<String> consumer) {
         this.label = label;
         this.placeholder = placeholder;
         this.x = x;
@@ -48,16 +42,13 @@ public class InputUI extends UI {
         this.width = width;
         this.height = height;
         this.consumer = consumer;
-    }
 
-    @Override
-    public void initialize(GamePanel game, SwingController controller) {
         this.consumer.accept("");
     }
 
     @Override
     public void draw(Graphics2D g) {
-        var metrics = g.getFontMetrics(g.getFont());
+        var metrics = g.getFontMetrics();
         var rect = new Rectangle2D.Float(this.x, this.y, this.width, this.height);
         var text = this.placeholder == null ? this.input.toString() : String.valueOf(this.placeholder).repeat(this.input.length());
         var position = metrics.stringWidth(this.input.substring(0, this.cursor)) - 1;
@@ -96,10 +87,8 @@ public class InputUI extends UI {
     }
 
     @Override
-    public int mouseMove(int x, int y) {
+    public void mouseMove(int x, int y) {
         this.hover = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
-
-        return this.hover ? Cursor.TEXT_CURSOR : Cursor.DEFAULT_CURSOR;
     }
 
     @Override
@@ -166,17 +155,13 @@ public class InputUI extends UI {
         return !Character.isISOControl(c) && c != KeyEvent.CHAR_UNDEFINED && block != null && block != Character.UnicodeBlock.SPECIALS;
     }
 
-    public String getClipboard() {
+    private String getClipboard() {
         try {
             return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
         } catch (UnsupportedFlavorException | IOException e) {
             e.printStackTrace();
-            return "";
         }
-    }
 
-    public void move(int x, int y) {
-        this.x = x;
-        this.y = y;
+        return "";
     }
 }

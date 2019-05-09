@@ -1,11 +1,12 @@
 package nl.avans.wordcrex.view;
 
 import nl.avans.wordcrex.controller.Controller;
+import nl.avans.wordcrex.widget.Widget;
 
-public interface View<C extends Controller<?>> {
-    void initialize(C controller);
+public abstract class View<T extends Controller> extends Widget {
+    protected final T controller;
 
-    void draw();
-
-    void update();
+    public View(T controller) {
+        this.controller = controller;
+    }
 }

@@ -4,26 +4,16 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class Database {
     private final DataSource source;
 
-    public Database(DataSource source) {
-        this.source = source;
+    public Database(String config) {
+        this.source = new HikariDataSource(new HikariConfig("/db/" + config + ".properties"));
     }
 
-    public static Database connect(String configName) {
-        var config = new HikariConfig("/db/" + configName + ".properties");
-        var source = new HikariDataSource(config);
-
-        return new Database(source);
-    }
-
-    public Connection getConnection() throws SQLException {
+    private Connection getConnection() throws SQLException {
         return this.source.getConnection();
     }
 
@@ -60,5 +50,30 @@ public class Database {
         }
 
         return updated;
+    }
+
+    public int insert(String sql, SqlConsumer<PreparedStatement> prepare) {
+        try (var connection = this.getConnection();
+             var statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            prepare.accept(statement);
+
+            var updated = statement.executeUpdate();
+
+            if (updated == 0) {
+                return -1;
+            }
+
+            try (var result = statement.getGeneratedKeys()) {
+                if (!result.next()) {
+                    return -1;
+                }
+
+                return result.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return -1;
     }
 }

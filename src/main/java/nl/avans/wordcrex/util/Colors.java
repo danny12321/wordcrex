@@ -1,4 +1,4 @@
-package nl.avans.wordcrex.view.swing;
+package nl.avans.wordcrex.util;
 
 import java.awt.*;
 
