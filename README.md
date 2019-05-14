@@ -42,4 +42,4 @@ You can login by creating an entry in the `user` table within your local databas
 - See [the application design on Figma](https://www.figma.com/proto/DVMqm1dfQfkmF8OwhxuPGqnc/Wordcrex?node-id=0%3A1&scaling=scale-down)
 - EER of the database (see below)
 
-![](https://i.imgur.com/isPEUgz.png)
+![](https://cdn.discordapp.com/attachments/567307335379451925/576443651123838996/EER.png)
