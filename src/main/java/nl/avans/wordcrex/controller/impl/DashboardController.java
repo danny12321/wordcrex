@@ -22,7 +22,7 @@ public class DashboardController extends Controller<User> {
     }
 
     public boolean isCurrentUser(User user) {
-        return user.id == this.getModel().id;
+        return user.username == this.getModel().username;
     }
 
     public boolean canSelectMatch(Match match) {
