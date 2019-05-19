@@ -32,7 +32,7 @@ public class DashboardView extends View<DashboardController> {
 
         if (matches.isEmpty()) {
             g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "No matches");
+            StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "No games");
         }
 
         for (var i = 0; i < matches.size(); i++) {

@@ -10,70 +10,69 @@ public class User implements Pollable<User> {
     private final Database database;
 
     public final String username;
-    public final List<Role> roles;
-    public final List<Match> matches;
+    public final boolean authenticated;
+    public final List<UserRole> roles;
+    public final List<Game> games;
 
     public User(Database database) {
-        this(database, "");
+        this(database, "", false);
     }
 
-    public User(Database database, String username) {
-        this(database, username, List.of(), List.of());
+    public User(Database database, String username, boolean authenticated) {
+        this(database, username, authenticated, List.of(), List.of());
     }
 
-    public User(User user, List<Role> roles, List<Match> matches) {
-        this(user.database, user.username, roles, matches);
+    public User(User user, List<UserRole> roles, List<Game> games) {
+        this(user.database, user.username, user.authenticated, roles, games);
     }
 
-    public User(Database database, String username, List<Role> roles, List<Match> matches) {
+    public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games) {
         this.database = database;
         this.username = username;
+        this.authenticated = authenticated;
         this.roles = roles;
-        this.matches = matches;
+        this.games = games;
     }
 
     @Override
     public User poll() {
-        if (!this.isAuthenticated()) {
+        if (!this.authenticated) {
             return this;
         }
 
-        var roles = new ArrayList<Role>();
+        var roles = new ArrayList<UserRole>();
 
         this.database.select(
-            "SELECT role FROM accountrole WHERE username = ?",
+            "SELECT r.role FROM accountrole r WHERE r.username = ?",
             (statement) -> statement.setString(1, username),
-            (result) -> roles.add(Role.byRole(result.getString("role")))
+            (result) -> roles.add(UserRole.byRole(result.getString("role")))
         );
 
-        var matches = new ArrayList<Match>();
+        var games = new ArrayList<Game>();
 
         this.database.select(
-            "SELECT m.id, m.status, h.id host_id, h.username host_username, h.first_name host_first_name, h.last_name host_last_name, o.id opponent_id, o.username opponent_username, o.first_name opponent_first_name, o.last_name opponent_last_name FROM `match` m JOIN `user` h ON m.host_id = h.id JOIN `user` o ON m.opponent_id = o.id WHERE m.host_id = ? OR m.opponent_id = ? ORDER BY m.status",
+            "SELECT * FROM game g WHERE g.username_player1 = ? OR g.username_player2 = ?",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setString(2, this.username);
             },
             (result) -> {
-                var id = result.getInt("id");
-                var status = result.getInt("status");
-                var host = result.getString("host_username") == this.username ? this : new User(this.database, result.getString("host_username"));
-                var opponent = result.getString("opponent_username") == this.username ? this : new User(this.database, result.getString("opponent_username"));
+                var id = result.getInt("game_id");
+                var state = result.getString("game_state");
+                var inviteState = result.getString("answer_player2");
+                var host = result.getString("username_player1").equals(this.username) ? this : new User(this.database, result.getString("username_player1"), false);
+                var opponent = result.getString("username_player2").equals(this.username) ? this : new User(this.database, result.getString("username_player2"), false);
 
-                matches.add(new Match(this.database, 1, host, opponent, Match.Status.byStatus(status)));
+                games.add(new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState)));
             }
         );
 
-        return new User(this, List.copyOf(roles), List.copyOf(matches));
+        return new User(this, List.copyOf(roles), List.copyOf(games));
     }
 
     @Override
     public User persist(User user) {
         return this;
-    }
-
-    public boolean isAuthenticated() {
-        return !this.username.isEmpty();
     }
 
     public String getDisplayName() {
@@ -95,47 +94,22 @@ public class User implements Pollable<User> {
             String username;
         };
         var selected = this.database.select(
-            "SELECT username FROM `account` WHERE username = ? AND password = ?",
+            "SELECT a.username FROM account a WHERE a.username = ? AND a.password = ?",
             (statement) -> {
                 statement.setString(1, username);
                 statement.setString(2, password);
             },
-            (result) -> {
-                ref.username = result.getString("username");
-            }
+            (result) -> ref.username = result.getString("username")
         );
 
         if (selected == 0) {
             return this;
         }
 
-        return new User(this.database, ref.username);
+        return new User(this.database, ref.username, true);
     }
 
     public User logout() {
         return new User(this.database);
-    }
-
-    public enum Role {
-        PLAYER("player"),
-        OBSERVER("observer"),
-        MODERATOR("moderator"),
-        ADMINISTRATOR("administrator");
-
-        public final String role;
-
-        Role(String role) {
-            this.role = role;
-        }
-
-        public static Role byRole(String role) {
-            for (var r : Role.values()) {
-                if (r.role.equals(role)) {
-                    return r;
-                }
-            }
-
-            return null;
-        }
     }
 }
