@@ -20,6 +20,6 @@ public class MatchController extends Controller<Game> {
     }
 
     public String getStatus() {
-        return this.getModel().status.name;
+        return this.getModel().state.state;
     }
 }

@@ -30,7 +30,7 @@ public class DashboardView extends View<DashboardController> {
         var offset = 96;
         var height = 96;
         var count = 0;
-        var last = -1;
+        var last = "";
 
         if (matches.isEmpty()) {
             g.setColor(Color.WHITE);
@@ -42,17 +42,17 @@ public class DashboardView extends View<DashboardController> {
             var match = matches.get(i);
             var position = height * i + offset - this.scroll + Main.TASKBAR_SIZE;
 
-            if (match.status.status != last) {
-                if (match.status.name.isEmpty()) {
+            if (!match.state.state.equals(last)) {
+                if (match.state.state.isEmpty()) {
                     break;
                 }
 
                 g.setColor(Colors.DARK_BLUE);
                 g.fillRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 64);
                 g.setColor(Colors.DARK_YELLOW);
-                g.drawString(match.status.name, Main.TASKBAR_SIZE, position + 38);
+                g.drawString(match.state.state, Main.TASKBAR_SIZE, position + 38);
 
-                last = match.status.status;
+                last = match.state.state;
                 offset += 64;
                 position += 64;
             }
@@ -74,7 +74,7 @@ public class DashboardView extends View<DashboardController> {
             g.setColor(Color.WHITE);
             g.drawString((this.controller.isCurrentUser(match.host) ? "To " : "From ") + other.getDisplayName(), Main.TASKBAR_SIZE * 2 + 42, position + 52);
 
-            if (i < matches.size() - 1 && matches.get(i + 1).status.status == last) {
+            if (i < matches.size() - 1 && matches.get(i + 1).state.state.equals(last)) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(Main.TASKBAR_SIZE * 2 + 42, position + height - 2, 268, 4);
             }
@@ -100,16 +100,16 @@ public class DashboardView extends View<DashboardController> {
         var matches = this.controller.getMatches();
         var offset = 96;
         var height = 96;
-        var last = -1;
+        var last = "";
 
         for (var i = 0; i < matches.size(); i++) {
             var match = matches.get(i);
             var position = height * i + offset - this.scroll + Main.TASKBAR_SIZE;
 
-            if (match.status.name.isEmpty()) {
+            if (match.state.state.isEmpty()) {
                 break;
-            } else if (match.status.status != last) {
-                last = match.status.status;
+            } else if (!match.state.state.equals(last)) {
+                last = match.state.state;
                 offset += 64;
                 position += 64;
             }
