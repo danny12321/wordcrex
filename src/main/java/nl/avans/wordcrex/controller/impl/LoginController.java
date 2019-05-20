@@ -21,7 +21,7 @@ public class LoginController extends Controller<User> {
     public boolean login(String username, String password) {
         this.replace((user) -> user.login(username, password));
 
-        if (!this.getModel().isAuthenticated()) {
+        if (!this.getModel().authenticated) {
             return false;
         }
 

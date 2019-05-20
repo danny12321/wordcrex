@@ -3,6 +3,7 @@ package nl.avans.wordcrex.controller.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
+import nl.avans.wordcrex.model.GameState;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
@@ -22,11 +23,11 @@ public class DashboardController extends Controller<User> {
     }
 
     public boolean isCurrentUser(User user) {
-        return user.username == this.getModel().username;
+        return user.username.equals(this.getModel().username);
     }
 
     public boolean canSelectMatch(Game game) {
-        return game.status == Game.Status.PLAYING || (game.status == Game.Status.PENDING && !this.isCurrentUser(game.host));
+        return game.state == GameState.PLAYING || (game.state == GameState.PENDING && !this.isCurrentUser(game.host));
     }
 
     public List<Game> getMatches() {

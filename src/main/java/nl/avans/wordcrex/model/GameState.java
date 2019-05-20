@@ -1,7 +1,7 @@
 package nl.avans.wordcrex.model;
 
 public enum GameState {
-    REQUESTED("request"),
+    PENDING("request"),
     PLAYING("playing"),
     FINISHED("finished"),
     RESIGNED("resigned");
