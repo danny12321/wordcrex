@@ -63,7 +63,7 @@ public class User implements Pollable<User> {
                 var host = result.getString("username_player1").equals(this.username) ? this : new User(this.database, result.getString("username_player1"), false);
                 var opponent = result.getString("username_player2").equals(this.username) ? this : new User(this.database, result.getString("username_player2"), false);
 
-                games.add(new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState)));
+                games.add(new Game(this.database, id, false, host, opponent, GameState.byState(state), InviteState.byState(inviteState)));
             }
         );
 

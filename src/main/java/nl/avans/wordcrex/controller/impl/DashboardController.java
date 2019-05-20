@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.GameState;
+import nl.avans.wordcrex.model.InviteState;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
@@ -26,15 +27,29 @@ public class DashboardController extends Controller<User> {
         return user.username.equals(this.getModel().username);
     }
 
-    public boolean canSelectMatch(Game game) {
+    public boolean isVisible(Game game) {
+        return (game.state == GameState.PENDING || game.state == GameState.PLAYING) && game.inviteState != InviteState.REJECTED;
+    }
+
+    public boolean isSelectable(Game game) {
         return game.state == GameState.PLAYING || (game.state == GameState.PENDING && !this.isCurrentUser(game.host));
     }
 
-    public List<Game> getMatches() {
+    public String getLabel(Game game) {
+        if (game.state == GameState.PENDING) {
+            return "UITGEDAAGD";
+        } else if (game.turn) {
+            return "JOUW BEURT";
+        } else {
+            return "HUN BEURT";
+        }
+    }
+
+    public List<Game> getGames() {
         return this.getModel().games;
     }
 
-    public void navigateMatch(int id) {
-        this.main.openController(MatchController.class, StreamUtil.getModelProperty((user) -> user.games, (match) -> match.id == id));
+    public void navigateGame(int id) {
+        this.main.openController(MatchController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
     }
 }
