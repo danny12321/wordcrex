@@ -80,18 +80,12 @@ public class User implements Pollable<User> {
         return this;
     }
 
-    public String getDisplayName() {
-        return this.username;
-    }
-
     public String getInitial() {
-        var displayName = this.getDisplayName();
-
-        if (displayName.isEmpty()) {
+        if (this.username.isEmpty()) {
             return "?";
         }
 
-        return displayName.substring(0, 1).toUpperCase();
+        return this.username.substring(0, 1).toUpperCase();
     }
 
     public User login(String username, String password) {

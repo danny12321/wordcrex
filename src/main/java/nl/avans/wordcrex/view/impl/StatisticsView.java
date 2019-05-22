@@ -29,7 +29,7 @@ public class StatisticsView extends View<StatisticsController> {
         g.setColor(Colors.DARK_YELLOW);
         g.fillOval(218, 58 - this.scroll, 42, 42);
         g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, 0, 128 - this.scroll, Main.FRAME_SIZE - Main.TASKBAR_SIZE, this.controller.getDisplayName());
+        StringUtil.drawCenteredString(g, 0, 128 - this.scroll, Main.FRAME_SIZE - Main.TASKBAR_SIZE, this.controller.getUsername());
         g.setColor(Colors.DARKER_BLUE);
         g.setFont(Fonts.BIG);
         StringUtil.drawCenteredString(g, 218, 58 - this.scroll, 42, 42, this.controller.getInitial());

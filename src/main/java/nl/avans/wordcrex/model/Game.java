@@ -17,21 +17,23 @@ public class Game implements Pollable<Game> {
     public final User opponent;
     public final GameState state;
     public final InviteState inviteState;
+    public final int hostScore;
+    public final int opponentScore;
     public final List<Tile> tiles;
 
     public Game(Game game, List<Tile> tiles) {
-        this(game.database, game.id, game.turn, game.host, game.opponent, game.state, game.inviteState, tiles);
+        this(game.database, game.id, game.turn, game.host, game.opponent, game.state, game.inviteState, game.hostScore, game.opponentScore, tiles);
     }
 
-    public Game(Game game, boolean turn, GameState state, InviteState inviteState) {
-        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, game.tiles);
+    public Game(Game game, boolean turn, GameState state, InviteState inviteState, int hostScore, int opponentScore) {
+        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, hostScore, opponentScore, game.tiles);
     }
 
     public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState) {
-        this(database, id, turn, host, opponent, state, inviteState, List.of());
+        this(database, id, turn, host, opponent, state, inviteState, 0, 0, List.of());
     }
 
-    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, List<Tile> tiles) {
+    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, int hostScore, int opponentScore, List<Tile> tiles) {
         this.database = database;
         this.id = id;
         this.turn = turn;
@@ -39,6 +41,8 @@ public class Game implements Pollable<Game> {
         this.opponent = opponent;
         this.state = state;
         this.inviteState = inviteState;
+        this.hostScore = hostScore;
+        this.opponentScore = opponentScore;
         this.tiles = tiles;
     }
 
@@ -49,16 +53,7 @@ public class Game implements Pollable<Game> {
         this.database.select(
             "SELECT t.x, t.y, t.tile_type FROM tile t",
             (statement) -> {},
-            (result) -> {
-                var rawMultiplier = result.getString("multiplier");
-                Multiplier multiplier = null;
-
-                if (rawMultiplier.length() == 2) {
-                    multiplier = new Multiplier(rawMultiplier);
-                }
-
-                tiles.add(new Tile(result.getInt("x"), result.getInt("y"), multiplier));
-            }
+            (result) -> tiles.add(new Tile(result.getInt("x"), result.getInt("y"), result.getString("tile_type")))
         );
 
         return new Game(this, List.copyOf(tiles));
@@ -70,6 +65,8 @@ public class Game implements Pollable<Game> {
             boolean turn;
             GameState state;
             InviteState inviteState;
+            int hostScore;
+            int opponentScore;
         };
         this.database.select(
             "SELECT g.game_state, g.answer_player2, isnull((SELECT p.username_player1 FROM turnplayer1 p WHERE p.game_id = g.game_id AND p.turn_id = (SELECT max(t.turn_id)))) turn FROM game g JOIN turn t ON g.game_id = t.game_id WHERE g.game_id = ?",
@@ -80,8 +77,16 @@ public class Game implements Pollable<Game> {
                 ref.inviteState = InviteState.byState(result.getString("answer_player2"));
             }
         );
+        this.database.select(
+            "SELECT s.score1 + s.bonus1 host, s.score2 + s.bonus2 opponent FROM score s WHERE s.game_id = ?",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> {
+                ref.hostScore = result.getInt("host");
+                ref.opponentScore = result.getInt("opponent");
+            }
+        );
 
-        return new Game(this, ref.turn, ref.state, ref.inviteState);
+        return new Game(this, ref.turn, ref.state, ref.inviteState, ref.hostScore, ref.opponentScore);
     }
 
     @Override
