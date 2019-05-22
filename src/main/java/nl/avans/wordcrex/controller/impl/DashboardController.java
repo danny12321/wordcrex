@@ -37,4 +37,9 @@ public class DashboardController extends Controller<User> {
     public void navigateMatch(int id) {
         this.main.openController(MatchController.class, StreamUtil.getModelProperty((user) -> user.games, (match) -> match.id == id));
     }
+
+    public void newGame() {
+        System.out.println("Open new game view");
+        this.main.openController(NewGameController.class);
+    }
 }

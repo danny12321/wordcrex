@@ -3,10 +3,12 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
 import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
+import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
@@ -25,7 +27,7 @@ public class DashboardView extends View<DashboardController> {
     @Override
     public void draw(Graphics2D g) {
         var matches = this.controller.getMatches();
-        var offset = 0;
+        var offset = 96;
         var height = 96;
         var count = 0;
         var last = "";
@@ -34,6 +36,7 @@ public class DashboardView extends View<DashboardController> {
             g.setColor(Color.WHITE);
             StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "No games");
         }
+
 
         for (var i = 0; i < matches.size(); i++) {
             var match = matches.get(i);
@@ -95,7 +98,7 @@ public class DashboardView extends View<DashboardController> {
         }
 
         var matches = this.controller.getMatches();
-        var offset = 0;
+        var offset = 96;
         var height = 96;
         var last = "";
 
@@ -135,7 +138,8 @@ public class DashboardView extends View<DashboardController> {
     @Override
     public List<Widget> getChildren() {
         return List.of(
-            this.scrollbar
+            this.scrollbar,
+            new ButtonWidget("New game", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 96, this.controller::newGame)
         );
     }
 }
