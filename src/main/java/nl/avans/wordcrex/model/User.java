@@ -35,6 +35,11 @@ public class User implements Pollable<User> {
     }
 
     @Override
+    public User initialize() {
+        return this;
+    }
+
+    @Override
     public User poll() {
         if (!this.authenticated) {
             return this;
