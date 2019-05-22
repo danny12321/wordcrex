@@ -109,6 +109,23 @@ public class User implements Pollable<User> {
         return new User(this.database, ref.username, true);
     }
 
+    public List<String> getUsers(String username) {
+        List<String> users = new ArrayList<>();
+
+        if(username.isEmpty()) return users;
+
+        this.database.select(
+                "SELECT a.username FROM account a WHERE a.username LIKE ? AND a.username != ? ",
+                (statement) -> {
+                    statement.setString(1, username + "%");
+                    statement.setString(2, this.username);
+                },
+                (result) -> users.add(result.getString("username"))
+        );
+
+        return users;
+    }
+
     public User logout() {
         return new User(this.database);
     }

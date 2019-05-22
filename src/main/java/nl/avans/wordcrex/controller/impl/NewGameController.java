@@ -6,9 +6,12 @@ import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.NewGameView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 public class NewGameController extends Controller<User> {
+    private List<String> users = new ArrayList<>();
 
     public NewGameController(Main main, Function<User, User> fn) {
         super(main, fn);
@@ -20,6 +23,10 @@ public class NewGameController extends Controller<User> {
     }
 
     public void search(String username) {
-        System.out.println((username));
+        this.users = this.getModel().getUsers(username);
+    }
+
+    public List<String> getUsers() {
+        return this.users;
     }
 }

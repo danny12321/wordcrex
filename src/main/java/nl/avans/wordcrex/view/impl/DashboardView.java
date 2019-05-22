@@ -27,7 +27,7 @@ public class DashboardView extends View<DashboardController> {
     @Override
     public void draw(Graphics2D g) {
         var matches = this.controller.getMatches();
-        var offset = 96;
+        var offset = 72;
         var height = 96;
         var count = 0;
         var last = "";
@@ -98,7 +98,7 @@ public class DashboardView extends View<DashboardController> {
         }
 
         var matches = this.controller.getMatches();
-        var offset = 96;
+        var offset = 72;
         var height = 96;
         var last = "";
 
@@ -139,7 +139,7 @@ public class DashboardView extends View<DashboardController> {
     public List<Widget> getChildren() {
         return List.of(
             this.scrollbar,
-            new ButtonWidget("New game", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 96, this.controller::newGame)
+            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::newGame)
         );
     }
 }
