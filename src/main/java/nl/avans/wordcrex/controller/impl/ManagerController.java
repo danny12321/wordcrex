@@ -19,17 +19,8 @@ public class ManagerController extends Controller<User> {
         return new ManagerView(this);
     }
 
-    public Map<String, String> getStatistics() {
-        return Map.of(
-            "Games won", "20",
-            "Games lost", "5",
-            "Games tied", "2",
-            "Games forfeited", "1",
-            "Highest game score", "420",
-            "Highest word score", "woordje (80)",
-            "Highest game bonus", "0",
-            "Total seven letter bonus", "0"
-        );
+    public Map<String, String> getUsers() {
+        return null;
     }
 
     public String getDisplayName() {
