@@ -19,21 +19,22 @@ public class Game implements Pollable<Game> {
     public final InviteState inviteState;
     public final int hostScore;
     public final int opponentScore;
+    public final List<Message> messages;
     public final List<Tile> tiles;
 
     public Game(Game game, List<Tile> tiles) {
-        this(game.database, game.id, game.turn, game.host, game.opponent, game.state, game.inviteState, game.hostScore, game.opponentScore, tiles);
+        this(game.database, game.id, game.turn, game.host, game.opponent, game.state, game.inviteState, game.hostScore, game.opponentScore, game.messages, tiles);
     }
 
-    public Game(Game game, boolean turn, GameState state, InviteState inviteState, int hostScore, int opponentScore) {
-        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, hostScore, opponentScore, game.tiles);
+    public Game(Game game, boolean turn, GameState state, InviteState inviteState, int hostScore, int opponentScore, List<Message> messages) {
+        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, hostScore, opponentScore, messages, game.tiles);
     }
 
     public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState) {
-        this(database, id, turn, host, opponent, state, inviteState, 0, 0, List.of());
+        this(database, id, turn, host, opponent, state, inviteState, 0, 0, List.of(), List.of());
     }
 
-    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, int hostScore, int opponentScore, List<Tile> tiles) {
+    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, int hostScore, int opponentScore, List<Message> messages, List<Tile> tiles) {
         this.database = database;
         this.id = id;
         this.turn = turn;
@@ -43,6 +44,7 @@ public class Game implements Pollable<Game> {
         this.inviteState = inviteState;
         this.hostScore = hostScore;
         this.opponentScore = opponentScore;
+        this.messages = messages;
         this.tiles = tiles;
     }
 
@@ -85,8 +87,15 @@ public class Game implements Pollable<Game> {
                 ref.opponentScore = result.getInt("opponent");
             }
         );
+        this.database.select(
+            "SELECT * FROM chatline WHERE game_id = ?",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> {
 
-        return new Game(this, ref.turn, ref.state, ref.inviteState, ref.hostScore, ref.opponentScore);
+            }
+        );
+
+        return new Game(this, ref.turn, ref.state, ref.inviteState, ref.hostScore, ref.opponentScore, List.of());
     }
 
     @Override

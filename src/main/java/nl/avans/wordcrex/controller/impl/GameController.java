@@ -5,6 +5,7 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Tile;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;
 
@@ -35,5 +36,9 @@ public class GameController extends Controller<Game> {
 
     public List<Tile> getTiles() {
         return this.getModel().tiles;
+    }
+
+    public void navigateChat() {
+        this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
     }
 }
