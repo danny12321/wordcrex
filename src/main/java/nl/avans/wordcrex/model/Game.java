@@ -95,7 +95,7 @@ public class Game implements Pollable<Game> {
             .map((match) -> match.id == this.id ? this : match)
             .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
-        return new User(user, user.roles, matches);
+        return new User(user, user.roles, matches, user.dictionaries);
     }
 
     public User getAuthenticatedUser() {

@@ -4,7 +4,10 @@ import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Pollable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class User implements Pollable<User> {
     private final Database database;
@@ -13,25 +16,27 @@ public class User implements Pollable<User> {
     public final boolean authenticated;
     public final List<UserRole> roles;
     public final List<Game> games;
+    public final List<Dictionary> dictionaries;
 
     public User(Database database) {
         this(database, "", false);
     }
 
     public User(Database database, String username, boolean authenticated) {
-        this(database, username, authenticated, List.of(), List.of());
+        this(database, username, authenticated, List.of(), List.of(), List.of());
     }
 
-    public User(User user, List<UserRole> roles, List<Game> games) {
-        this(user.database, user.username, user.authenticated, roles, games);
+    public User(User user, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
+        this(user.database, user.username, user.authenticated, roles, games, dictionaries);
     }
 
-    public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games) {
+    public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
         this.database = database;
         this.username = username;
         this.authenticated = authenticated;
         this.roles = roles;
         this.games = games;
+        this.dictionaries = dictionaries;
     }
 
     @Override
@@ -72,7 +77,39 @@ public class User implements Pollable<User> {
             }
         );
 
-        return new User(this, List.copyOf(roles), List.copyOf(games));
+        var words = new HashMap<String, List<Word>>();
+
+        this.database.select(
+            "SELECT * FROM dictionary",
+            (statement) -> {},
+            (result) -> {
+                var code = result.getString("letterset_code");
+                var list = words.getOrDefault(code, new ArrayList<>());
+                var username = result.getString("username");
+                var user = this.username.equals(username) ? this : new User(this.database, username, false);
+
+                System.out.println(this);
+
+                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), user));
+
+                words.put(code, list);
+            }
+        );
+
+        var dictionaries = new ArrayList<Dictionary>();
+
+        this.database.select(
+            "SELECT * FROM letterset",
+            (statement) -> {},
+            (result) -> {
+                var code = result.getString("code");
+                var list = words.getOrDefault(code, new ArrayList<>());
+
+                dictionaries.add(new Dictionary(code, result.getString("description"), list));
+            }
+        );
+
+        return new User(this, List.copyOf(roles), List.copyOf(games), List.copyOf(dictionaries));
     }
 
     @Override
@@ -110,5 +147,10 @@ public class User implements Pollable<User> {
 
     public User logout() {
         return new User(this.database);
+    }
+
+    public Map<String, List<Word>> getSubmittedWords() {
+        return Map.copyOf(this.dictionaries.stream()
+            .collect(Collectors.groupingBy((dictionary) -> dictionary.code, Collectors.flatMapping((dictionary) -> dictionary.words.stream().filter((word) -> word.user.authenticated), Collectors.toList()))));
     }
 }
