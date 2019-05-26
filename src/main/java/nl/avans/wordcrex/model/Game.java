@@ -17,23 +17,24 @@ public class Game implements Pollable<Game> {
     public final User opponent;
     public final GameState state;
     public final InviteState inviteState;
+    public final Dictionary dictionary;
     public final int hostScore;
     public final int opponentScore;
     public final List<Tile> tiles;
 
     public Game(Game game, List<Tile> tiles) {
-        this(game.database, game.id, game.turn, game.host, game.opponent, game.state, game.inviteState, game.hostScore, game.opponentScore, tiles);
+        this(game.database, game.id, game.turn, game.host, game.opponent, game.state, game.inviteState, game.dictionary, game.hostScore, game.opponentScore, tiles);
     }
 
     public Game(Game game, boolean turn, GameState state, InviteState inviteState, int hostScore, int opponentScore) {
-        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, hostScore, opponentScore, game.tiles);
+        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, game.dictionary, hostScore, opponentScore, game.tiles);
     }
 
-    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState) {
-        this(database, id, turn, host, opponent, state, inviteState, 0, 0, List.of());
+    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
+        this(database, id, turn, host, opponent, state, inviteState, dictionary, 0, 0, List.of());
     }
 
-    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, int hostScore, int opponentScore, List<Tile> tiles) {
+    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, int hostScore, int opponentScore, List<Tile> tiles) {
         this.database = database;
         this.id = id;
         this.turn = turn;
@@ -41,6 +42,7 @@ public class Game implements Pollable<Game> {
         this.opponent = opponent;
         this.state = state;
         this.inviteState = inviteState;
+        this.dictionary = dictionary;
         this.hostScore = hostScore;
         this.opponentScore = opponentScore;
         this.tiles = tiles;
@@ -95,7 +97,7 @@ public class Game implements Pollable<Game> {
             .map((match) -> match.id == this.id ? this : match)
             .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
-        return new User(user, user.roles, matches, user.dictionaries);
+        return new User(user, user.roles, matches);
     }
 
     public User getAuthenticatedUser() {

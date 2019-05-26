@@ -26,8 +26,12 @@ public class User implements Pollable<User> {
         this(database, username, authenticated, List.of(), List.of(), List.of());
     }
 
-    public User(User user, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
-        this(user.database, user.username, user.authenticated, roles, games, dictionaries);
+    public User(User user, List<Dictionary> dictionaries) {
+        this(user.database, user.username, user.authenticated, user.roles, user.games, dictionaries);
+    }
+
+    public User(User user, List<UserRole> roles, List<Game> games) {
+        this(user.database, user.username, user.authenticated, roles, games, user.dictionaries);
     }
 
     public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
@@ -41,7 +45,39 @@ public class User implements Pollable<User> {
 
     @Override
     public User initialize() {
-        return this;
+        if (!this.dictionaries.isEmpty()) {
+            return this;
+        }
+
+        var words = new HashMap<String, List<Word>>();
+
+        this.database.select(
+            "SELECT * FROM dictionary",
+            (statement) -> {},
+            (result) -> {
+                var code = result.getString("letterset_code");
+                var list = words.getOrDefault(code, new ArrayList<>());
+
+                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username")));
+
+                words.put(code, list);
+            }
+        );
+
+        var dictionaries = new ArrayList<Dictionary>();
+
+        this.database.select(
+            "SELECT * FROM letterset",
+            (statement) -> {},
+            (result) -> {
+                var code = result.getString("code");
+                var list = words.getOrDefault(code, new ArrayList<>());
+
+                dictionaries.add(new Dictionary(code, result.getString("description"), list));
+            }
+        );
+
+        return new User(this, List.copyOf(dictionaries));
     }
 
     @Override
@@ -72,44 +108,21 @@ public class User implements Pollable<User> {
                 var inviteState = result.getString("answer_player2");
                 var host = result.getString("username_player1").equals(this.username) ? this : new User(this.database, result.getString("username_player1"), false);
                 var opponent = result.getString("username_player2").equals(this.username) ? this : new User(this.database, result.getString("username_player2"), false);
-
-                games.add(new Game(this.database, id, false, host, opponent, GameState.byState(state), InviteState.byState(inviteState)));
-            }
-        );
-
-        var words = new HashMap<String, List<Word>>();
-
-        this.database.select(
-            "SELECT * FROM dictionary",
-            (statement) -> {},
-            (result) -> {
                 var code = result.getString("letterset_code");
-                var list = words.getOrDefault(code, new ArrayList<>());
-                var username = result.getString("username");
-                var user = this.username.equals(username) ? this : new User(this.database, username, false);
+                var dictionary = this.dictionaries.stream()
+                    .filter((d) -> d.code.equals(code))
+                    .findAny()
+                    .orElse(null);
 
-                System.out.println(this);
+                if (dictionary == null) {
+                    return;
+                }
 
-                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), user));
-
-                words.put(code, list);
+                games.add(new Game(this.database, id, false, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary));
             }
         );
 
-        var dictionaries = new ArrayList<Dictionary>();
-
-        this.database.select(
-            "SELECT * FROM letterset",
-            (statement) -> {},
-            (result) -> {
-                var code = result.getString("code");
-                var list = words.getOrDefault(code, new ArrayList<>());
-
-                dictionaries.add(new Dictionary(code, result.getString("description"), list));
-            }
-        );
-
-        return new User(this, List.copyOf(roles), List.copyOf(games), List.copyOf(dictionaries));
+        return new User(this, List.copyOf(roles), List.copyOf(games));
     }
 
     @Override
@@ -151,6 +164,6 @@ public class User implements Pollable<User> {
 
     public Map<String, List<Word>> getSubmittedWords() {
         return Map.copyOf(this.dictionaries.stream()
-            .collect(Collectors.groupingBy((dictionary) -> dictionary.code, Collectors.flatMapping((dictionary) -> dictionary.words.stream().filter((word) -> word.user.authenticated), Collectors.toList()))));
+            .collect(Collectors.groupingBy((dictionary) -> dictionary.code, Collectors.flatMapping((dictionary) -> dictionary.words.stream().filter((word) -> word.username.equals(this.username)), Collectors.toList()))));
     }
 }
