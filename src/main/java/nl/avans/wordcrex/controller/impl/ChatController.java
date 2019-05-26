@@ -3,10 +3,13 @@ package nl.avans.wordcrex.controller.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
+import nl.avans.wordcrex.model.Message;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.ChatView;
 
+import java.util.List;
 import java.util.function.Function;
 
 public class ChatController extends Controller<Game> {
@@ -21,5 +24,17 @@ public class ChatController extends Controller<Game> {
 
     public void sendChat(String message) {
         System.out.println(message);
+    }
+
+    public String getUsername() {
+        return this.getModel().getAuthenticatedUser().username;
+    }
+
+    public List<Message> getMessages() {
+        return this.getModel().messages;
+    }
+
+    public void returnToGame() {
+        this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == this.getModel().id));
     }
 }

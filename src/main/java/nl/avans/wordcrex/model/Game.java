@@ -69,6 +69,7 @@ public class Game implements Pollable<Game> {
             InviteState inviteState;
             int hostScore;
             int opponentScore;
+            List<Message> messages = new ArrayList<>();
         };
         this.database.select(
             "SELECT g.game_state, g.answer_player2, isnull((SELECT p.username_player1 FROM turnplayer1 p WHERE p.game_id = g.game_id AND p.turn_id = (SELECT max(t.turn_id)))) turn FROM game g JOIN turn t ON g.game_id = t.game_id WHERE g.game_id = ?",
@@ -90,12 +91,19 @@ public class Game implements Pollable<Game> {
         this.database.select(
             "SELECT * FROM chatline WHERE game_id = ?",
             (statement) -> statement.setInt(1, this.id),
-            (result) -> {
-
-            }
+            (result) ->
+            ref.messages.add(
+                new Message(
+                    this.host.username.equals(result.getString("username")) ? this.host : this.opponent,
+                    result.getDate("moment"),
+                    result.getString("message")
+                )
+            )
         );
 
-        return new Game(this, ref.turn, ref.state, ref.inviteState, ref.hostScore, ref.opponentScore, List.of());
+        Collections.sort(ref.messages);
+
+        return new Game(this, ref.turn, ref.state, ref.inviteState, ref.hostScore, ref.opponentScore, List.copyOf(ref.messages));
     }
 
     @Override
