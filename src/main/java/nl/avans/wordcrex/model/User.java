@@ -49,6 +49,21 @@ public class User implements Pollable<User> {
             return this;
         }
 
+        var characters = new HashMap<String, List<Character>>();
+
+        this.database.select(
+            "SELECT * FROM symbol",
+            (statement) -> {},
+            (result) -> {
+                var code = result.getString("letterset_code");
+                var list = characters.getOrDefault(code, new ArrayList<>());
+
+                list.add(new Character(result.getString("symbol"), result.getInt("value"), result.getInt("counted")));
+
+                characters.put(code, list);
+            }
+        );
+
         var words = new HashMap<String, List<Word>>();
 
         this.database.select(
@@ -71,9 +86,10 @@ public class User implements Pollable<User> {
             (statement) -> {},
             (result) -> {
                 var code = result.getString("code");
-                var list = words.getOrDefault(code, new ArrayList<>());
+                var character = characters.getOrDefault(code, new ArrayList<>());
+                var word = words.getOrDefault(code, new ArrayList<>());
 
-                dictionaries.add(new Dictionary(code, result.getString("description"), list));
+                dictionaries.add(new Dictionary(code, result.getString("description"), List.copyOf(character), List.copyOf(word)));
             }
         );
 
