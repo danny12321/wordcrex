@@ -28,14 +28,14 @@ public class Game implements Pollable<Game> {
     }
 
     public Game(Game game, boolean turn, GameState state, InviteState inviteState, int hostScore, int opponentScore, List<Message> messages) {
-        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, game.dictionary, hostScore, opponentScore, message, game.tiles);
+        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, game.dictionary, hostScore, opponentScore, messages, game.tiles);
     }
 
     public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
         this(database, id, turn, host, opponent, state, inviteState, dictionary, 0, 0, List.of(), List.of());
     }
 
-    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, int hostScore, int opponentScore, List<Messages> messages, List<Tile> tiles) {
+    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, int hostScore, int opponentScore, List<Message> messages, List<Tile> tiles) {
         this.database = database;
         this.id = id;
         this.turn = turn;
