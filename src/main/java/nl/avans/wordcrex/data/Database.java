@@ -65,7 +65,7 @@ public class Database {
 
             try (var result = statement.getGeneratedKeys()) {
                 if (!result.next()) {
-                    return -1;
+                    return 0;
                 }
 
                 return result.getInt(1);

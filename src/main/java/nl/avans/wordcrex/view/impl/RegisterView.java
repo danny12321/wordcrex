@@ -38,10 +38,10 @@ public class RegisterView extends View<RegisterController> {
     @Override
     public List<Widget> getChildren() {
         return List.of(
-                new InputWidget("USERNAME", 64, 184, 384, 48, this.controller::setUsername),
-                new InputWidget("PASSWORD", '*', 64, 248, 384, 48, this.controller::setPassword),
-                new ButtonWidget("<", 64, 312, 64, 48, this.controller::navigateLogin),
-                this.submitButton
+            new InputWidget("USERNAME", 64, 184, 384, 48, this.controller::setUsername),
+            new InputWidget("PASSWORD", '*', 64, 248, 384, 48, this.controller::setPassword),
+            new ButtonWidget("<", 64, 312, 64, 48, this.controller::navigateLogin),
+            this.submitButton
         );
     }
 

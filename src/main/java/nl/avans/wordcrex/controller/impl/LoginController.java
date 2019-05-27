@@ -30,7 +30,7 @@ public class LoginController extends Controller<User> {
         return true;
     }
 
-    public void navigateRegister(){
+    public void navigateRegister() {
         this.main.openController(RegisterController.class);
     }
 

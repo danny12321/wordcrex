@@ -45,7 +45,7 @@ public class RegisterController extends Controller<User> {
         return this.username.matches("^[a-zA-Z0-9]{5,25}$") && this.password.matches("^[a-zA-Z0-9]{5,25}$");
     }
 
-    public void navigateLogin(){
+    public void navigateLogin() {
         this.main.openController(LoginController.class);
     }
 }

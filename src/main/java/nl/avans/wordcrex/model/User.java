@@ -155,7 +155,6 @@ public class User implements Pollable<User> {
     }
 
     public User register(String username, String password) {
-
         var insertedUser = this.database.insert(
             "INSERT INTO `account` VALUES(lower(?), lower(?));",
             (statement) -> {
@@ -171,7 +170,7 @@ public class User implements Pollable<User> {
             }
         );
 
-        if(insertedUser == -1 || insertedRole == -1) {
+        if (insertedUser == -1 || insertedRole == -1) {
             return this;
         }
 
