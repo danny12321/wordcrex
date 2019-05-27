@@ -53,8 +53,7 @@ public class DashboardController extends Controller<User> {
         this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
     }
 
-    public void newGame() {
-        System.out.println("Open new game view");
-        this.main.openController(NewGameController.class);
+    public void navigateInvite() {
+        this.main.openController(InviteController.class);
     }
 }
