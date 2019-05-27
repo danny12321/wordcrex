@@ -95,10 +95,11 @@ public class User implements Pollable<User> {
         var games = new ArrayList<Game>();
 
         this.database.select(
-            "SELECT * FROM game g WHERE g.username_player1 = ? OR g.username_player2 = ?",
+            "SELECT * FROM game g WHERE (g.username_player1 = ? OR g.username_player2 = ?) AND g.answer_player2 != ? ORDER BY g.game_state DESC",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setString(2, this.username);
+                statement.setString(3, InviteState.REJECTED.state);
             },
             (result) -> {
                 var id = result.getInt("game_id");

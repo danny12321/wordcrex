@@ -27,10 +27,6 @@ public class DashboardController extends Controller<User> {
         return user.username.equals(this.getModel().username);
     }
 
-    public boolean isVisible(Game game) {
-        return (game.state == GameState.PENDING || game.state == GameState.PLAYING) && game.inviteState != InviteState.REJECTED;
-    }
-
     public boolean isSelectable(Game game) {
         return game.state == GameState.PLAYING || (game.state == GameState.PENDING && !this.isCurrentUser(game.host));
     }

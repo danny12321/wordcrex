@@ -36,4 +36,8 @@ public class GameController extends Controller<Game> {
     public List<Tile> getTiles() {
         return this.getModel().tiles;
     }
+
+    public int getPoolSize() {
+        return this.getModel().pool.size();
+    }
 }
