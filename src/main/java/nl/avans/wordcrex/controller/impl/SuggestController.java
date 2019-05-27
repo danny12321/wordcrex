@@ -3,38 +3,47 @@ package nl.avans.wordcrex.controller.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.model.Word;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.SuggestView;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 public class SuggestController extends Controller<User> {
+	private int page;
+	private Map<String, List<Word>> words;
 	private String languageCode;
+
 	public SuggestController(Main main, Function<User, User> fn)
 	{
 		super(main, fn);
-	}
-
-	public Map<String, String> getWords() {
-		return Map.of(
-				"takelen", "Accepted",
-				"wielrennen", "Pending",
-				"yeet", "Denied",
-				"computer", "Accepted",
-				"Aqua", "Pending",
-				"Kappa", "Denied"
-		);
-	}
-
-	public void setLanguage(String languageCode)
-	{
-		this.languageCode = languageCode;
+		this.setPage(0);
 	}
 
 	@Override
 	public View<? extends Controller<User>> createView()
 	{
 		return new SuggestView(this);
+	}
+
+	public void setLanguage(String languageCode) {
+		this.languageCode = languageCode;
+	}
+
+	public void setPage(int page) {
+		this.page = page;
+		this.words = this.getModel().getSuggestedWords(this.page);
+	}
+
+	public int getPage()
+	{
+		return page;
+	}
+
+	public Map<String, List<Word>> getWords()
+	{
+		return words;
 	}
 }

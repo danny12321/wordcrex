@@ -6,6 +6,7 @@ import nl.avans.wordcrex.util.Pollable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class User implements Pollable<User> {
     private final Database database;
@@ -176,4 +177,30 @@ public class User implements Pollable<User> {
     public User logout() {
         return new User(this.database);
     }
+
+    public Map<String, List<Word>> getSuggestedWords(int page)
+    {
+    	var size = 100;
+        var words = new HashMap<String, List<Word>>();
+
+        this.database.select(
+        		"SELECT word, letterset_code, state FROM dictionary WHERE username = ? LIMIT ?, ?",
+                (statement) -> {
+					statement.setString(1,this.username);
+					statement.setInt(2, page * size);
+					statement.setInt(3, size);
+				},
+                (result) -> {
+        			var code  = result.getString("letterset_code");
+        			var list = words.getOrDefault(code, new ArrayList<>());
+
+        			list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username));
+
+                    words.put(code, list);
+                }
+        );
+
+        return Map.copyOf(words);
+    }
+
 }

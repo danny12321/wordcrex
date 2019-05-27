@@ -26,6 +26,7 @@ public class SuggestView extends View<SuggestController>
 
 	private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
 	private int scroll;
+	private int count;
 
 	public SuggestView(SuggestController controller)
 	{
@@ -45,20 +46,19 @@ public class SuggestView extends View<SuggestController>
 		var index = new AtomicInteger();
 		var words = this.controller.getWords();
 
-		words.forEach((key,value) -> {
+		words.forEach((key,list) -> list.forEach((value) -> {
 			var offset = index.getAndIncrement() * 88 - this.scroll;
 
 			g.setColor(Color.WHITE);
-			g.drawString(key, Main.TASKBAR_SIZE, 202 + offset);
-			g.drawString(value, Main.FRAME_SIZE - Main.TASKBAR_SIZE * 2 - metrics.stringWidth(value), 202 + offset);
+			g.drawString(key, Main.TASKBAR_SIZE, 170 + offset);
+			g.drawString(value.word, Main.FRAME_SIZE - Main.TASKBAR_SIZE * 2 - metrics.stringWidth(value.word), 170 + offset);
 
-			if (index.get() < words.size()) {
+			if (index.get() < list.size()) {
 				g.setColor(Colors.DARKERER_BLUE);
-				g.fillRect(Main.TASKBAR_SIZE * 2 + 42, 236 + offset, 268, 4);
+				g.fillRect(0, 204 + offset, 480, 4);
 			}
-		});
-
-		this.scrollbar.setHeight(words.size() * 88 + 128);
+		}));
+		this.scrollbar.setHeight(100 * 88+ 128);
 	}
 
 	@Override
