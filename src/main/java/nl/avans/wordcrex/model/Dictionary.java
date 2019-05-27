@@ -19,6 +19,14 @@ public class Dictionary {
     }
 
     public boolean isWord(String word) {
-        return false;
+        return this.database.select(
+            "SELECT d.word FROM dictionary d WHERE d.letterset_code = ? AND d.word = ? AND d.state = ?",
+            (statement) -> {
+                statement.setString(1, this.code);
+                statement.setString(2, word);
+                statement.setString(3, WordState.ACCEPTED.state);
+            },
+            (result) -> {}
+        ) > 0;
     }
 }
