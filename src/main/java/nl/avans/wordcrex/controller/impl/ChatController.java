@@ -23,7 +23,7 @@ public class ChatController extends Controller<Game> {
     }
 
     public void sendChat(String message) {
-        System.out.println(message);
+        this.getModel().sendChatMessage(message);
     }
 
     public String getUsername() {
@@ -32,6 +32,10 @@ public class ChatController extends Controller<Game> {
 
     public List<Message> getMessages() {
         return this.getModel().messages;
+    }
+
+    public void reloadChatView() {
+        this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
     }
 
     public void returnToGame() {

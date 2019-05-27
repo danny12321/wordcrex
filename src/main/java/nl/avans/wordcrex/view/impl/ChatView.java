@@ -10,6 +10,7 @@ import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
+import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,9 +19,12 @@ import java.util.List;
 public class ChatView extends View<ChatController> {
     private String message;
 
+    private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
+    private int scroll = 0;
+
     private final int size = 32;
     private final int gap = 16;
-    private final int maxBubbleSize = Main.FRAME_SIZE - (gap * 4 + size * 2);
+    private final int maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (gap * 4 + size * 2);
 
     public ChatView(ChatController controller) {
         super(controller);
@@ -78,15 +82,15 @@ public class ChatView extends View<ChatController> {
 
             if(messages.get(i).user.username.equals(this.controller.getUsername())) {
                 userMessage = true;
-                x = Main.FRAME_SIZE - size - gap;
+                x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - size - gap;
             }
 
             if(!(i != 0 && messages.get(i - 1).user.username.equals(messages.get(i).user.username))) {
                 g.setColor(Colors.DARK_YELLOW);
-                g.fillOval(x, y, size, size);
+                g.fillOval(x, y - this.scroll, size, size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, y, size, size, messages.get(i).user.username.substring(0, 1).toUpperCase());
+                StringUtil.drawCenteredString(g, x, y - this.scroll, size, size, messages.get(i).user.username.substring(0, 1).toUpperCase());
             }
 
             final String message = messages.get(i).message;
@@ -102,16 +106,18 @@ public class ChatView extends View<ChatController> {
 
             for(int j = 0; j < lines.size(); j++) {
                 g.setColor(Colors.DARK_BLUE);
-                g.fillRect(stringX - gap / 2, y, (int) width + gap, size);
+                g.fillRect(stringX - gap / 2, y - this.scroll, (int) width + gap, size);
 
                 g.setColor(Color.WHITE);
-                g.drawString(lines.get(j).trim(), stringX, y + (int) height);
+                g.drawString(lines.get(j).trim(), stringX, y + (int) height - this.scroll);
 
                 y += size;
             }
 
             y += gap;
         }
+
+        this.scrollbar.setHeight(y + 10);
 
 
     }
@@ -124,8 +130,12 @@ public class ChatView extends View<ChatController> {
     public java.util.List<Widget> getChildren() {
         return List.of(
             new ButtonWidget("<", 0, Main.FRAME_SIZE - 48, 48, 48, this.controller::returnToGame),
-            new InputWidget("MESSAGE", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - 96, 48, (value) -> this.message = value),
-            new ButtonWidget("+", Main.FRAME_SIZE - 48, Main.FRAME_SIZE - 48, 48, 48, () -> this.controller.sendChat(this.message))
+            new InputWidget("MESSAGE", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value),
+            new ButtonWidget("+", Main.FRAME_SIZE - Main.TASKBAR_SIZE - 48, Main.FRAME_SIZE - 48, 48, 48, () -> {
+                this.controller.sendChat(this.message);
+                this.controller.reloadChatView();
+            }),
+            this.scrollbar
         );
     }
 }

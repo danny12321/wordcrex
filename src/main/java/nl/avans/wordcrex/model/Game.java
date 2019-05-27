@@ -5,6 +5,7 @@ import nl.avans.wordcrex.util.Pollable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,5 +120,16 @@ public class Game implements Pollable<Game> {
 
     public User getAuthenticatedUser() {
         return this.host.authenticated ? this.host : this.opponent;
+    }
+
+    public void sendChatMessage(String message) {
+        this.database.insert("INSERT INTO chatline VALUES (?, ?, ?, ?);",
+            (statement) -> {
+                statement.setString(1, this.getAuthenticatedUser().username);
+                statement.setInt(2, this.id);
+                statement.setTimestamp(3, new java.sql.Timestamp(new Date().getTime()));
+                statement.setString(4, message);
+            }
+        );
     }
 }
