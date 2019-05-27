@@ -3,10 +3,12 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
 import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
+import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
@@ -134,7 +136,8 @@ public class DashboardView extends View<DashboardController> {
     @Override
     public List<Widget> getChildren() {
         return List.of(
-            this.scrollbar
+            this.scrollbar,
+            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::newGame)
         );
     }
 }
