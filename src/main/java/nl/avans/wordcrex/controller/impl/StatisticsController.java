@@ -32,8 +32,8 @@ public class StatisticsController extends Controller<User> {
         );
     }
 
-    public String getDisplayName() {
-        return this.getModel().getDisplayName();
+    public String getUsername() {
+        return this.getModel().username;
     }
 
     public String getInitial() {

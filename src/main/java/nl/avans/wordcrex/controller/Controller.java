@@ -15,6 +15,7 @@ public abstract class Controller<T extends Pollable<T>> {
     public Controller(Main main, Function<User, T> fn) {
         this.main = main;
         this.fn = fn;
+        this.replace(Pollable::initialize);
     }
 
     protected T getModel() {
