@@ -89,8 +89,8 @@ public class NewGameView extends View<NewGameController> {
     @Override
     public java.util.List<Widget> getChildren() {
         LinkedHashMap<String, String> options = new LinkedHashMap<>();
-        options.put("nl", "Nederlands");
-        options.put("en", "Engels");
+        options.put("NL", "Nederlands");
+        options.put("EN", "Engels");
 
         return List.of(
                 this.scrollbar,

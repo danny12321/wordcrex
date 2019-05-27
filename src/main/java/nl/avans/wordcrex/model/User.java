@@ -191,6 +191,18 @@ public class User implements Pollable<User> {
         return users;
     }
 
+    public void sendInvite(String username, String letterset_code) {
+        this.database.insert(
+                "INSERT INTO game(game_state, letterset_code, username_player1, username_player2, answer_player2)" +
+                        "VALUES('request', ?, ?, ?, 'unknown')",
+                (statement) -> {
+                    statement.setString(1, letterset_code);
+                    statement.setString(2, this.username);
+                    statement.setString(3, username);
+                }
+        );
+    }
+
     public User logout() {
         return new User(this.database);
     }

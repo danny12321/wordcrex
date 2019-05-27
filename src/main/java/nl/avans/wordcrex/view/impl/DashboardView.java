@@ -30,7 +30,7 @@ public class DashboardView extends View<DashboardController> {
         var games = this.controller.getGames().stream()
             .filter(this.controller::isVisible)
             .collect(Collectors.toList());
-        var offset = 0;
+        var offset = 72;
         var height = 96;
         var count = 0;
         var last = "";
@@ -98,7 +98,7 @@ public class DashboardView extends View<DashboardController> {
         var games = this.controller.getGames().stream()
             .filter(this.controller::isVisible)
             .collect(Collectors.toList());
-        var offset = 0;
+        var offset = 72;
         var height = 96;
         var last = "";
 

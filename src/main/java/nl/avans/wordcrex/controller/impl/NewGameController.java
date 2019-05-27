@@ -33,15 +33,13 @@ public class NewGameController extends Controller<User> {
 
     public void invite(String username) {
 
-        System.out.println(username);
-
         if(languageCode.isEmpty()) {
             System.out.println("Selecteer een taal");
             return;
         }
 
+        this.getModel().sendInvite(username, languageCode);
         this.main.openController(DashboardController.class);
-
     }
 
     public void setLanguageCode(String languageCode) {
