@@ -9,6 +9,8 @@ import nl.avans.wordcrex.view.impl.RegisterView;
 import java.util.function.Function;
 
 public class RegisterController extends Controller<User> {
+    private static final String REGEX = "^[a-zA-Z0-9]{5,25}$";
+
     private String username;
     private String password;
 
@@ -42,7 +44,7 @@ public class RegisterController extends Controller<User> {
     }
 
     public boolean isValid() {
-        return this.username.matches("^[a-zA-Z0-9]{5,25}$") && this.password.matches("^[a-zA-Z0-9]{5,25}$");
+        return this.username.matches(RegisterController.REGEX) && this.password.matches(RegisterController.REGEX);
     }
 
     public void navigateLogin() {
