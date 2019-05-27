@@ -6,8 +6,6 @@ import nl.avans.wordcrex.util.Pollable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class User implements Pollable<User> {
     private final Database database;
@@ -64,21 +62,6 @@ public class User implements Pollable<User> {
             }
         );
 
-        var words = new HashMap<String, List<Word>>();
-
-        this.database.select(
-            "SELECT * FROM dictionary",
-            (statement) -> {},
-            (result) -> {
-                var code = result.getString("letterset_code");
-                var list = words.getOrDefault(code, new ArrayList<>());
-
-                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username")));
-
-                words.put(code, list);
-            }
-        );
-
         var dictionaries = new ArrayList<Dictionary>();
 
         this.database.select(
@@ -87,9 +70,8 @@ public class User implements Pollable<User> {
             (result) -> {
                 var code = result.getString("code");
                 var character = characters.getOrDefault(code, new ArrayList<>());
-                var word = words.getOrDefault(code, new ArrayList<>());
 
-                dictionaries.add(new Dictionary(code, result.getString("description"), List.copyOf(character), List.copyOf(word)));
+                dictionaries.add(new Dictionary(this.database, code, result.getString("description"), List.copyOf(character)));
             }
         );
 
@@ -193,10 +175,5 @@ public class User implements Pollable<User> {
 
     public User logout() {
         return new User(this.database);
-    }
-
-    public Map<String, List<Word>> getSubmittedWords() {
-        return Map.copyOf(this.dictionaries.stream()
-            .collect(Collectors.groupingBy((dictionary) -> dictionary.code, Collectors.flatMapping((dictionary) -> dictionary.words.stream().filter((word) -> word.username.equals(this.username)), Collectors.toList()))));
     }
 }
