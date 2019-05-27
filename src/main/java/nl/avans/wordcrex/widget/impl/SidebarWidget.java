@@ -1,9 +1,7 @@
 package nl.avans.wordcrex.widget.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.controller.impl.DashboardController;
-import nl.avans.wordcrex.controller.impl.LoginController;
-import nl.avans.wordcrex.controller.impl.StatisticsController;
+import nl.avans.wordcrex.controller.impl.*;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.view.View;
@@ -18,8 +16,9 @@ public class SidebarWidget extends Widget {
     private final ButtonWidget games = new ButtonWidget("GAMES", 32, 64, 192, 32, () -> this.main.openController(DashboardController.class));
     private final ButtonWidget statistics = new ButtonWidget("STATISTICS", 32, 112, 192, 32, () -> this.main.openController(StatisticsController.class));
     private final ButtonWidget observe = new ButtonWidget("OBSERVE", 32, 160, 192, 32, Console.log("observe"));
-    private final ButtonWidget words = new ButtonWidget("WORDS", 32, 208, 192, 32, Console.log("words"));
-    private final ButtonWidget manage = new ButtonWidget("MANAGE", 32, 256, 192, 32, Console.log("manage"));
+    private final ButtonWidget suggest = new ButtonWidget("SUGGEST", 32, 208, 192, 32, () -> this.main.openController(DictionaryController.class));
+    private final ButtonWidget words = new ButtonWidget("WORDS", 32, 256, 192, 32, Console.log("words"));
+    private final ButtonWidget manage = new ButtonWidget("MANAGE", 32, 304, 192, 32, Console.log("manage"));
     private final ButtonWidget logout = new ButtonWidget("LOGOUT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class));
 
     private Main main;
@@ -34,6 +33,7 @@ public class SidebarWidget extends Widget {
         this.updateButton(this.games, DashboardView.class);
         this.updateButton(this.statistics, StatisticsView.class);
         this.updateButton(this.observe, null);
+        this.updateButton(this.suggest, null);
         this.updateButton(this.words, null);
         this.updateButton(this.manage, null);
         this.updateButton(this.logout, null);
@@ -62,6 +62,7 @@ public class SidebarWidget extends Widget {
             this.games,
             this.statistics,
             this.observe,
+            this.suggest,
             this.words,
             this.manage,
             this.logout
