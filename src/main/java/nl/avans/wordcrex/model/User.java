@@ -154,12 +154,35 @@ public class User implements Pollable<User> {
         return this.username.substring(0, 1).toUpperCase();
     }
 
+    public User register(String username, String password) {
+        var insertedUser = this.database.insert(
+            "INSERT INTO `account` VALUES(lower(?), lower(?));",
+            (statement) -> {
+                statement.setString(1, username);
+                statement.setString(2, password);
+            }
+        );
+
+        var insertedRole = this.database.insert(
+            "INSERT INTO accountrole VALUES(lower(?), 'player')",
+            (statement) -> {
+                statement.setString(1, username);
+            }
+        );
+
+        if (insertedUser == -1 || insertedRole == -1) {
+            return this;
+        }
+
+        return this.login(username, password);
+    }
+
     public User login(String username, String password) {
         var ref = new Object() {
             String username;
         };
         var selected = this.database.select(
-            "SELECT a.username FROM account a WHERE a.username = ? AND a.password = ?",
+            "SELECT a.username FROM account a WHERE lower(a.username) = lower(?) AND lower(a.password) = lower(?)",
             (statement) -> {
                 statement.setString(1, username);
                 statement.setString(2, password);
