@@ -42,7 +42,7 @@ public class LoginView extends View<LoginController> {
             new InputWidget("USERNAME", 64, 184, 384, 48, (value) -> this.username = value),
             new InputWidget("PASSWORD", '*', 64, 248, 384, 48, (value) -> this.password = value),
             new ButtonWidget("LOG IN", 64, 312, 184, 48, this::login),
-            new ButtonWidget("REGISTER", 264, 312, 184, 48, Console.log("register"))
+            new ButtonWidget("REGISTER", 264, 312, 184, 48, this.controller::navigateRegister)
         );
     }
 
