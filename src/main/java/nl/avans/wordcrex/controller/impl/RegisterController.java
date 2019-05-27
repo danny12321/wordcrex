@@ -13,6 +13,7 @@ public class RegisterController extends Controller<User> {
 
     private String username;
     private String password;
+    private boolean failed;
 
     public RegisterController(Main main, Function<User, User> fn) {
         super(main, fn);
@@ -23,28 +24,34 @@ public class RegisterController extends Controller<User> {
         return new RegisterView(this);
     }
 
-    public boolean register() {
+    public void register() {
         this.replace((user) -> user.register(this.username, this.password));
 
         if (!this.getModel().authenticated) {
-            return false;
+            this.failed = true;
+
+            return;
         }
 
         this.main.openController(DashboardController.class);
-
-        return true;
     }
 
     public void setUsername(String username) {
         this.username = username;
+        this.failed = false;
     }
 
     public void setPassword(String password) {
         this.password = password;
+        this.failed = false;
     }
 
     public boolean isValid() {
         return this.username.matches(RegisterController.REGEX) && this.password.matches(RegisterController.REGEX);
+    }
+
+    public boolean hasFailed() {
+        return this.failed;
     }
 
     public void navigateLogin() {

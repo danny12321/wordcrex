@@ -9,6 +9,10 @@ import nl.avans.wordcrex.view.impl.LoginView;
 import java.util.function.Function;
 
 public class LoginController extends Controller<User> {
+    private String username;
+    private String password;
+    private boolean failed;
+
     public LoginController(Main main, Function<User, User> fn) {
         super(main, fn);
     }
@@ -18,16 +22,34 @@ public class LoginController extends Controller<User> {
         return new LoginView(this);
     }
 
-    public boolean login(String username, String password) {
-        this.replace((user) -> user.login(username, password));
+    public void login() {
+        this.replace((user) -> user.login(this.username, this.password));
 
         if (!this.getModel().authenticated) {
-            return false;
+            this.failed = true;
+
+            return;
         }
 
         this.main.openController(DashboardController.class);
+    }
 
-        return true;
+    public void setUsername(String username) {
+        this.username = username;
+        this.failed = false;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+        this.failed = false;
+    }
+
+    public boolean isValid() {
+        return !this.username.isEmpty() && !this.password.isEmpty();
+    }
+
+    public boolean hasFailed() {
+        return this.failed;
     }
 
     public void navigateRegister() {
