@@ -4,7 +4,10 @@ import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Pollable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class User implements Pollable<User> {
     private final Database database;
@@ -13,25 +16,84 @@ public class User implements Pollable<User> {
     public final boolean authenticated;
     public final List<UserRole> roles;
     public final List<Game> games;
+    public final List<Dictionary> dictionaries;
 
     public User(Database database) {
         this(database, "", false);
     }
 
     public User(Database database, String username, boolean authenticated) {
-        this(database, username, authenticated, List.of(), List.of());
+        this(database, username, authenticated, List.of(), List.of(), List.of());
+    }
+
+    public User(User user, List<Dictionary> dictionaries) {
+        this(user.database, user.username, user.authenticated, user.roles, user.games, dictionaries);
     }
 
     public User(User user, List<UserRole> roles, List<Game> games) {
-        this(user.database, user.username, user.authenticated, roles, games);
+        this(user.database, user.username, user.authenticated, roles, games, user.dictionaries);
     }
 
-    public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games) {
+    public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
         this.database = database;
         this.username = username;
         this.authenticated = authenticated;
         this.roles = roles;
         this.games = games;
+        this.dictionaries = dictionaries;
+    }
+
+    @Override
+    public User initialize() {
+        if (!this.dictionaries.isEmpty()) {
+            return this;
+        }
+
+        var characters = new HashMap<String, List<Character>>();
+
+        this.database.select(
+            "SELECT * FROM symbol",
+            (statement) -> {},
+            (result) -> {
+                var code = result.getString("letterset_code");
+                var list = characters.getOrDefault(code, new ArrayList<>());
+
+                list.add(new Character(result.getString("symbol"), result.getInt("value"), result.getInt("counted")));
+
+                characters.put(code, list);
+            }
+        );
+
+        var words = new HashMap<String, List<Word>>();
+
+        this.database.select(
+            "SELECT * FROM dictionary",
+            (statement) -> {},
+            (result) -> {
+                var code = result.getString("letterset_code");
+                var list = words.getOrDefault(code, new ArrayList<>());
+
+                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username")));
+
+                words.put(code, list);
+            }
+        );
+
+        var dictionaries = new ArrayList<Dictionary>();
+
+        this.database.select(
+            "SELECT * FROM letterset",
+            (statement) -> {},
+            (result) -> {
+                var code = result.getString("code");
+                var character = characters.getOrDefault(code, new ArrayList<>());
+                var word = words.getOrDefault(code, new ArrayList<>());
+
+                dictionaries.add(new Dictionary(code, result.getString("description"), List.copyOf(character), List.copyOf(word)));
+            }
+        );
+
+        return new User(this, List.copyOf(dictionaries));
     }
 
     @Override
@@ -62,8 +124,17 @@ public class User implements Pollable<User> {
                 var inviteState = result.getString("answer_player2");
                 var host = result.getString("username_player1").equals(this.username) ? this : new User(this.database, result.getString("username_player1"), false);
                 var opponent = result.getString("username_player2").equals(this.username) ? this : new User(this.database, result.getString("username_player2"), false);
+                var code = result.getString("letterset_code");
+                var dictionary = this.dictionaries.stream()
+                    .filter((d) -> d.code.equals(code))
+                    .findAny()
+                    .orElse(null);
 
-                games.add(new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState)));
+                if (dictionary == null) {
+                    return;
+                }
+
+                games.add(new Game(this.database, id, false, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary));
             }
         );
 
@@ -75,18 +146,12 @@ public class User implements Pollable<User> {
         return this;
     }
 
-    public String getDisplayName() {
-        return this.username;
-    }
-
     public String getInitial() {
-        var displayName = this.getDisplayName();
-
-        if (displayName.isEmpty()) {
+        if (this.username.isEmpty()) {
             return "?";
         }
 
-        return displayName.substring(0, 1).toUpperCase();
+        return this.username.substring(0, 1).toUpperCase();
     }
 
     public User login(String username, String password) {
@@ -128,5 +193,10 @@ public class User implements Pollable<User> {
 
     public User logout() {
         return new User(this.database);
+    }
+
+    public Map<String, List<Word>> getSubmittedWords() {
+        return Map.copyOf(this.dictionaries.stream()
+            .collect(Collectors.groupingBy((dictionary) -> dictionary.code, Collectors.flatMapping((dictionary) -> dictionary.words.stream().filter((word) -> word.username.equals(this.username)), Collectors.toList()))));
     }
 }
