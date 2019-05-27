@@ -105,7 +105,7 @@ public class ChatView extends View<ChatController> {
             ArrayList<String> lines = this.getLines(g, splitMessage);
 
             for(int j = 0; j < lines.size(); j++) {
-                g.setColor(Colors.DARK_BLUE);
+                g.setColor(Colors.CHAT_BLUE);
                 g.fillRect(stringX - gap / 2, y - this.scroll, (int) width + gap, size);
 
                 g.setColor(Color.WHITE);
