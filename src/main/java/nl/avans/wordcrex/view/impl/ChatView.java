@@ -12,13 +12,44 @@ import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChatView extends View<ChatController> {
     private String message;
 
+    private final int size = 32;
+    private final int gap = 16;
+    private final int maxBubbleSize = Main.FRAME_SIZE - (gap * 4 + size * 2);
+
     public ChatView(ChatController controller) {
         super(controller);
+    }
+
+    private ArrayList<String> getLines(Graphics2D g, String[] splitMessage) {
+        ArrayList<String> lines = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        String lastString = null;
+
+        for(int i = 0; i < splitMessage.length; i++) {
+            sb.append(" ").append(splitMessage[i]);
+            if(g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
+
+                if(g.getFontMetrics().getStringBounds(splitMessage[i], g).getWidth() > maxBubbleSize) {
+                    
+                }
+
+                //when string width is higher than maxbubble size
+                lines.add(lastString);
+                sb = new StringBuilder();
+                i--;
+            }
+            lastString = sb.toString();
+        }
+
+        lines.add(lastString);
+
+        return lines;
     }
 
     @Override
@@ -27,9 +58,6 @@ public class ChatView extends View<ChatController> {
 
         int y = 48;
         //x declared in loop
-        final int size = 32;
-        final int gap = 16;
-        final int maxBubbleSize = Main.FRAME_SIZE - (gap * 4 + size * 2);
 
         for(int i = 0; i < messages.size(); i++) {
             boolean userMessage = false;
@@ -56,15 +84,20 @@ public class ChatView extends View<ChatController> {
 
             final int stringX = (int) (userMessage ? x - width - gap : x + size + gap); //start x of string
 
-            String[] splitString = message.split("/ +/g");
+            String[] splitMessage = message.split("\\s+");
+            ArrayList<String> lines = this.getLines(g, splitMessage);
 
-            g.setColor(Colors.DARK_BLUE);
-            g.fillRect(stringX - gap / 2, y, (int) width + gap, size);
+            for(int j = 0; j < lines.size(); j++) {
+                g.setColor(Colors.DARK_BLUE);
+                g.fillRect(stringX - gap / 2, y, (int) width + gap, size);
 
-            g.setColor(Colors.DARK_YELLOW);
-            g.drawString(messages.get(i).message, stringX, y + (int) height);
+                g.setColor(Color.WHITE);
+                g.drawString(lines.get(j).trim(), stringX, y + (int) height);
 
-            y += size + gap;
+                y += size;
+            }
+
+            y += gap;
         }
 
 
