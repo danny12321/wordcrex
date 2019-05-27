@@ -29,4 +29,8 @@ public class LoginController extends Controller<User> {
 
         return true;
     }
+
+    public void logout() {
+        this.replace(User::logout);
+    }
 }
