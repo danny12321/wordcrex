@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class SuggestController extends Controller<User> {
-
+	private String languageCode;
 	public SuggestController(Main main, Function<User, User> fn)
 	{
 		super(main, fn);
@@ -27,7 +27,10 @@ public class SuggestController extends Controller<User> {
 		);
 	}
 
-
+	public void setLanguage(String languageCode)
+	{
+		this.languageCode = languageCode;
+	}
 
 	@Override
 	public View<? extends Controller<User>> createView()

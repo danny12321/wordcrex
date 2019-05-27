@@ -16,7 +16,7 @@ public class SidebarWidget extends Widget {
     private final ButtonWidget games = new ButtonWidget("GAMES", 32, 64, 192, 32, () -> this.main.openController(DashboardController.class));
     private final ButtonWidget statistics = new ButtonWidget("STATISTICS", 32, 112, 192, 32, () -> this.main.openController(StatisticsController.class));
     private final ButtonWidget observe = new ButtonWidget("OBSERVE", 32, 160, 192, 32, Console.log("observe"));
-    private final ButtonWidget suggest = new ButtonWidget("SUGGEST", 32, 208, 192, 32, () -> this.main.openController(DictionaryController.class));
+    private final ButtonWidget suggest = new ButtonWidget("SUGGEST", 32, 208, 192, 32, () -> this.main.openController(SuggestController.class));
     private final ButtonWidget words = new ButtonWidget("WORDS", 32, 256, 192, 32, Console.log("words"));
     private final ButtonWidget manage = new ButtonWidget("MANAGE", 32, 304, 192, 32, Console.log("manage"));
     private final ButtonWidget logout = new ButtonWidget("LOGOUT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class));
