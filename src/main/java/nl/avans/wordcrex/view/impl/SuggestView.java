@@ -2,6 +2,7 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.SuggestController;
+import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -69,8 +70,8 @@ public class SuggestView extends View<SuggestController>
 	public List<Widget> getChildren()
 	{
 		LinkedHashMap<String, String> languages = new LinkedHashMap<>();
-		languages.put("Nederlands", "NL");
-		languages.put("Engels", "EN");
+		languages.put("NL", "NL");
+		languages.put("EN", "EN");
 
 		return List.of(
 			this.scrollbar,
@@ -82,6 +83,6 @@ public class SuggestView extends View<SuggestController>
 
 	private void Suggest()
 	{
-		//this.invalid = !
+		controller.addWord(word);
 	}
 }

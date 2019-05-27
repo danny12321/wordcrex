@@ -203,4 +203,20 @@ public class User implements Pollable<User> {
         return Map.copyOf(words);
     }
 
+    public void submitNewWord(String word, String lettercode)
+	{
+
+		this.database.insert(
+				"INSERT INTO dictionary VALUES (?,?,?,?)",
+				(statement) ->
+				{
+					statement.setString(1, word);
+					statement.setString(2, lettercode);
+					statement.setString(3, "Pending");
+					statement.setString(4, this.username);
+				}
+		);
+	}
+
+
 }

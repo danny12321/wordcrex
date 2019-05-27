@@ -28,8 +28,19 @@ public class SuggestController extends Controller<User> {
 		return new SuggestView(this);
 	}
 
+	public void addWord(String word)
+	{
+		this.getModel().submitNewWord(word, languageCode);
+		this.setPage(this.page);
+	}
+
 	public void setLanguage(String languageCode) {
 		this.languageCode = languageCode;
+	}
+
+	public String getLanguage()
+	{
+		return languageCode;
 	}
 
 	public void setPage(int page) {
