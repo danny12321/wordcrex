@@ -6,10 +6,15 @@ import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.ManagerView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 public class ManagerController extends Controller<User> {
+
+    private List<String> users = new ArrayList<>();
+
     public ManagerController(Main main, Function<User, User> fn) {
         super(main, fn);
     }
@@ -19,15 +24,11 @@ public class ManagerController extends Controller<User> {
         return new ManagerView(this);
     }
 
-    public Map<String, String> getUsers() {
-        return null;
+    public void search(String username) {
+        this.users = this.getModel().getUsers(username);
     }
 
-    public String getDisplayName() {
-        return this.getModel().getDisplayName();
-    }
-
-    public String getInitial() {
-        return this.getModel().getInitial();
+    public List<String> getUsers() {
+        return this.users;
     }
 }
