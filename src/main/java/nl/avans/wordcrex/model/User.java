@@ -115,7 +115,7 @@ public class User implements Pollable<User> {
         if(username.isEmpty()) return users;
 
         this.database.select(
-                "SELECT a.username FROM account a WHERE a.username LIKE ? AND a.username != ? ",
+                "SELECT a.username FROM account a JOIN accountrole ar ON a.username = ar.username WHERE a.username LIKE ? AND a.username != ? AND ar.role = 'player'",
                 (statement) -> {
                     statement.setString(1, username + "%");
                     statement.setString(2, this.username);

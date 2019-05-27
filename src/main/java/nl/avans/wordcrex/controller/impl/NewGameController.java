@@ -12,6 +12,7 @@ import java.util.function.Function;
 
 public class NewGameController extends Controller<User> {
     private List<String> users = new ArrayList<>();
+    private String languageCode;
 
     public NewGameController(Main main, Function<User, User> fn) {
         super(main, fn);
@@ -28,5 +29,22 @@ public class NewGameController extends Controller<User> {
 
     public List<String> getUsers() {
         return this.users;
+    }
+
+    public void invite(String username) {
+
+        System.out.println(username);
+
+        if(languageCode.isEmpty()) {
+            System.out.println("Selecteer een taal");
+            return;
+        }
+
+        this.main.openController(DashboardController.class);
+
+    }
+
+    public void setLanguageCode(String languageCode) {
+        this.languageCode = languageCode;
     }
 }
