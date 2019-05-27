@@ -19,6 +19,7 @@ public class LoginView extends View<LoginController> {
 
     public LoginView(LoginController controller) {
         super(controller);
+        this.controller.logout();
     }
 
     @Override
