@@ -29,20 +29,33 @@ public class ChatView extends View<ChatController> {
     private ArrayList<String> getLines(Graphics2D g, String[] splitMessage) {
         ArrayList<String> lines = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        String lastString = null;
+        String lastString = "";
 
         for(int i = 0; i < splitMessage.length; i++) {
             sb.append(" ").append(splitMessage[i]);
+
             if(g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
-
                 if(g.getFontMetrics().getStringBounds(splitMessage[i], g).getWidth() > maxBubbleSize) {
-                    
-                }
+                    //God help me, don't read this or you'll die
+                    sb = new StringBuilder(lastString);
+                    sb.append(" ");
 
-                //when string width is higher than maxbubble size
-                lines.add(lastString);
-                sb = new StringBuilder();
-                i--;
+                    for(int j = 1; j < splitMessage[i].length(); j++) {
+                        sb.append(splitMessage[i], j - 1, j);
+
+                        if(g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
+                            lines.add(lastString);
+                            sb = new StringBuilder();
+                        }
+
+                        lastString = sb.toString();
+                    }
+                } else {
+                    //when string width is higher than maxbubble size
+                    lines.add(lastString);
+                    sb = new StringBuilder();
+                    i--;
+                }
             }
             lastString = sb.toString();
         }
