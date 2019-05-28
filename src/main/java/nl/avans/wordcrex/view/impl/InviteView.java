@@ -1,7 +1,7 @@
 package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.controller.impl.NewGameController;
+import nl.avans.wordcrex.controller.impl.InviteController;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
@@ -15,7 +15,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-public class NewGameView extends View<NewGameController> {
+public class InviteView extends View<InviteController> {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
     private int scroll;
 
@@ -25,7 +25,7 @@ public class NewGameView extends View<NewGameController> {
     private HashMap<String, String> hover;
     private Boolean disabled = false;
 
-    public NewGameView(NewGameController controller) {
+    public InviteView(InviteController controller) {
         super(controller);
     }
 

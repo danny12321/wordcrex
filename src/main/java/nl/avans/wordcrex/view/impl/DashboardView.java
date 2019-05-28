@@ -3,7 +3,6 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
 import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -137,7 +136,7 @@ public class DashboardView extends View<DashboardController> {
     public List<Widget> getChildren() {
         return List.of(
             this.scrollbar,
-            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::newGame)
+            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::navigateInvite)
         );
     }
 }

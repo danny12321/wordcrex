@@ -4,7 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.view.View;
-import nl.avans.wordcrex.view.impl.NewGameView;
+import nl.avans.wordcrex.view.impl.InviteView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,17 +12,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Function;
 
-public class NewGameController extends Controller<User> {
+public class InviteController extends Controller<User> {
     private List<HashMap<String, String>> users = new ArrayList<>();
     private String languageCode;
 
-    public NewGameController(Main main, Function<User, User> fn) {
+    public InviteController(Main main, Function<User, User> fn) {
         super(main, fn);
     }
 
     @Override
     public View<? extends Controller<User>> createView() {
-        return new NewGameView(this);
+        return new InviteView(this);
     }
 
 
