@@ -22,7 +22,7 @@ public class NewGameView extends View<NewGameController> {
     private int offset = Main.TASKBAR_SIZE + 96 + 20;
     private int height = 96;
 
-    private String hover;
+    private HashMap<String, String> hover;
     private Boolean disabled = false;
 
     public NewGameView(NewGameController controller) {
@@ -31,14 +31,16 @@ public class NewGameView extends View<NewGameController> {
 
     @Override
     public void draw(Graphics2D g) {
-        List<String> users = this.controller.getUsers();
+        List<HashMap<String, String>> users = this.controller.getUsers();
 
         for (int i = 0; i < users.size(); i++) {
-            String username = users.get(i);
+            HashMap<String, String> user = users.get(i);
+            String username = user.get("username");
+
             int ypos = this.offset + this.height * i - this.scroll;
 
             // background
-            if(this.hover != null && this.hover.equals(username)) {
+            if(this.hover != null && this.hover.get("username").equals(username) && this.hover.get("disabled") == null) {
                 g.setColor(Colors.DARKERER_BLUE);
             } else {
                 g.setColor(Colors.DARKER_BLUE);
@@ -57,6 +59,13 @@ public class NewGameView extends View<NewGameController> {
             g.setFont(Fonts.NORMAL);
             g.setColor(Color.WHITE);
             g.drawString(username, Main.TASKBAR_SIZE * 2 + 42, ypos + this.height / 2);
+
+
+            if(user.get("disabled") != null) {
+                g.setFont(Fonts.SMALL);
+                g.setColor(Color.RED);
+                g.drawString("Is al uitgenodigd of speel je al een spel mee", Main.TASKBAR_SIZE * 2 + 42, ypos + this.height / 2 + 20);
+            }
         }
 
         this.scrollbar.setHeight(10 * this.height + this.offset - Main.TASKBAR_SIZE);
@@ -88,9 +97,7 @@ public class NewGameView extends View<NewGameController> {
 
     @Override
     public java.util.List<Widget> getChildren() {
-        LinkedHashMap<String, String> options = new LinkedHashMap<>();
-        options.put("NL", "Nederlands");
-        options.put("EN", "Engels");
+        LinkedHashMap<String, String> options = this.controller.getDictionaries();;
 
         return List.of(
                 this.scrollbar,
