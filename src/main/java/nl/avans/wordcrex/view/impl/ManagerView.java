@@ -2,7 +2,9 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.ManagerController;
+import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -15,8 +17,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ManagerView extends View<ManagerController> {
-
-    private String username;
 
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
     private int scroll;
@@ -40,15 +40,16 @@ public class ManagerView extends View<ManagerController> {
             //username
             g.setColor(Colors.DARKER_YELLOW);
             g.drawString( users.get(i), Main.TASKBAR_SIZE + 35, ypos + this.height / 2);
-            //icon
+            //user icon
             g.setColor(Colors.DARK_YELLOW);
             g.fillOval(20, ypos + 42/2, 42, 42);
             g.setColor(Colors.DARKER_BLUE);
             g.setFont(Fonts.BIG);
-            //StringUtil.drawCenteredString(users.get(i).substring(0,1).toUpperCase(), 33, ypos + 50);
             StringUtil.drawCenteredString(g, 20, ypos + 42/2, 42,42, users.get(i).substring(0,1).toUpperCase());
-
+            //set font back to normal
             g.setFont(Fonts.NORMAL);
+            //create role buttons
+            
         }
 
         this.scrollbar.setHeight(10 * this.height + this.offset - Main.TASKBAR_SIZE);
@@ -63,6 +64,7 @@ public class ManagerView extends View<ManagerController> {
         return List.of(
                 this.scrollbar,
                 new InputWidget("Gebruikersnaam", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::search)
+
         );
     }
 }
