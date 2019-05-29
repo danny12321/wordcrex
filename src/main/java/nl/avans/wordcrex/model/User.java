@@ -191,15 +191,22 @@ public class User implements Pollable<User> {
         return users;
     }
 
-    public List<User> getChangableUsers() {
+    public List<User> getChangableUsers(String name) {
        // if (this.roles.indexOf(UserRole.ADMINISTRATOR) == -1) {
            // return List.of();
         //}
 
         List<User> users = new ArrayList<User>();
 
-        this.database.select("SELECT username, role FROM wordcrex.accountrole;",
-                (statement) -> {},
+        if(name.isEmpty()){
+            return users;
+        }
+
+        this.database.select("SELECT username, role FROM wordcrex.accountrole WHERE username LIKE ? AND username != ? ",
+                (statement) -> {
+                    statement.setString(1, name + "%");
+                    statement.setString(2, this.username);
+                    },
                 (result)->{
                        List<UserRole> roleList = new ArrayList<>();
                        boolean foundUser = false;

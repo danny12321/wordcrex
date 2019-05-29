@@ -16,6 +16,7 @@ import java.util.function.Function;
 public class ManagerController extends Controller<User> {
 
     private List<String> users = new ArrayList<>();
+    private List<User> usersWithRoles = new ArrayList<>();
 
     public ManagerController(Main main, Function<User, User> fn) {
         super(main, fn);
@@ -27,32 +28,25 @@ public class ManagerController extends Controller<User> {
     }
 
     public void search(String username) {
-        printUserRoles();
         this.users = this.getModel().getUsers(username);
     }
+    public void searchUsersWithRoles(String username){
+        this.usersWithRoles = this.getModel().getChangableUsers(username);
+    }
+
 
     public List<String> getUsers() {
         return this.users;
     }
+    public List<User> getUsersWithRoles(){ return this.usersWithRoles; }
     
     public boolean hasRole(UserRole role){
         return this.getModel().roles.indexOf(role) != -1;
     }
 
-    public void printUserRoles()
-    {
-        List<User> userRoles = this.getModel().getChangableUsers();
-        System.out.println(userRoles.size());
-        for (User u : userRoles)
-        {
-            System.out.println(u.username + " : " + u.roles.size());
-            System.out.print(u.username + " : ");
-            for(UserRole r : u.roles)
-            {
-                System.out.print(r.role + ", ");
-            }
-            System.out.println("");
-        }
+    public List<User> getUserRoles(String name){
+        return this.getModel().getChangableUsers(name);
     }
+
 
 }
