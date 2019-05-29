@@ -212,7 +212,7 @@ public class User implements Pollable<User> {
 				{
 					statement.setString(1, word);
 					statement.setString(2, lettercode);
-					statement.setString(3, "Pending");
+					statement.setString(3, WordState.PENDING.state);
 					statement.setString(4, this.username);
 				}
 		);

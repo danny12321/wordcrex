@@ -3,6 +3,7 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.SuggestController;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.model.WordState;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -27,7 +28,6 @@ public class SuggestView extends View<SuggestController>
 
 	private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
 	private int scroll;
-	private int count;
 
 	public SuggestView(SuggestController controller)
 	{
@@ -49,9 +49,11 @@ public class SuggestView extends View<SuggestController>
 
 		words.forEach((key,list) -> list.forEach((value) -> {
 			var offset = index.getAndIncrement() * 88 - this.scroll;
+			String state = value.state.toString();
 
 			g.setColor(Color.WHITE);
 			g.drawString(key, Main.TASKBAR_SIZE, 170 + offset);
+			g.drawString(state, 200,170 + offset);
 			g.drawString(value.word, Main.FRAME_SIZE - Main.TASKBAR_SIZE * 2 - metrics.stringWidth(value.word), 170 + offset);
 
 			if (index.get() < list.size()) {
@@ -67,8 +69,7 @@ public class SuggestView extends View<SuggestController>
 	{}
 
 	@Override
-	public List<Widget> getChildren()
-	{
+	public List<Widget> getChildren() {
 		LinkedHashMap<String, String> languages = new LinkedHashMap<>();
 		languages.put("NL", "NL");
 		languages.put("EN", "EN");
@@ -81,8 +82,7 @@ public class SuggestView extends View<SuggestController>
 		);
 	}
 
-	private void Suggest()
-	{
+	private void Suggest() {
 		controller.addWord(word);
 	}
 }

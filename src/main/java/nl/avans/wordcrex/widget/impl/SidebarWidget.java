@@ -17,9 +17,10 @@ public class SidebarWidget extends Widget {
     private final ButtonWidget statistics = new ButtonWidget("STATISTICS", 32, 112, 192, 32, () -> this.main.openController(StatisticsController.class));
     private final ButtonWidget observe = new ButtonWidget("OBSERVE", 32, 160, 192, 32, Console.log("observe"));
     private final ButtonWidget suggest = new ButtonWidget("SUGGEST", 32, 208, 192, 32, () -> this.main.openController(SuggestController.class));
-    private final ButtonWidget words = new ButtonWidget("WORDS", 32, 256, 192, 32, Console.log("words"));
-    private final ButtonWidget manage = new ButtonWidget("MANAGE", 32, 304, 192, 32, Console.log("manage"));
-    private final ButtonWidget logout = new ButtonWidget("LOGOUT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class));
+    private final ButtonWidget accept = new ButtonWidget("ACCEPT", 32,256,192,32, () -> this.main.openController(AcceptController.class));
+    private final ButtonWidget words = new ButtonWidget("WORDS", 32, 304, 192, 32, Console.log("words"));
+    private final ButtonWidget manage = new ButtonWidget("MANAGE", 32, 448, 192, 32, Console.log("manage"));
+    private final ButtonWidget logout = new ButtonWidget("LOGOUT", 32, 496, 192, 32, () -> this.main.openController(LoginController.class));
 
     private Main main;
     private boolean open;
@@ -34,6 +35,7 @@ public class SidebarWidget extends Widget {
         this.updateButton(this.statistics, StatisticsView.class);
         this.updateButton(this.observe, null);
         this.updateButton(this.suggest, null);
+        this.updateButton(this.accept,null);
         this.updateButton(this.words, null);
         this.updateButton(this.manage, null);
         this.updateButton(this.logout, null);
@@ -63,6 +65,7 @@ public class SidebarWidget extends Widget {
             this.statistics,
             this.observe,
             this.suggest,
+            this.accept,
             this.words,
             this.manage,
             this.logout
