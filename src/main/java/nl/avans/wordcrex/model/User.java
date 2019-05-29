@@ -178,6 +178,24 @@ public class User implements Pollable<User> {
         return new User(this.database);
     }
 
+    public List<Word> getPendingWords()
+    {
+        var words = new ArrayList<Word>();
+
+        this.database.select(
+                "SELECT word, state FROM dictionary WHERE state = ? ",
+                (statement) -> {
+                    statement.setString(1, WordState.PENDING.state);
+                },
+                (result) -> {
+                    words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), ""));
+                }
+        );
+
+        return List.copyOf(words);
+    }
+
+
     public Map<String, List<Word>> getSuggestedWords(int page)
     {
     	var size = 100;
