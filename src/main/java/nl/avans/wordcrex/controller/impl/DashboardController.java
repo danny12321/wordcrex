@@ -4,7 +4,6 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.GameState;
-import nl.avans.wordcrex.model.InviteState;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
@@ -27,18 +26,18 @@ public class DashboardController extends Controller<User> {
         return user.username.equals(this.getModel().username);
     }
 
-    public boolean isVisible(Game game) {
-        return (game.state == GameState.PENDING || game.state == GameState.PLAYING) && game.inviteState != InviteState.REJECTED;
-    }
-
     public boolean isSelectable(Game game) {
-        return game.state == GameState.PLAYING || (game.state == GameState.PENDING && !this.isCurrentUser(game.host));
+        return game.state == GameState.PLAYING /*|| (game.state == GameState.PENDING && !this.isCurrentUser(game.host))*/;
     }
 
     public String getLabel(Game game) {
+        if (game.getLastRound() == null) {
+            return "?";
+        }
+
         if (game.state == GameState.PENDING) {
             return "UITGEDAAGD";
-        } else if (game.turn) {
+        } else if (game.getLastRound().isHostTurn() == game.isHostAuthenticated()) {
             return "JOUW BEURT";
         } else {
             return "HUN BEURT";
@@ -53,8 +52,7 @@ public class DashboardController extends Controller<User> {
         this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
     }
 
-    public void newGame() {
-        System.out.println("Open new game view");
-        this.main.openController(NewGameController.class);
+    public void navigateInvite() {
+        this.main.openController(InviteController.class);
     }
 }

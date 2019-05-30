@@ -3,7 +3,6 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
 import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -13,7 +12,6 @@ import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DashboardView extends View<DashboardController> {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
@@ -27,9 +25,7 @@ public class DashboardView extends View<DashboardController> {
 
     @Override
     public void draw(Graphics2D g) {
-        var games = this.controller.getGames().stream()
-            .filter(this.controller::isVisible)
-            .collect(Collectors.toList());
+        var games = this.controller.getGames();
         var offset = 0;
         var height = 96;
         var count = 0;
@@ -95,9 +91,7 @@ public class DashboardView extends View<DashboardController> {
             return;
         }
 
-        var games = this.controller.getGames().stream()
-            .filter(this.controller::isVisible)
-            .collect(Collectors.toList());
+        var games = this.controller.getGames();
         var offset = 0;
         var height = 96;
         var last = "";
@@ -137,7 +131,7 @@ public class DashboardView extends View<DashboardController> {
     public List<Widget> getChildren() {
         return List.of(
             this.scrollbar,
-            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::newGame)
+            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::navigateInvite)
         );
     }
 }

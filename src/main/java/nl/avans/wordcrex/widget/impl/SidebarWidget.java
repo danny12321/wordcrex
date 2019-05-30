@@ -1,28 +1,33 @@
 package nl.avans.wordcrex.widget.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.controller.impl.*;
+import nl.avans.wordcrex.controller.Controller;
+import nl.avans.wordcrex.controller.impl.DashboardController;
+import nl.avans.wordcrex.controller.impl.LoginController;
+import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.DashboardView;
-import nl.avans.wordcrex.view.impl.StatisticsView;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SidebarWidget extends Widget {
-    private final ButtonWidget games = new ButtonWidget("GAMES", 32, 64, 192, 32, () -> this.main.openController(DashboardController.class));
-    private final ButtonWidget statistics = new ButtonWidget("STATISTICS", 32, 112, 192, 32, () -> this.main.openController(StatisticsController.class));
-    private final ButtonWidget observe = new ButtonWidget("OBSERVE", 32, 160, 192, 32, Console.log("observe"));
-    private final ButtonWidget suggest = new ButtonWidget("SUGGEST", 32, 208, 192, 32, () -> this.main.openController(SuggestController.class));
-    private final ButtonWidget accept = new ButtonWidget("ACCEPT", 32,256,192,32, () -> this.main.openController(AcceptController.class));
-    private final ButtonWidget words = new ButtonWidget("WORDS", 32, 304, 192, 32, Console.log("words"));
-    private final ButtonWidget manage = new ButtonWidget("MANAGE", 32, 448, 192, 32, Console.log("manage"));
-    private final ButtonWidget logout = new ButtonWidget("LOGOUT", 32, 496, 192, 32, () -> this.main.openController(LoginController.class));
+    private final List<Item> items = List.of(
+        new Item<>("GAMES", DashboardController.class, DashboardView.class, UserRole.PLAYER),
+        new Item<>("OBSERVE", null, null, UserRole.OBSERVER),
+        new Item<>("SUGGEST", null, null, UserRole.PLAYER),
+        new Item<>("APPROVE", null, null, UserRole.MODERATOR),
+        new Item<>("MANAGE", null, null, UserRole.ADMINISTRATOR),
+        new Item<>("ACCOUNT", null, null, null)
+    );
+    private final Map<String, ButtonWidget> children = new HashMap<>();
+    private final Main main;
 
-    private Main main;
     private boolean open;
 
     public SidebarWidget(Main main) {
@@ -31,14 +36,18 @@ public class SidebarWidget extends Widget {
 
     @Override
     public void draw(Graphics2D g) {
-        this.updateButton(this.games, DashboardView.class);
-        this.updateButton(this.statistics, StatisticsView.class);
-        this.updateButton(this.observe, null);
-        this.updateButton(this.suggest, null);
-        this.updateButton(this.accept,null);
-        this.updateButton(this.words, null);
-        this.updateButton(this.manage, null);
-        this.updateButton(this.logout, null);
+        this.children.forEach((key, value) -> {
+            var item = this.items.stream()
+                .filter((i) -> i.title.equals(key))
+                .findFirst()
+                .orElse(null);
+
+            value.setVisible(this.open);
+
+            if (item != null && item.controller != null) {
+                value.setEnabled(!this.main.isOpen(item.controller));
+            }
+        });
 
         var width = Main.FRAME_SIZE / 2;
 
@@ -50,26 +59,21 @@ public class SidebarWidget extends Widget {
     public void update() {
     }
 
-    private void updateButton(ButtonWidget button, Class<? extends View<?>> cls) {
-        button.setVisible(this.open);
-
-        if (cls != null) {
-            button.setEnabled(!this.main.isOpen(cls));
-        }
-    }
-
     @Override
     public List<Widget> getChildren() {
-        return List.of(
-            this.games,
-            this.statistics,
-            this.observe,
-            this.suggest,
-            this.accept,
-            this.words,
-            this.manage,
-            this.logout
-        );
+        var filtered = this.items.stream()
+            .filter((i) -> i.role == null || this.main.getModel().roles.indexOf(i.role) != -1)
+            .collect(Collectors.toList());
+
+        for (var i = 0; i < filtered.size(); i++) {
+            var item = filtered.get(i);
+
+            this.children.put(item.title, new ButtonWidget(item.title, 32, 64 + 48 * i, 192, 32, () -> this.main.openController(item.controller)));
+        }
+
+        this.children.put("LOGOUT", new ButtonWidget("LOGOUT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class)));
+
+        return List.copyOf(this.children.values());
     }
 
     public void toggle() {
@@ -78,5 +82,19 @@ public class SidebarWidget extends Widget {
 
     public boolean isOpen() {
         return this.open;
+    }
+
+    private class Item<T extends Controller<?>> {
+        public final String title;
+        public final Class<T> controller;
+        public final Class<? extends View<T>> view;
+        public final UserRole role;
+
+        private Item(String title, Class<T> controller, Class<? extends View<T>> view, UserRole role) {
+            this.title = title;
+            this.controller = controller;
+            this.view = view;
+            this.role = role;
+        }
     }
 }

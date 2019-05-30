@@ -25,6 +25,7 @@ public class GameView extends View<GameController> {
         g.fillRect(offset + metrics.stringWidth(host), 40, metrics.stringWidth(score), 28);
         g.setColor(Color.WHITE);
         g.drawString(full, offset, 60);
+        g.drawString(this.controller.getPoolSize() + " characters left", 32, 512);
 
         for (var tile : this.controller.getTiles()) {
             g.setColor(Colors.DARKERER_BLUE);
