@@ -102,7 +102,7 @@ public class Game implements Pollable<Game> {
             .map((match) -> match.id == this.id ? this : match)
             .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
-        return new User(user, user.roles, matches);
+        return new User(user, matches);
     }
 
     public boolean isHostAuthenticated() {
@@ -110,6 +110,10 @@ public class Game implements Pollable<Game> {
     }
 
     public Round getLastRound() {
+        if (this.rounds.size() == 0) {
+            return null;
+        }
+
         return this.rounds.get(this.rounds.size() - 1);
     }
 

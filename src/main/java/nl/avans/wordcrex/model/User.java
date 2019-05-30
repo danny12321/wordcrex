@@ -24,12 +24,12 @@ public class User implements Pollable<User> {
         this(database, username, authenticated, List.of(), List.of(), List.of());
     }
 
-    public User(User user, List<Dictionary> dictionaries) {
-        this(user.database, user.username, user.authenticated, user.roles, user.games, dictionaries);
+    public User(User user, List<UserRole> roles, List<Dictionary> dictionaries) {
+        this(user.database, user.username, user.authenticated, roles, user.games, dictionaries);
     }
 
-    public User(User user, List<UserRole> roles, List<Game> games) {
-        this(user.database, user.username, user.authenticated, roles, games, user.dictionaries);
+    public User(User user, List<Game> games) {
+        this(user.database, user.username, user.authenticated, user.roles, games, user.dictionaries);
     }
 
     public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
@@ -46,6 +46,14 @@ public class User implements Pollable<User> {
         if (!this.dictionaries.isEmpty()) {
             return this;
         }
+
+        var roles = new ArrayList<UserRole>();
+
+        this.database.select(
+            "SELECT r.role FROM accountrole r WHERE r.username = ?",
+            (statement) -> statement.setString(1, username),
+            (result) -> roles.add(UserRole.byRole(result.getString("role")))
+        );
 
         var characters = new HashMap<String, List<Character>>();
 
@@ -75,7 +83,7 @@ public class User implements Pollable<User> {
             }
         );
 
-        return new User(this, List.copyOf(dictionaries));
+        return new User(this, List.copyOf(roles), List.copyOf(dictionaries));
     }
 
     @Override
@@ -83,14 +91,6 @@ public class User implements Pollable<User> {
         if (!this.authenticated) {
             return this;
         }
-
-        var roles = new ArrayList<UserRole>();
-
-        this.database.select(
-            "SELECT r.role FROM accountrole r WHERE r.username = ?",
-            (statement) -> statement.setString(1, username),
-            (result) -> roles.add(UserRole.byRole(result.getString("role")))
-        );
 
         var games = new ArrayList<Game>();
 
@@ -117,11 +117,11 @@ public class User implements Pollable<User> {
                     return;
                 }
 
-                games.add(new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary).poll());
+                games.add(new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary));
             }
         );
 
-        return new User(this, List.copyOf(roles), List.copyOf(games));
+        return new User(this, List.copyOf(games));
     }
 
     @Override
