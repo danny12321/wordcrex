@@ -24,7 +24,7 @@ public class ManagerController extends Controller<User> {
 
     @Override
     public View<? extends Controller<User>> createView() {
-        return new ManagerView(this);
+        return new ManagerView(this, main);
     }
 
     public void search(String username) {

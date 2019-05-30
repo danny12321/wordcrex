@@ -5,19 +5,23 @@ import nl.avans.wordcrex.controller.impl.ManagerController;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
+import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ManagerView extends View<ManagerController> {
+
+
+    private List<ButtonWidget> roleButtons = new ArrayList<>();
 
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
     private int scroll;
@@ -25,9 +29,14 @@ public class ManagerView extends View<ManagerController> {
     private int offset = Main.TASKBAR_SIZE + 48;
     private int height = 96;
 
-    public ManagerView(ManagerController controller) {
+    private Main main;
+
+    public ManagerView(ManagerController controller, Main main) {
         super(controller);
+        this.main = main;
     }
+
+
 
     @Override
     public void draw(Graphics2D g) {
@@ -54,17 +63,23 @@ public class ManagerView extends View<ManagerController> {
             for(UserRole u : UserRole.values()) {
                 if (users.get(i).roles.contains(u)) {
                     g.setColor(Colors.DARK_YELLOW);
-                } else {
+                }
+                else {
                     g.setColor(Colors.DARK_BLUE);
                 }
-                g.fillOval(270 + (index  * 50), ypos + this.height / 4, 30, 30);
-                g.setColor(Colors.DARKERER_BLUE);
-                StringUtil.drawCenteredString(g, 270 + (index  * 50), ypos + this.height / 4, 30, 30, u.role.substring(0,1).toUpperCase());
+
+                roleButtons.add(new ButtonWidget(u.role.substring(0,1).toUpperCase(),270 + (index  * 50), ypos + this.height / 4, 30, 30,Colors.DARK_BLUE,Color.WHITE,Colors.DARK_YELLOW,()-> System.out.println("Button")));
+                //g.fillOval(270 + (index  * 50), ypos + this.height / 4, 30, 30);
+                //g.setColor(Colors.DARKERER_BLUE);
+                //StringUtil.drawCenteredString(g, 270 + (index  * 50), ypos + this.height / 4, 30, 30, u.role.substring(0,1).toUpperCase());
                 index++;
+            }
+            for(ButtonWidget b : roleButtons){
+
             }
         }
 
-        this.scrollbar.setHeight(10 * this.height + this.offset - Main.TASKBAR_SIZE);
+        this.scrollbar.setHeight(users.size() * this.height + this.offset - Main.TASKBAR_SIZE);
     }
 
     @Override
@@ -73,10 +88,13 @@ public class ManagerView extends View<ManagerController> {
 
     @Override
     public List<Widget> getChildren() {
-        return List.of(
+        List<Widget> widgets = new ArrayList<>();
+        widgets.addAll(List.of(
                 this.scrollbar,
                 new InputWidget("Gebruikersnaam", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::searchUsersWithRoles)
 
-        );
+        ));
+        widgets.addAll(roleButtons);
+        return widgets;
     }
 }
