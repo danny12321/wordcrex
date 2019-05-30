@@ -2,13 +2,17 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
+import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Tile;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Function;
 
 public class GameController extends Controller<Game> {
@@ -39,5 +43,10 @@ public class GameController extends Controller<Game> {
 
     public int getPoolSize() {
         return this.getModel().pool.size();
+    }
+
+    public void getNewHand() {
+
+        this.getModel().startNewRound();
     }
 }

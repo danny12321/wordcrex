@@ -6,6 +6,7 @@ import nl.avans.wordcrex.util.Pollable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class Game implements Pollable<Game> {
@@ -18,14 +19,14 @@ public class Game implements Pollable<Game> {
     public final InviteState inviteState;
     public final Dictionary dictionary;
     public final List<Tile> tiles;
-    public final List<Character> pool;
+    public final List<Letter> pool;
     public final List<Round> rounds;
 
     public Game(Game game, List<Tile> tiles) {
         this(game.database, game.id, game.host, game.opponent, game.state, game.inviteState, game.dictionary, tiles, game.pool, game.rounds);
     }
 
-    public Game(Game game, GameState state, InviteState inviteState, List<Character> pool, List<Round> rounds) {
+    public Game(Game game, GameState state, InviteState inviteState, List<Letter> pool, List<Round> rounds) {
         this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, pool, rounds);
     }
 
@@ -33,7 +34,7 @@ public class Game implements Pollable<Game> {
         this(database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), List.of());
     }
 
-    public Game(Database database, int id, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Character> pool, List<Round> rounds) {
+    public Game(Database database, int id, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Letter> pool, List<Round> rounds) {
         this.database = database;
         this.id = id;
         this.host = host;
@@ -65,7 +66,7 @@ public class Game implements Pollable<Game> {
         var ref = new Object() {
             GameState state;
             InviteState inviteState;
-            List<Character> pool = new ArrayList<>();
+            List<Letter> pool = new ArrayList<>();
             List<Round> rounds = new ArrayList<>();
         };
         this.database.select(
@@ -81,7 +82,7 @@ public class Game implements Pollable<Game> {
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
                 var character = result.getString("symbol");
-                ref.pool.add(this.dictionary.characters.stream()
+                ref.pool.add(this.pool.stream()
                     .filter((c) -> c.character.equals(character))
                     .findFirst()
                     .orElseThrow());
@@ -139,5 +140,47 @@ public class Game implements Pollable<Game> {
                 return round.opponentTurn.score + round.opponentTurn.bonus;
             })
             .sum();
+    }
+
+    public void startNewRound() {
+
+        this.database.insert(
+                "INSERT INTO turn(game_id, turn_id) VALUES (?, ?)",
+                (statement) -> {
+                    statement.setInt(1, this.id);
+                    statement.setInt(2, this.rounds.size() + 1);
+                }
+        );
+
+        var sb = new StringBuilder();
+
+        var newHand = new ArrayList<Letter>();
+        var looper = Math.min(7, this.pool.size() - 1);
+        var r = new Random();
+
+        for (int i = 0; i < looper; i++) {
+            var index = r.nextInt(this.pool.size());
+            newHand.add(this.pool.get(index));
+            sb.append("(?, ?, ?) ");
+        }
+
+
+        this.database.insert(
+                "INSERT INTO handletter(game_id, turn_id, letter_id) " +
+                        "VALUES " + sb.toString(),
+                (statement) -> {
+                    var offset = 0;
+                    for (int i = 0; i < looper; i++) {
+                        statement.setInt(1 + offset, this.id);
+                        statement.setInt(2 + offset, this.rounds.size() + 1);
+                        statement.setInt(3 + offset, newHand.get(i).id);
+
+                        offset += 3;
+                    }
+                }
+        );
+
+
+
     }
 }
