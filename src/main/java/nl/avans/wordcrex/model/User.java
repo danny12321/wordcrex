@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
+import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class User implements Pollable<User> {
 
         this.database.select(
             "SELECT r.role FROM accountrole r WHERE r.username = ?",
-            (statement) -> statement.setString(1, username),
+            (statement) -> statement.setString(1, this.username),
             (result) -> roles.add(UserRole.byRole(result.getString("role")))
         );
 
@@ -59,7 +60,8 @@ public class User implements Pollable<User> {
 
         this.database.select(
             "SELECT * FROM symbol",
-            (statement) -> {},
+            (statement) -> {
+            },
             (result) -> {
                 var code = result.getString("letterset_code");
                 var list = characters.getOrDefault(code, new ArrayList<>());
@@ -74,7 +76,8 @@ public class User implements Pollable<User> {
 
         this.database.select(
             "SELECT * FROM letterset",
-            (statement) -> {},
+            (statement) -> {
+            },
             (result) -> {
                 var code = result.getString("code");
                 var character = characters.getOrDefault(code, new ArrayList<>());
@@ -180,77 +183,50 @@ public class User implements Pollable<User> {
         return new User(this.database, ref.username, true);
     }
 
-    public List<HashMap<String, String>> getUsers(String username) {
-        List<HashMap<String, String>> users = new ArrayList<>();
+    public List<Pair<String, Boolean>> findOpponents(String username) {
+        var users = new ArrayList<Pair<String, Boolean>>();
 
-        if(username.isEmpty()) return users;
+        if (username.isEmpty()) {
+            return users;
+        }
 
         this.database.select(
-                "SELECT  a.username, " +
-                        "(SELECT true FROM game g WHERE ((g.username_player1 = ? AND g.username_player2 LIKE ?) OR (g.username_player2 = ? AND g.username_player1 LIKE ?)) AND g.game_state IN ('request', 'playing') AND g.answer_player2 IN ('unknown', 'accepted') LIMIT 1) " +
-                        "as disabled FROM account a JOIN accountrole ar ON a.username = ar.username WHERE a.username LIKE ? AND a.username != ? AND ar.role = 'player';",
-                (statement) -> {
-                    statement.setString(1, this.username);
-                    statement.setString(2, username + "%");
-                    statement.setString(3, username + "%");
-                    statement.setString(4, this.username);
-                    statement.setString(5, username + "%");
-                    statement.setString(6, this.username);
-
-
-                },
-                (result) -> {
-                    HashMap<String, String> user = new HashMap<>();
-                    user.put("username", result.getString("username"));
-                    user.put("disabled", result.getString("disabled"));
-                    users.add(user);
-                }
+            "SELECT a.username, (SELECT true FROM game g WHERE ((g.username_player1 = ? AND g.username_player2 LIKE ?) OR (g.username_player2 = ? AND g.username_player1 LIKE ?)) AND g.game_state IN ('request', 'playing') AND g.answer_player2 IN ('unknown', 'accepted') LIMIT 1) AS disabled FROM account a JOIN accountrole ar ON a.username = ar.username WHERE a.username LIKE ? AND a.username != ? AND ar.role = 'player'",
+            (statement) -> {
+                statement.setString(1, this.username);
+                statement.setString(2, username + "%");
+                statement.setString(3, username + "%");
+                statement.setString(4, this.username);
+                statement.setString(5, username + "%");
+                statement.setString(6, this.username);
+            },
+            (result) -> users.add(new Pair<>(result.getString("username"), !result.getBoolean("disabled")))
         );
 
-        return users;
+        return List.copyOf(users);
     }
 
-    public void sendInvite(String username, String letterset_code) {
-        int game_id = this.database.insert(
-                "INSERT INTO game(game_state, letterset_code, username_player1, username_player2, answer_player2)" +
-                        "VALUES('request', ?, ?, ?, 'unknown')",
-                (statement) -> {
-                    statement.setString(1, letterset_code);
-                    statement.setString(2, this.username);
-                    statement.setString(3, username);
-                }
-        );
-
-        this.database.insert(
-                "INSERT INTO turn(game_id, turn_id)" +
-                        "VALUES(?, 1)",
-                (statement) -> statement.setInt(1, game_id)
-        );
-
-        List<String> letters = new ArrayList<>();
-
-        this.database.select(
-            "SELECT * from symbol WHERE letterset_code = ?",
-            (statement) -> statement.setString(1, letterset_code),
-            (result) -> {
-                for(int i = 0; i < result.getInt("counted"); i++) {
-                    letters.add(result.getString("symbol"));
-                }
+    public void sendInvite(String username, Dictionary dictionary) {
+        var gameId = this.database.insert(
+            "INSERT INTO game (game_state, letterset_code, username_player1, username_player2, answer_player2) VALUES ('request', ?, ?, ?, 'unknown')",
+            (statement) -> {
+                statement.setString(1, dictionary.code);
+                statement.setString(2, this.username);
+                statement.setString(3, username);
             }
         );
 
-        for(int i = 0; i < letters.size(); i++) {
-            String symbol = letters.get(i);
-            int letter_id = i;
+        for (int i = 0; i < dictionary.characters.size(); i++) {
+            var character = dictionary.characters.get(i);
+            var letterId = i;
 
             this.database.insert(
-                "INSERT INTO letter(letter_id, game_id, symbol_letterset_code, symbol)" +
-                        "VALUES(?, ?, ?, ?)",
+                "INSERT INTO letter (letter_id, game_id, symbol_letterset_code, symbol) VALUES (?, ?, ?, ?)",
                 (statement) -> {
-                    statement.setInt(1, letter_id);
-                    statement.setInt(2, game_id);
-                    statement.setString(3, letterset_code);
-                    statement.setString(4, symbol);
+                    statement.setInt(1, letterId);
+                    statement.setInt(2, gameId);
+                    statement.setString(3, dictionary.code);
+                    statement.setString(4, character.character);
                 }
             );
         }

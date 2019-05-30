@@ -2,7 +2,6 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.controller.impl.LoginController;
 import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;

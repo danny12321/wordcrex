@@ -6,13 +6,11 @@ import nl.avans.wordcrex.controller.impl.DashboardController;
 import nl.avans.wordcrex.controller.impl.LoginController;
 import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Console;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.DashboardView;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
