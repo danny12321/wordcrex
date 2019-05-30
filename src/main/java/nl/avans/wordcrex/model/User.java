@@ -237,63 +237,55 @@ public class User implements Pollable<User> {
         return new User(this.database);
     }
 
-    public List<Word> getPendingWords()
-    {
+    public List<Word> getPendingWords() {
+        if (this.roles.indexOf(UserRole.MODERATOR) == -1) {
+            return List.of();
+        }
+
         var words = new ArrayList<Word>();
 
         this.database.select(
-                "SELECT word, state FROM dictionary WHERE state = ? ",
-                (statement) -> {
-                    statement.setString(1, WordState.PENDING.state);
-                },
-                (result) -> {
-                    words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), ""));
-                }
+            "SELECT word, state FROM dictionary WHERE state = ? ",
+            (statement) -> statement.setString(1, WordState.PENDING.state),
+            (result) -> words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), ""))
         );
 
         return List.copyOf(words);
     }
 
-
-    public Map<String, List<Word>> getSuggestedWords(int page)
-    {
-    	var size = 100;
+    public Map<String, List<Word>> getSuggestedWords(int page) {
+        var size = 100;
         var words = new HashMap<String, List<Word>>();
 
         this.database.select(
-        		"SELECT word, letterset_code, state FROM dictionary WHERE username = ? LIMIT ?, ?",
-                (statement) -> {
-					statement.setString(1,this.username);
-					statement.setInt(2, page * size);
-					statement.setInt(3, size);
-				},
-                (result) -> {
-        			var code  = result.getString("letterset_code");
-        			var list = words.getOrDefault(code, new ArrayList<>());
+            "SELECT word, letterset_code, state FROM dictionary WHERE username = ? LIMIT ?, ?",
+            (statement) -> {
+                statement.setString(1, this.username);
+                statement.setInt(2, page * size);
+                statement.setInt(3, size);
+            },
+            (result) -> {
+                var code = result.getString("letterset_code");
+                var list = words.getOrDefault(code, new ArrayList<>());
 
-        			list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username));
+                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username));
 
-                    words.put(code, list);
-                }
+                words.put(code, list);
+            }
         );
 
         return Map.copyOf(words);
     }
 
-    public void submitNewWord(String word, String lettercode)
-	{
-
-		this.database.insert(
-				"INSERT INTO dictionary VALUES (?,?,?,?)",
-				(statement) ->
-				{
-					statement.setString(1, word);
-					statement.setString(2, lettercode);
-					statement.setString(3, WordState.PENDING.state);
-					statement.setString(4, this.username);
-				}
-		);
-	}
-
-
+    public void submitNewWord(String word, String languageCode) {
+        this.database.insert(
+            "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
+            (statement) -> {
+                statement.setString(1, word);
+                statement.setString(2, languageCode);
+                statement.setString(3, WordState.PENDING.state);
+                statement.setString(4, this.username);
+            }
+        );
+    }
 }

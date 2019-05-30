@@ -12,49 +12,43 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class SuggestController extends Controller<User> {
-	private int page;
-	private Map<String, List<Word>> words;
-	private String languageCode;
+    private int page;
+    private Map<String, List<Word>> words;
+    private String languageCode;
 
-	public SuggestController(Main main, Function<User, User> fn)
-	{
-		super(main, fn);
-		this.setPage(0);
-	}
+    public SuggestController(Main main, Function<User, User> fn) {
+        super(main, fn);
+        this.setPage(0);
+    }
 
-	@Override
-	public View<? extends Controller<User>> createView()
-	{
-		return new SuggestView(this);
-	}
+    @Override
+    public View<? extends Controller<User>> createView() {
+        return new SuggestView(this);
+    }
 
-	public void addWord(String word)
-	{
-		this.getModel().submitNewWord(word, languageCode);
-		this.setPage(this.page);
-	}
+    public void addWord(String word) {
+        this.getModel().submitNewWord(word, this.languageCode);
+        this.setPage(this.page);
+    }
 
-	public void setLanguage(String languageCode) {
-		this.languageCode = languageCode;
-	}
+    public void setLanguage(String languageCode) {
+        this.languageCode = languageCode;
+    }
 
-	public String getLanguage()
-	{
-		return languageCode;
-	}
+    public String getLanguage() {
+        return this.languageCode;
+    }
 
-	public void setPage(int page) {
-		this.page = page;
-		this.words = this.getModel().getSuggestedWords(this.page);
-	}
+    public void setPage(int page) {
+        this.page = page;
+        this.words = this.getModel().getSuggestedWords(this.page);
+    }
 
-	public int getPage()
-	{
-		return page;
-	}
+    public int getPage() {
+        return this.page;
+    }
 
-	public Map<String, List<Word>> getWords()
-	{
-		return words;
-	}
+    public Map<String, List<Word>> getWords() {
+        return this.words;
+    }
 }
