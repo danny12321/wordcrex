@@ -83,7 +83,7 @@ public class Game implements Pollable<Game> {
             (result) -> {
                 var character = result.getString("symbol");
                 ref.pool.add(this.pool.stream()
-                    .filter((c) -> c.character.equals(character))
+                    .filter((c) -> c.character.character.equals(character))
                     .findFirst()
                     .orElseThrow());
             }
@@ -143,44 +143,37 @@ public class Game implements Pollable<Game> {
     }
 
     public void startNewRound() {
-
         this.database.insert(
-                "INSERT INTO turn(game_id, turn_id) VALUES (?, ?)",
-                (statement) -> {
-                    statement.setInt(1, this.id);
-                    statement.setInt(2, this.rounds.size() + 1);
-                }
+            "INSERT INTO turn (game_id, turn_id) VALUES (?, ?)",
+            (statement) -> {
+                statement.setInt(1, this.id);
+                statement.setInt(2, this.rounds.size() + 1);
+            }
         );
 
-        var sb = new StringBuilder();
+        var builder = new StringBuilder();
+        var deck = new ArrayList<Letter>();
+        var size = Math.min(7, this.pool.size() - 1);
+        var random = new Random();
 
-        var newHand = new ArrayList<Letter>();
-        var looper = Math.min(7, this.pool.size() - 1);
-        var r = new Random();
+        for (int i = 0; i < size; i++) {
+            var next = random.nextInt(this.pool.size());
 
-        for (int i = 0; i < looper; i++) {
-            var index = r.nextInt(this.pool.size());
-            newHand.add(this.pool.get(index));
-            sb.append("(?, ?, ?) ");
+            deck.add(this.pool.get(next));
+            builder.append("(?, ?, ?) ");
         }
 
-
         this.database.insert(
-                "INSERT INTO handletter(game_id, turn_id, letter_id) " +
-                        "VALUES " + sb.toString(),
-                (statement) -> {
-                    var offset = 0;
-                    for (int i = 0; i < looper; i++) {
-                        statement.setInt(1 + offset, this.id);
-                        statement.setInt(2 + offset, this.rounds.size() + 1);
-                        statement.setInt(3 + offset, newHand.get(i).id);
+            "INSERT INTO handletter (game_id, turn_id, letter_id) VALUES " + builder.toString(),
+            (statement) -> {
+                var offset = 0;
 
-                        offset += 3;
-                    }
+                for (int i = 0; i < size; i++) {
+                    statement.setInt(1 + offset++, this.id);
+                    statement.setInt(2 + offset++, this.rounds.size() + 1);
+                    statement.setInt(3 + offset++, deck.get(i).id);
                 }
+            }
         );
-
-
-
     }
 }
