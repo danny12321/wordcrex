@@ -6,8 +6,6 @@ import nl.avans.wordcrex.util.Pollable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class User implements Pollable<User> {
     private final Database database;
@@ -64,21 +62,6 @@ public class User implements Pollable<User> {
             }
         );
 
-        var words = new HashMap<String, List<Word>>();
-
-        this.database.select(
-            "SELECT * FROM dictionary",
-            (statement) -> {},
-            (result) -> {
-                var code = result.getString("letterset_code");
-                var list = words.getOrDefault(code, new ArrayList<>());
-
-                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username")));
-
-                words.put(code, list);
-            }
-        );
-
         var dictionaries = new ArrayList<Dictionary>();
 
         this.database.select(
@@ -87,9 +70,8 @@ public class User implements Pollable<User> {
             (result) -> {
                 var code = result.getString("code");
                 var character = characters.getOrDefault(code, new ArrayList<>());
-                var word = words.getOrDefault(code, new ArrayList<>());
 
-                dictionaries.add(new Dictionary(code, result.getString("description"), List.copyOf(character), List.copyOf(word)));
+                dictionaries.add(new Dictionary(this.database, code, result.getString("description"), List.copyOf(character)));
             }
         );
 
@@ -113,10 +95,11 @@ public class User implements Pollable<User> {
         var games = new ArrayList<Game>();
 
         this.database.select(
-            "SELECT * FROM game g WHERE g.username_player1 = ? OR g.username_player2 = ?",
+            "SELECT * FROM game g WHERE (g.username_player1 = ? OR g.username_player2 = ?) AND g.answer_player2 != ? ORDER BY g.game_state DESC",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setString(2, this.username);
+                statement.setString(3, InviteState.REJECTED.state);
             },
             (result) -> {
                 var id = result.getInt("game_id");
@@ -154,12 +137,35 @@ public class User implements Pollable<User> {
         return this.username.substring(0, 1).toUpperCase();
     }
 
+    public User register(String username, String password) {
+        var insertedUser = this.database.insert(
+            "INSERT INTO `account` VALUES(lower(?), lower(?));",
+            (statement) -> {
+                statement.setString(1, username);
+                statement.setString(2, password);
+            }
+        );
+
+        var insertedRole = this.database.insert(
+            "INSERT INTO accountrole VALUES(lower(?), 'player')",
+            (statement) -> {
+                statement.setString(1, username);
+            }
+        );
+
+        if (insertedUser == -1 || insertedRole == -1) {
+            return this;
+        }
+
+        return this.login(username, password);
+    }
+
     public User login(String username, String password) {
         var ref = new Object() {
             String username;
         };
         var selected = this.database.select(
-            "SELECT a.username FROM account a WHERE a.username = ? AND a.password = ?",
+            "SELECT a.username FROM account a WHERE lower(a.username) = lower(?) AND lower(a.password) = lower(?)",
             (statement) -> {
                 statement.setString(1, username);
                 statement.setString(2, password);
@@ -255,10 +261,5 @@ public class User implements Pollable<User> {
 
     public User logout() {
         return new User(this.database);
-    }
-
-    public Map<String, List<Word>> getSubmittedWords() {
-        return Map.copyOf(this.dictionaries.stream()
-            .collect(Collectors.groupingBy((dictionary) -> dictionary.code, Collectors.flatMapping((dictionary) -> dictionary.words.stream().filter((word) -> word.username.equals(this.username)), Collectors.toList()))));
     }
 }

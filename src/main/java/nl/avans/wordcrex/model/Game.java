@@ -21,20 +21,21 @@ public class Game implements Pollable<Game> {
     public final int hostScore;
     public final int opponentScore;
     public final List<Tile> tiles;
+    public final List<Character> pool;
 
     public Game(Game game, List<Tile> tiles) {
-        this(game.database, game.id, game.turn, game.host, game.opponent, game.state, game.inviteState, game.dictionary, game.hostScore, game.opponentScore, tiles);
+        this(game.database, game.id, game.turn, game.host, game.opponent, game.state, game.inviteState, game.dictionary, game.hostScore, game.opponentScore, tiles, game.pool);
     }
 
-    public Game(Game game, boolean turn, GameState state, InviteState inviteState, int hostScore, int opponentScore) {
-        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, game.dictionary, hostScore, opponentScore, game.tiles);
+    public Game(Game game, boolean turn, GameState state, InviteState inviteState, int hostScore, int opponentScore, List<Character> pool) {
+        this(game.database, game.id, turn, game.host, game.opponent, state, inviteState, game.dictionary, hostScore, opponentScore, game.tiles, pool);
     }
 
     public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
-        this(database, id, turn, host, opponent, state, inviteState, dictionary, 0, 0, List.of());
+        this(database, id, turn, host, opponent, state, inviteState, dictionary, 0, 0, List.of(), List.of());
     }
 
-    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, int hostScore, int opponentScore, List<Tile> tiles) {
+    public Game(Database database, int id, boolean turn, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, int hostScore, int opponentScore, List<Tile> tiles, List<Character> pool) {
         this.database = database;
         this.id = id;
         this.turn = turn;
@@ -46,6 +47,7 @@ public class Game implements Pollable<Game> {
         this.hostScore = hostScore;
         this.opponentScore = opponentScore;
         this.tiles = tiles;
+        this.pool = pool;
     }
 
     @Override
@@ -54,11 +56,12 @@ public class Game implements Pollable<Game> {
 
         this.database.select(
             "SELECT t.x, t.y, t.tile_type FROM tile t",
-            (statement) -> {},
+            (statement) -> {
+            },
             (result) -> tiles.add(new Tile(result.getInt("x"), result.getInt("y"), result.getString("tile_type")))
         );
 
-        return new Game(this, List.copyOf(tiles));
+        return new Game(this.poll(), List.copyOf(tiles));
     }
 
     @Override
@@ -69,6 +72,7 @@ public class Game implements Pollable<Game> {
             InviteState inviteState;
             int hostScore;
             int opponentScore;
+            List<Character> pool = new ArrayList<>();
         };
         this.database.select(
             "SELECT g.game_state, g.answer_player2, isnull((SELECT p.username_player1 FROM turnplayer1 p WHERE p.game_id = g.game_id AND p.turn_id = (SELECT max(t.turn_id)))) turn FROM game g JOIN turn t ON g.game_id = t.game_id WHERE g.game_id = ?",
@@ -87,8 +91,19 @@ public class Game implements Pollable<Game> {
                 ref.opponentScore = result.getInt("opponent");
             }
         );
+        this.database.select(
+            "SELECT * FROM pot p WHERE p.game_id = ?",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> {
+                var character = result.getString("symbol");
+                ref.pool.add(this.dictionary.characters.stream()
+                    .filter((c) -> c.character.equals(character))
+                    .findFirst()
+                    .orElseThrow());
+            }
+        );
 
-        return new Game(this, ref.turn, ref.state, ref.inviteState, ref.hostScore, ref.opponentScore);
+        return new Game(this, ref.turn, ref.state, ref.inviteState, ref.hostScore, ref.opponentScore, List.copyOf(ref.pool));
     }
 
     @Override
