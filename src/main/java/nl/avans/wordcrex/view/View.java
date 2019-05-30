@@ -9,4 +9,8 @@ public abstract class View<T extends Controller> extends Widget {
     public View(T controller) {
         this.controller = controller;
     }
+
+    public boolean shouldReinitialize() {
+        return false;
+    }
 }
