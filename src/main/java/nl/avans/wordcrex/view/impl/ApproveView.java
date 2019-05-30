@@ -1,19 +1,17 @@
 package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.model.WordState;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
-import nl.avans.wordcrex.controller.impl.AcceptController;
-import nl.avans.wordcrex.widget.impl.ButtonWidget;
+import nl.avans.wordcrex.controller.impl.ApproveController;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AcceptView extends View<AcceptController>
+public class ApproveView extends View<ApproveController>
 {
 	private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
 	//private final ButtonWidget acceptButton = new ButtonWidget("Y", 220,200,40,40,this::accept);
@@ -21,7 +19,7 @@ public class AcceptView extends View<AcceptController>
 	private int scroll;
 
 
-	public AcceptView(AcceptController controller)
+	public ApproveView(ApproveController controller)
 	{
 		super(controller);
 	}
