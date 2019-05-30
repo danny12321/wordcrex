@@ -34,7 +34,7 @@ public class DashboardController extends Controller<User> {
     public String getLabel(Game game) {
         if (game.state == GameState.PENDING) {
             return "UITGEDAAGD";
-        } else if (game.turn) {
+        } else if (game.getLastRound().isHostTurn() == game.isHostAuthenticated()) {
             return "JOUW BEURT";
         } else {
             return "HUN BEURT";
