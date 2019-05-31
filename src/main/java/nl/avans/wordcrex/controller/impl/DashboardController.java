@@ -4,7 +4,6 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.GameState;
-import nl.avans.wordcrex.model.InviteState;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
@@ -51,5 +50,9 @@ public class DashboardController extends Controller<User> {
 
     public void navigateGame(int id) {
         this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
+    }
+
+    public void navigateInvite() {
+        this.main.openController(InviteController.class);
     }
 }
