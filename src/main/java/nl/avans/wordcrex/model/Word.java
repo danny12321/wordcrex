@@ -10,4 +10,9 @@ public class Word {
         this.state = state;
         this.username = username;
     }
+
+    public WordState getState()
+    {
+        return state;
+    }
 }
