@@ -12,8 +12,7 @@ import java.awt.*;
 import java.util.List;
 
 public class RegisterView extends View<RegisterController> {
-    private final ButtonWidget submitButton = new ButtonWidget("REGISTER", 144, 312, 304, 48, this::register);
-    private boolean invalid;
+    private final ButtonWidget submitButton = new ButtonWidget("REGISTER", 144, 312, 304, 48, this.controller::register);
 
     public RegisterView(RegisterController controller) {
         super(controller);
@@ -23,7 +22,7 @@ public class RegisterView extends View<RegisterController> {
     public void draw(Graphics2D g) {
         this.submitButton.setEnabled(this.controller.isValid());
 
-        if (this.invalid) {
+        if (this.controller.hasFailed()) {
             g.setColor(Colors.DARK_RED);
             g.fillRect(144, 360, 304, 32);
             g.setColor(Color.WHITE);
@@ -43,9 +42,5 @@ public class RegisterView extends View<RegisterController> {
             new ButtonWidget("<", 64, 312, 64, 48, this.controller::navigateLogin),
             this.submitButton
         );
-    }
-
-    private void register() {
-        this.invalid = !this.controller.register();
     }
 }

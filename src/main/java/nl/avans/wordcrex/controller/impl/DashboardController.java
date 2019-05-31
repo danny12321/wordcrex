@@ -27,18 +27,18 @@ public class DashboardController extends Controller<User> {
         return user.username.equals(this.getModel().username);
     }
 
-    public boolean isVisible(Game game) {
-        return (game.state == GameState.PENDING || game.state == GameState.PLAYING) && game.inviteState != InviteState.REJECTED;
-    }
-
     public boolean isSelectable(Game game) {
-        return game.state == GameState.PLAYING || (game.state == GameState.PENDING && !this.isCurrentUser(game.host));
+        return game.state == GameState.PLAYING /*|| (game.state == GameState.PENDING && !this.isCurrentUser(game.host))*/;
     }
 
     public String getLabel(Game game) {
+        if (game.getLastRound() == null) {
+            return "?";
+        }
+
         if (game.state == GameState.PENDING) {
             return "UITGEDAAGD";
-        } else if (game.turn) {
+        } else if (game.getLastRound().isHostTurn() == game.isHostAuthenticated()) {
             return "JOUW BEURT";
         } else {
             return "HUN BEURT";

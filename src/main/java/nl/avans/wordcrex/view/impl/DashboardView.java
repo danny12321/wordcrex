@@ -2,6 +2,7 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
+import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
@@ -10,6 +11,7 @@ import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,9 +27,7 @@ public class DashboardView extends View<DashboardController> {
 
     @Override
     public void draw(Graphics2D g) {
-        var games = this.controller.getGames().stream()
-            .filter(this.controller::isVisible)
-            .collect(Collectors.toList());
+        var games = this.controller.getGames();
         var offset = 0;
         var height = 96;
         var count = 0;
@@ -93,9 +93,7 @@ public class DashboardView extends View<DashboardController> {
             return;
         }
 
-        var games = this.controller.getGames().stream()
-            .filter(this.controller::isVisible)
-            .collect(Collectors.toList());
+        var games = this.controller.getGames();
         var offset = 0;
         var height = 96;
         var last = "";
