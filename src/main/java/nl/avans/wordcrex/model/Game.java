@@ -92,19 +92,18 @@ public class Game implements Pollable<Game> {
             }
         );
         this.database.select(
-            "SELECT * FROM chatline WHERE game_id = ?",
+            "SELECT * FROM chatline WHERE game_id = ? ORDER BY moment ASC",
             (statement) -> statement.setInt(1, this.id),
-            (result) ->
-            ref.messages.add(
-                new Message(
-                    this.host.username.equals(result.getString("username")) ? this.host : this.opponent,
-                    result.getDate("moment"),
-                    result.getString("message")
-                )
-            )
+            (result) -> {
+                ref.messages.add(
+                    new Message(
+                        this.host.username.equals(result.getString("username")) ? this.host : this.opponent,
+                        result.getDate("moment"),
+                        result.getString("message")
+                    )
+                );
+            }
         );
-
-        Collections.sort(ref.messages);
 
         return new Game(this, ref.turn, ref.state, ref.inviteState, ref.hostScore, ref.opponentScore, List.copyOf(ref.messages));
     }
@@ -123,7 +122,7 @@ public class Game implements Pollable<Game> {
     }
 
     public void sendChatMessage(String message) {
-        this.database.insert("INSERT INTO chatline VALUES (?, ?, ?, ?);",
+        this.database.insert("INSERT INTO chatline VALUES (?, ?, ?, ?)",
             (statement) -> {
                 statement.setString(1, this.getAuthenticatedUser().username);
                 statement.setInt(2, this.id);

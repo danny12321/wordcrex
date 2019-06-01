@@ -31,23 +31,23 @@ public class ChatView extends View<ChatController> {
     }
 
     private ArrayList<String> getLines(Graphics2D g, String[] splitMessage) {
-        ArrayList<String> lines = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-        String lastString = "";
+        var lines = new ArrayList<String>();
+        var sb = new StringBuilder();
+        var lastString = "";
 
-        for(int i = 0; i < splitMessage.length; i++) {
+        for (var i = 0; i < splitMessage.length; i++) {
             sb.append(" ").append(splitMessage[i]);
 
-            if(g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
-                if(g.getFontMetrics().getStringBounds(splitMessage[i], g).getWidth() > maxBubbleSize) {
+            if (g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
+                if (g.getFontMetrics().getStringBounds(splitMessage[i], g).getWidth() > maxBubbleSize) {
                     //God help me, don't read this or you'll die
                     sb = new StringBuilder(lastString);
                     sb.append(" ");
 
-                    for(int j = 1; j < splitMessage[i].length(); j++) {
+                    for (var j = 1; j < splitMessage[i].length(); j++) {
                         sb.append(splitMessage[i], j - 1, j);
 
-                        if(g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
+                        if (g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
                             lines.add(lastString);
                             sb = new StringBuilder();
                         }
@@ -71,21 +71,21 @@ public class ChatView extends View<ChatController> {
 
     @Override
     public void draw(Graphics2D g) {
-        List<Message> messages = this.controller.getMessages();
+        var messages = this.controller.getMessages();
 
-        int y = 48;
+        var y = 48;
         //x declared in loop
 
-        for(int i = 0; i < messages.size(); i++) {
-            boolean userMessage = false;
-            int x = gap;
+        for (var i = 0; i < messages.size(); i++) {
+            var userMessage = false;
+            var x = gap;
 
-            if(messages.get(i).user.username.equals(this.controller.getUsername())) {
+            if (messages.get(i).user.username.equals(this.controller.getUsername())) {
                 userMessage = true;
                 x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - size - gap;
             }
 
-            if(!(i != 0 && messages.get(i - 1).user.username.equals(messages.get(i).user.username))) {
+            if (!(i != 0 && messages.get(i - 1).user.username.equals(messages.get(i).user.username))) {
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(x, y - this.scroll, size, size);
                 g.setFont(Fonts.NORMAL);
@@ -93,23 +93,23 @@ public class ChatView extends View<ChatController> {
                 StringUtil.drawCenteredString(g, x, y - this.scroll, size, size, messages.get(i).user.username.substring(0, 1).toUpperCase());
             }
 
-            final String message = messages.get(i).message;
-            double width = g.getFontMetrics().getStringBounds(message, g).getWidth(); //width of string
-            final double height = g.getFontMetrics().getStringBounds(message, g).getHeight(); //height of string
+            final var message = messages.get(i).message;
+            var width = g.getFontMetrics().getStringBounds(message, g).getWidth(); //width of string
+            final var height = g.getFontMetrics().getStringBounds(message, g).getHeight(); //height of string
 
-            if(width > maxBubbleSize) width = maxBubbleSize;
+            if (width > maxBubbleSize) width = maxBubbleSize;
 
-            final int stringX = (int) (userMessage ? x - width - gap : x + size + gap); //start x of string
+            final var stringX = (int) (userMessage ? x - width - gap : x + size + gap); //start x of string
 
-            String[] splitMessage = message.split("\\s+");
-            ArrayList<String> lines = this.getLines(g, splitMessage);
+            var splitMessage = message.split("\\s+");
+            var lines = this.getLines(g, splitMessage);
 
-            for(int j = 0; j < lines.size(); j++) {
+            for (var line : lines) {
                 g.setColor(Colors.CHAT_BLUE);
                 g.fillRect(stringX - gap / 2, y - this.scroll, (int) width + gap, size);
 
                 g.setColor(Color.WHITE);
-                g.drawString(lines.get(j).trim(), stringX, y + (int) height - this.scroll);
+                g.drawString(line.trim(), stringX, y + (int) height - this.scroll);
 
                 y += size;
             }
