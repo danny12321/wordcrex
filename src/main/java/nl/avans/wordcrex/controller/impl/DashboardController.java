@@ -49,13 +49,13 @@ public class DashboardController extends Controller<User> {
         return this.getModel().games;
     }
 
-    public void acceptInvite(int id) {
-        this.getModel().respondInvite(id, InviteState.ACCEPTED);
-        this.afterPoll(() -> this.navigateGame(id));
+    public void acceptInvite(Game game) {
+        this.getModel().respondInvite(game, InviteState.ACCEPTED);
+        this.afterPoll(() -> this.navigateGame(game.id));
     }
 
-    public void rejectInvite(int id) {
-        this.getModel().respondInvite(id, InviteState.REJECTED);
+    public void rejectInvite(Game game) {
+        this.getModel().respondInvite(game, InviteState.REJECTED);
     }
 
     public void navigateGame(int id) {

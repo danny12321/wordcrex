@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class Game implements Pollable<Game> {
@@ -70,7 +71,7 @@ public class Game implements Pollable<Game> {
             List<Round> rounds = new ArrayList<>();
         };
         this.database.select(
-            "SELECT g.game_state, g.answer_player2 FROM game g JOIN turn t ON g.game_id = t.game_id WHERE g.game_id = ?",
+            "SELECT g.game_state, g.answer_player2 FROM game g WHERE g.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
                 ref.state = GameState.byState(result.getString("game_state"));
@@ -81,11 +82,9 @@ public class Game implements Pollable<Game> {
             "SELECT * FROM pot p WHERE p.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
+                var id = result.getInt("letter_id");
                 var character = result.getString("symbol");
-                ref.pool.add(this.pool.stream()
-                    .filter((c) -> c.character.character.equals(character))
-                    .findFirst()
-                    .orElseThrow());
+                ref.pool.add(new Letter(id, character));
             }
         );
         this.database.select(
@@ -94,7 +93,13 @@ public class Game implements Pollable<Game> {
             (result) -> ref.rounds.add(new Round(result.getInt("turn_id"), List.of(), null, null))
         );
 
-        return new Game(this, ref.state, ref.inviteState, List.copyOf(ref.pool), List.copyOf(ref.rounds));
+        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(ref.pool), List.copyOf(ref.rounds));
+
+        if (game.state == GameState.PLAYING && game.rounds.isEmpty()) {
+            game.startNewRound();
+        }
+
+        return game;
     }
 
     @Override
@@ -142,6 +147,34 @@ public class Game implements Pollable<Game> {
             .sum();
     }
 
+    public void startGame() {
+        this.database.update(
+            "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",
+            (statement) -> {
+                statement.setString(1, GameState.PLAYING.state);
+                statement.setInt(2, this.id);
+            }
+        );
+
+        var id = new AtomicInteger();
+
+        for (int i = 0; i < this.dictionary.characters.size(); i++) {
+            var character = this.dictionary.characters.get(i);
+
+            for (var j = 0; j < character.amount; j++) {
+                this.database.insert(
+                    "INSERT INTO letter (letter_id, game_id, symbol_letterset_code, symbol) VALUES (?, ?, ?, ?)",
+                    (statement) -> {
+                        statement.setInt(1, id.incrementAndGet());
+                        statement.setInt(2, this.id);
+                        statement.setString(3, this.dictionary.code);
+                        statement.setString(4, character.character);
+                    }
+                );
+            }
+        }
+    }
+
     public void startNewRound() {
         this.database.insert(
             "INSERT INTO turn (game_id, turn_id) VALUES (?, ?)",
@@ -151,7 +184,7 @@ public class Game implements Pollable<Game> {
             }
         );
 
-        var builder = new StringBuilder();
+        var values = new ArrayList<String>();
         var deck = new ArrayList<Letter>();
         var size = Math.min(7, this.pool.size() - 1);
         var random = new Random();
@@ -160,18 +193,18 @@ public class Game implements Pollable<Game> {
             var next = random.nextInt(this.pool.size());
 
             deck.add(this.pool.get(next));
-            builder.append("(?, ?, ?) ");
+            values.add("(?, ?, ?)");
         }
 
         this.database.insert(
-            "INSERT INTO handletter (game_id, turn_id, letter_id) VALUES " + builder.toString(),
+            "INSERT INTO handletter (game_id, turn_id, letter_id) VALUES " + String.join(", ", values),
             (statement) -> {
                 var offset = 0;
 
                 for (int i = 0; i < size; i++) {
-                    statement.setInt(1 + offset++, this.id);
-                    statement.setInt(2 + offset++, this.rounds.size() + 1);
-                    statement.setInt(3 + offset++, deck.get(i).id);
+                    statement.setInt(++offset, this.id);
+                    statement.setInt(++offset, this.rounds.size() + 1);
+                    statement.setInt(++offset, deck.get(i).id);
                 }
             }
         );

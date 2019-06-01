@@ -11,14 +11,13 @@ public enum TurnAction {
         this.action = action;
     }
 
-    public static TurnAction byState(String state) {
+    public static TurnAction byAction(String action) {
         for (var s : TurnAction.values()) {
-            if (s.action.equals(state)) {
+            if (s.action.equals(action)) {
                 return s;
             }
         }
 
         return null;
     }
-
 }

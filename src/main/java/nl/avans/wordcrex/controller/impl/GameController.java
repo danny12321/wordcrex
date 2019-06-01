@@ -40,8 +40,4 @@ public class GameController extends Controller<Game> {
     public int getPoolSize() {
         return this.getModel().pool.size();
     }
-
-    public void startNewRound() {
-        this.getModel().startNewRound();
-    }
 }

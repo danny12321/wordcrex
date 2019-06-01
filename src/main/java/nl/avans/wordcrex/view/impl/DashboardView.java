@@ -21,7 +21,7 @@ public class DashboardView extends View<DashboardController> {
     private final DialogWidget dialog = new DialogWidget();
 
     private int scroll;
-    private Game hover;
+    private int hover;
 
     public DashboardView(DashboardController controller) {
         super(controller);
@@ -55,7 +55,7 @@ public class DashboardView extends View<DashboardController> {
                 position += 64;
             }
 
-            if (this.hover == game) {
+            if (this.hover == game.id) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE, height);
             }
@@ -89,7 +89,7 @@ public class DashboardView extends View<DashboardController> {
 
     @Override
     public void mouseMove(int x, int y) {
-        this.hover = null;
+        this.hover = 0;
 
         if (x > Main.FRAME_SIZE - Main.TASKBAR_SIZE || y < Main.TASKBAR_SIZE) {
             return;
@@ -115,7 +115,7 @@ public class DashboardView extends View<DashboardController> {
                     break;
                 }
 
-                this.hover = game;
+                this.hover = game.id;
 
                 break;
             }
@@ -124,31 +124,40 @@ public class DashboardView extends View<DashboardController> {
 
     @Override
     public void mouseClick(int x, int y) {
-        if (this.hover == null) {
+        if (this.hover == 0) {
             return;
         }
 
-        if (this.hover.inviteState == InviteState.PENDING) {
-            this.dialog.show("Accepteeren?", "Ja", "Nee", (positive) -> {
+        var game = this.controller.getGames().stream()
+            .filter((g) -> g.id == this.hover)
+            .findFirst()
+            .orElse(null);
+
+        if (game == null) {
+            return;
+        }
+
+        if (game.inviteState == InviteState.PENDING) {
+            this.dialog.show("Accepteren?", "Ja", "Nee", (positive) -> {
                 if (positive) {
-                    this.controller.acceptInvite(this.hover.id);
+                    this.controller.acceptInvite(game);
                 } else {
-                    this.controller.rejectInvite(this.hover.id);
+                    this.controller.rejectInvite(game);
                 }
             });
 
             return;
         }
 
-        this.controller.navigateGame(this.hover.id);
+        this.controller.navigateGame(this.hover);
     }
 
     @Override
     public List<Widget> getChildren() {
         return List.of(
             this.scrollbar,
-            this.dialog,
-            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::navigateInvite)
+            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::navigateInvite),
+            this.dialog
         );
     }
 }
