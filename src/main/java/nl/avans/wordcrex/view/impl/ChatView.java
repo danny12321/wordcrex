@@ -2,7 +2,6 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.ChatController;
-import nl.avans.wordcrex.model.Message;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
@@ -20,104 +19,65 @@ public class ChatView extends View<ChatController> {
     private String message;
 
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
-    private int scroll = 0;
-
+    private final InputWidget input = new InputWidget("MESSAGE", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
     private final int size = 32;
     private final int gap = 16;
-    private final int maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (gap * 4 + size * 2);
+    private final int maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (this.gap * 4 + this.size * 2);
+
+    private int scroll = 0;
 
     public ChatView(ChatController controller) {
         super(controller);
     }
 
-    private ArrayList<String> getLines(Graphics2D g, String[] splitMessage) {
-        var lines = new ArrayList<String>();
-        var sb = new StringBuilder();
-        var lastString = "";
-
-        for (var i = 0; i < splitMessage.length; i++) {
-            sb.append(" ").append(splitMessage[i]);
-
-            if (g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
-                if (g.getFontMetrics().getStringBounds(splitMessage[i], g).getWidth() > maxBubbleSize) {
-                    //God help me, don't read this or you'll die
-                    sb = new StringBuilder(lastString);
-                    sb.append(" ");
-
-                    for (var j = 1; j < splitMessage[i].length(); j++) {
-                        sb.append(splitMessage[i], j - 1, j);
-
-                        if (g.getFontMetrics().getStringBounds(sb.toString(), g).getWidth() > maxBubbleSize) {
-                            lines.add(lastString);
-                            sb = new StringBuilder();
-                        }
-
-                        lastString = sb.toString();
-                    }
-                } else {
-                    //when string width is higher than maxbubble size
-                    lines.add(lastString);
-                    sb = new StringBuilder();
-                    i--;
-                }
-            }
-            lastString = sb.toString();
-        }
-
-        lines.add(lastString);
-
-        return lines;
-    }
-
     @Override
     public void draw(Graphics2D g) {
         var messages = this.controller.getMessages();
-
         var y = 48;
-        //x declared in loop
 
         for (var i = 0; i < messages.size(); i++) {
             var userMessage = false;
-            var x = gap;
+            var x = this.gap;
 
             if (messages.get(i).user.username.equals(this.controller.getUsername())) {
                 userMessage = true;
-                x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - size - gap;
+                x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.size - this.gap;
             }
 
             if (!(i != 0 && messages.get(i - 1).user.username.equals(messages.get(i).user.username))) {
                 g.setColor(Colors.DARK_YELLOW);
-                g.fillOval(x, y - this.scroll, size, size);
+                g.fillOval(x, y - this.scroll, this.size, this.size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, y - this.scroll, size, size, messages.get(i).user.username.substring(0, 1).toUpperCase());
+                StringUtil.drawCenteredString(g, x, y - this.scroll, this.size, this.size, messages.get(i).user.username.substring(0, 1).toUpperCase());
             }
 
-            final var message = messages.get(i).message;
-            var width = g.getFontMetrics().getStringBounds(message, g).getWidth(); //width of string
-            final var height = g.getFontMetrics().getStringBounds(message, g).getHeight(); //height of string
+            var message = messages.get(i).message;
+            var width = g.getFontMetrics().getStringBounds(message, g).getWidth();
+            var height = g.getFontMetrics().getStringBounds(message, g).getHeight();
 
-            if (width > maxBubbleSize) width = maxBubbleSize;
+            if (width > this.maxBubbleSize) {
+                width = this.maxBubbleSize;
+            }
 
-            final var stringX = (int) (userMessage ? x - width - gap : x + size + gap); //start x of string
-
+            var stringX = (int) (userMessage ? x - width - this.gap : x + this.size + this.gap);
             var splitMessage = message.split("\\s+");
-            var lines = this.getLines(g, splitMessage);
+            var lines = this.splitMessage(g, splitMessage);
 
             for (var line : lines) {
                 g.setColor(Colors.CHAT_BLUE);
-                g.fillRect(stringX - gap / 2, y - this.scroll, (int) width + gap, size);
+                g.fillRect(stringX - this.gap / 2, y - this.scroll, (int) width + gap, this.size);
 
                 g.setColor(Color.WHITE);
                 g.drawString(line.trim(), stringX, y + (int) height - this.scroll);
 
-                y += size;
+                y += this.size;
             }
 
-            y += gap;
+            y += this.gap;
         }
 
-        this.scrollbar.setHeight(y + gap);
+        this.scrollbar.setHeight(y + this.gap);
     }
 
     @Override
@@ -125,15 +85,53 @@ public class ChatView extends View<ChatController> {
     }
 
     @Override
-    public java.util.List<Widget> getChildren() {
+    public List<Widget> getChildren() {
         return List.of(
-            new ButtonWidget("<", 0, Main.FRAME_SIZE - 48, 48, 48, this.controller::returnToGame),
-            new InputWidget("MESSAGE", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value),
+            new ButtonWidget("<", 0, Main.FRAME_SIZE - 48, 48, 48, this.controller::navigateGame),
+            this.input,
             new ButtonWidget("+", Main.FRAME_SIZE - Main.TASKBAR_SIZE - 48, Main.FRAME_SIZE - 48, 48, 48, () -> {
                 this.controller.sendChat(this.message);
-                this.controller.reloadChatView();
+                this.input.clearInput();
             }),
             this.scrollbar
         );
+    }
+
+    private List<String> splitMessage(Graphics2D g, String[] words) {
+        var lines = new ArrayList<String>();
+        var builder = new StringBuilder();
+        var lastString = "";
+
+        for (var i = 0; i < words.length; i++) {
+            builder.append(" ").append(words[i]);
+
+            if (g.getFontMetrics().getStringBounds(builder.toString(), g).getWidth() > this.maxBubbleSize) {
+                if (g.getFontMetrics().getStringBounds(words[i], g).getWidth() > this.maxBubbleSize) {
+                    builder = new StringBuilder(lastString);
+                    builder.append(" ");
+
+                    for (var j = 1; j < words[i].length(); j++) {
+                        builder.append(words[i], j - 1, j);
+
+                        if (g.getFontMetrics().getStringBounds(builder.toString(), g).getWidth() > this.maxBubbleSize) {
+                            lines.add(lastString);
+                            builder = new StringBuilder();
+                        }
+
+                        lastString = builder.toString();
+                    }
+                } else {
+                    lines.add(lastString);
+                    builder.setLength(0);
+                    i--;
+                }
+            }
+
+            lastString = builder.toString();
+        }
+
+        lines.add(lastString);
+
+        return lines;
     }
 }

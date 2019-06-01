@@ -34,11 +34,7 @@ public class ChatController extends Controller<Game> {
         return this.getModel().messages;
     }
 
-    public void reloadChatView() {
-        this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
-    }
-
-    public void returnToGame() {
+    public void navigateGame() {
         this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == this.getModel().id));
     }
 }
