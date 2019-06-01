@@ -110,7 +110,7 @@ public class Game implements Pollable<Game> {
             }
         );
 
-        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(ref.pool), List.copyOf(ref.rounds), List.copyOf(messages));
+        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(ref.pool), List.copyOf(ref.rounds), List.copyOf(ref.messages));
 
         if (game.state == GameState.PLAYING && game.rounds.isEmpty()) {
             game.startNewRound();
