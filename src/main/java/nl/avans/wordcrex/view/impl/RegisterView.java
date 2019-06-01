@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.controller.impl.RegisterController;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -10,6 +11,7 @@ import nl.avans.wordcrex.widget.impl.InputWidget;
 
 import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class RegisterView extends View<RegisterController> {
     private final ButtonWidget submitButton = new ButtonWidget("REGISTER", 144, 312, 304, 48, this.controller::register);
@@ -31,7 +33,7 @@ public class RegisterView extends View<RegisterController> {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
     }
 
     @Override

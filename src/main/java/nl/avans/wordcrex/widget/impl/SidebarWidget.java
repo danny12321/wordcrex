@@ -7,6 +7,7 @@ import nl.avans.wordcrex.controller.impl.DashboardController;
 import nl.avans.wordcrex.controller.impl.LoginController;
 import nl.avans.wordcrex.controller.impl.SuggestController;
 import nl.avans.wordcrex.model.UserRole;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.ApproveView;
@@ -18,6 +19,7 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class SidebarWidget extends Widget {
@@ -60,7 +62,7 @@ public class SidebarWidget extends Widget {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
     }
 
     @Override

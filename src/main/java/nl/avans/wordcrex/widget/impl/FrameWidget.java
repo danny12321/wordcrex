@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.widget.impl;
 
 import nl.avans.wordcrex.Main;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.view.impl.LoginView;
@@ -9,6 +10,7 @@ import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class FrameWidget extends Widget {
     private final Main main;
@@ -34,7 +36,7 @@ public class FrameWidget extends Widget {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
     }
 
     @Override
