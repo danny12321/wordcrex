@@ -5,6 +5,7 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Tile;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;
 
@@ -22,7 +23,7 @@ public class GameController extends Controller<Game> {
     }
 
     public String getScore() {
-        return this.getModel().hostScore + " - " + this.getModel().opponentScore;
+        return this.getModel().getHostScore() + " - " + this.getModel().getOpponentScore();
     }
 
     public String getHostName() {
@@ -39,5 +40,13 @@ public class GameController extends Controller<Game> {
 
     public int getPoolSize() {
         return this.getModel().pool.size();
+    }
+
+    public void startNewRound() {
+        this.getModel().startNewRound();
+    }
+
+    public void navigateChat() {
+        this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
     }
 }

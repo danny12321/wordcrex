@@ -18,6 +18,6 @@ public enum InviteState {
             }
         }
 
-        return null;
+        throw new RuntimeException("Invalid invite state: " + state);
     }
 }

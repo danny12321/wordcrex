@@ -2,11 +2,16 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.GameController;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
+import nl.avans.wordcrex.widget.Widget;
+import nl.avans.wordcrex.widget.impl.ButtonWidget;
 
 import java.awt.*;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class GameView extends View<GameController> {
     public GameView(GameController controller) {
@@ -39,6 +44,13 @@ public class GameView extends View<GameController> {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
+    }
+
+    @Override
+    public List<Widget> getChildren() {
+        return List.of(
+            new ButtonWidget("CHAT", 6, 52 + 24, 64, 32, this.controller::navigateChat)
+        );
     }
 }

@@ -1,5 +1,6 @@
 package nl.avans.wordcrex.widget.impl;
 
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.widget.Widget;
 
@@ -82,7 +83,7 @@ public class InputWidget extends Widget {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
         this.update++;
     }
 
@@ -163,5 +164,12 @@ public class InputWidget extends Widget {
         }
 
         return "";
+    }
+
+    public void clearInput() {
+        this.cursor = 0;
+        this.offset = 0;
+        this.input.setLength(0);
+        this.consumer.accept(this.input.toString());
     }
 }
