@@ -82,7 +82,7 @@ public class DropdownWidget<T> extends Widget {
     public void mousePress(int x, int y) {
         this.open = this.hover == 0 && !this.open;
 
-        if (this.hover > 0 && this.options.size() >= this.hover - 1) {
+        if (this.hover > 0 && this.options.size() > this.hover - 1) {
             var keys = List.copyOf(this.options.keySet());
 
             this.consumer.accept(keys.get(this.hover - 1));
