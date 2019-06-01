@@ -78,9 +78,13 @@ public class Main extends JPanel {
 
     public <T extends Pollable<T>> void openController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
         this.controller = this.createController(cls, fn);
+        this.openView(this.controller.createView());
+    }
+
+    private void openView(View<?> view) {
         this.widgets.clear();
 
-        this.addWidget(this.controller.createView(), new ArrayList<>());
+        this.addWidget(view, new ArrayList<>());
         this.addWidget(new FrameWidget(this), new ArrayList<>());
     }
 
@@ -125,6 +129,13 @@ public class Main extends JPanel {
 
     private void update() {
         this.widgets.forEach(Widget::update);
+
+        this.widgets.stream()
+            .filter(View.class::isInstance)
+            .map(View.class::cast)
+            .filter(View::shouldReinitialize)
+            .findAny()
+            .ifPresent(this::openView);
     }
 
     @Override

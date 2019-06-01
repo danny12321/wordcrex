@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.view.impl.LoginView;
+import nl.avans.wordcrex.view.impl.RegisterView;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
@@ -22,7 +23,7 @@ public class FrameWidget extends Widget {
 
     @Override
     public void draw(Graphics2D g) {
-        this.sidebarButton.setEnabled(!this.main.isOpen(LoginView.class));
+        this.sidebarButton.setEnabled(!this.main.isOpen(LoginView.class) && !this.main.isOpen(RegisterView.class));
 
         g.setColor(Colors.DARKERER_BLUE);
         g.fillRect(0, 0, Main.FRAME_SIZE, Main.TASKBAR_SIZE);

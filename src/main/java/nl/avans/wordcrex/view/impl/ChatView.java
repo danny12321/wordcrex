@@ -49,7 +49,7 @@ public class ChatView extends View<ChatController> {
                 g.fillOval(x, y - this.scroll, this.size, this.size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, y - this.scroll, this.size, this.size, messages.get(i).user.username.substring(0, 1).toUpperCase());
+                StringUtil.drawCenteredString(g, x, y - this.scroll, this.size, this.size, messages.get(i).user.getInitial());
             }
 
             var message = messages.get(i).message;
@@ -66,7 +66,7 @@ public class ChatView extends View<ChatController> {
 
             for (var line : lines) {
                 g.setColor(Colors.CHAT_BLUE);
-                g.fillRect(stringX - this.gap / 2, y - this.scroll, (int) width + gap, this.size);
+                g.fillRect(stringX - this.gap / 2, y - this.scroll, (int) width + this.gap, this.size);
 
                 g.setColor(Color.WHITE);
                 g.drawString(line.trim(), stringX, y + (int) height - this.scroll);

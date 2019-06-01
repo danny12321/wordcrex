@@ -27,7 +27,7 @@ public class ChatController extends Controller<Game> {
     }
 
     public String getUsername() {
-        return this.getModel().getAuthenticatedUser().username;
+        return this.getModel().isHostAuthenticated() ? this.getModel().host.username : this.getModel().opponent.username;
     }
 
     public List<Message> getMessages() {

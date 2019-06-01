@@ -23,7 +23,7 @@ public class GameController extends Controller<Game> {
     }
 
     public String getScore() {
-        return this.getModel().hostScore + " - " + this.getModel().opponentScore;
+        return this.getModel().getHostScore() + " - " + this.getModel().getOpponentScore();
     }
 
     public String getHostName() {
@@ -36,6 +36,14 @@ public class GameController extends Controller<Game> {
 
     public List<Tile> getTiles() {
         return this.getModel().tiles;
+    }
+
+    public int getPoolSize() {
+        return this.getModel().pool.size();
+    }
+
+    public void startNewRound() {
+        this.getModel().startNewRound();
     }
 
     public void navigateChat() {

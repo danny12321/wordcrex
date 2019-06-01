@@ -4,26 +4,28 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.view.View;
-import nl.avans.wordcrex.view.impl.LoginView;
+import nl.avans.wordcrex.view.impl.RegisterView;
 
 import java.util.function.Function;
 
-public class LoginController extends Controller<User> {
+public class RegisterController extends Controller<User> {
+    private static final String REGEX = "^[a-zA-Z0-9]{5,25}$";
+
     private String username;
     private String password;
     private boolean failed;
 
-    public LoginController(Main main, Function<User, User> fn) {
+    public RegisterController(Main main, Function<User, User> fn) {
         super(main, fn);
     }
 
     @Override
     public View<? extends Controller<User>> createView() {
-        return new LoginView(this);
+        return new RegisterView(this);
     }
 
-    public void login() {
-        this.replace((user) -> user.login(this.username, this.password));
+    public void register() {
+        this.replace((user) -> user.register(this.username, this.password));
 
         if (!this.getModel().authenticated) {
             this.failed = true;
@@ -45,18 +47,14 @@ public class LoginController extends Controller<User> {
     }
 
     public boolean isValid() {
-        return !this.username.isEmpty() && !this.password.isEmpty();
+        return this.username.matches(RegisterController.REGEX) && this.password.matches(RegisterController.REGEX);
     }
 
     public boolean hasFailed() {
         return this.failed;
     }
 
-    public void navigateRegister() {
-        this.main.openController(RegisterController.class);
-    }
-
-    public void logout() {
-        this.replace(User::logout);
+    public void navigateLogin() {
+        this.main.openController(LoginController.class);
     }
 }
