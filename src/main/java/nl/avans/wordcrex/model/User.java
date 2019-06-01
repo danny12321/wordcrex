@@ -233,6 +233,16 @@ public class User implements Pollable<User> {
         }
     }
 
+    public void respondInvite(int id, InviteState state) {
+        this.database.update(
+            "UPDATE game g SET g.answer_player2 = ? WHERE g.game_id = ?",
+            (statement) -> {
+                statement.setString(1, state.state);
+                statement.setInt(2, id);
+            }
+        );
+    }
+
     public User logout() {
         return new User(this.database);
     }

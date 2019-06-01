@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.GameState;
+import nl.avans.wordcrex.model.InviteState;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
@@ -27,7 +28,7 @@ public class DashboardController extends Controller<User> {
     }
 
     public boolean isSelectable(Game game) {
-        return game.state == GameState.PLAYING /*|| (game.state == GameState.PENDING && !this.isCurrentUser(game.host))*/;
+        return game.state == GameState.PLAYING || (game.state == GameState.PENDING && !this.isCurrentUser(game.host));
     }
 
     public String getLabel(Game game) {
@@ -46,6 +47,15 @@ public class DashboardController extends Controller<User> {
 
     public List<Game> getGames() {
         return this.getModel().games;
+    }
+
+    public void acceptInvite(int id) {
+        this.getModel().respondInvite(id, InviteState.ACCEPTED);
+        this.afterPoll(() -> this.navigateGame(id));
+    }
+
+    public void rejectInvite(int id) {
+        this.getModel().respondInvite(id, InviteState.REJECTED);
     }
 
     public void navigateGame(int id) {

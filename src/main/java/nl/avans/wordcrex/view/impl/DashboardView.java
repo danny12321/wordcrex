@@ -2,12 +2,15 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
+import nl.avans.wordcrex.model.Game;
+import nl.avans.wordcrex.model.InviteState;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
+import nl.avans.wordcrex.widget.impl.DialogWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
@@ -15,9 +18,10 @@ import java.util.List;
 
 public class DashboardView extends View<DashboardController> {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
+    private final DialogWidget dialog = new DialogWidget();
 
     private int scroll;
-    private int hover;
+    private Game hover;
 
     public DashboardView(DashboardController controller) {
         super(controller);
@@ -51,7 +55,7 @@ public class DashboardView extends View<DashboardController> {
                 position += 64;
             }
 
-            if (this.hover == game.id) {
+            if (this.hover == game) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE, height);
             }
@@ -85,7 +89,7 @@ public class DashboardView extends View<DashboardController> {
 
     @Override
     public void mouseMove(int x, int y) {
-        this.hover = 0;
+        this.hover = null;
 
         if (x > Main.FRAME_SIZE - Main.TASKBAR_SIZE || y < Main.TASKBAR_SIZE) {
             return;
@@ -111,7 +115,7 @@ public class DashboardView extends View<DashboardController> {
                     break;
                 }
 
-                this.hover = game.id;
+                this.hover = game;
 
                 break;
             }
@@ -120,17 +124,30 @@ public class DashboardView extends View<DashboardController> {
 
     @Override
     public void mouseClick(int x, int y) {
-        if (this.hover == 0) {
+        if (this.hover == null) {
             return;
         }
 
-        this.controller.navigateGame(this.hover);
+        if (this.hover.inviteState == InviteState.PENDING) {
+            this.dialog.show("Accepteeren?", "Ja", "Nee", (positive) -> {
+                if (positive) {
+                    this.controller.acceptInvite(this.hover.id);
+                } else {
+                    this.controller.rejectInvite(this.hover.id);
+                }
+            });
+
+            return;
+        }
+
+        this.controller.navigateGame(this.hover.id);
     }
 
     @Override
     public List<Widget> getChildren() {
         return List.of(
             this.scrollbar,
+            this.dialog,
             new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::navigateInvite)
         );
     }
