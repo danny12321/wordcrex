@@ -2,6 +2,7 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.InviteController;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.Pair;
@@ -14,6 +15,7 @@ import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class InviteView extends View<InviteController> {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
@@ -67,7 +69,7 @@ public class InviteView extends View<InviteController> {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
     }
 
     @Override
