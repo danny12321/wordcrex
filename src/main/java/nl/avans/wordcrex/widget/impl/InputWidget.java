@@ -164,4 +164,11 @@ public class InputWidget extends Widget {
 
         return "";
     }
+
+    public void clearInput() {
+        this.cursor = 0;
+        this.offset = 0;
+        this.input.setLength(0);
+        this.consumer.accept(this.input.toString());
+    }
 }

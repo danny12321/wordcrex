@@ -5,6 +5,7 @@ import nl.avans.wordcrex.util.Pollable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,20 +23,21 @@ public class Game implements Pollable<Game> {
     public final List<Tile> tiles;
     public final List<Letter> pool;
     public final List<Round> rounds;
+    public final List<Message> messages;
 
     public Game(Game game, List<Tile> tiles) {
-        this(game.database, game.id, game.host, game.opponent, game.state, game.inviteState, game.dictionary, tiles, game.pool, game.rounds);
+        this(game.database, game.id, game.host, game.opponent, game.state, game.inviteState, game.dictionary, tiles, game.pool, game.rounds, game.messages);
     }
 
-    public Game(Game game, GameState state, InviteState inviteState, List<Letter> pool, List<Round> rounds) {
-        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, pool, rounds);
+    public Game(Game game, GameState state, InviteState inviteState, List<Letter> pool, List<Round> rounds, List<Message> messages) {
+        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, pool, rounds, messages);
     }
 
     public Game(Database database, int id, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
-        this(database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), List.of());
+        this(database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), List.of(), List.of());
     }
 
-    public Game(Database database, int id, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Letter> pool, List<Round> rounds) {
+    public Game(Database database, int id, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Letter> pool, List<Round> rounds, List<Message> messages) {
         this.database = database;
         this.id = id;
         this.host = host;
@@ -46,6 +48,7 @@ public class Game implements Pollable<Game> {
         this.tiles = tiles;
         this.pool = pool;
         this.rounds = rounds;
+        this.messages = messages;
     }
 
     @Override
@@ -69,6 +72,7 @@ public class Game implements Pollable<Game> {
             InviteState inviteState;
             List<Letter> pool = new ArrayList<>();
             List<Round> rounds = new ArrayList<>();
+            List<Message> messages = new ArrayList<>();
         };
         this.database.select(
             "SELECT g.game_state, g.answer_player2 FROM game g WHERE g.game_id = ?",
@@ -92,8 +96,21 @@ public class Game implements Pollable<Game> {
             (statement) -> statement.setInt(1, this.id),
             (result) -> ref.rounds.add(new Round(result.getInt("turn_id"), List.of(), null, null))
         );
+        this.database.select(
+            "SELECT * FROM chatline WHERE game_id = ? ORDER BY moment ASC",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> {
+                ref.messages.add(
+                    new Message(
+                        this.host.username.equals(result.getString("username")) ? this.host : this.opponent,
+                        result.getDate("moment"),
+                        result.getString("message")
+                    )
+                );
+            }
+        );
 
-        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(ref.pool), List.copyOf(ref.rounds));
+        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(ref.pool), List.copyOf(ref.rounds), List.copyOf(messages));
 
         if (game.state == GameState.PLAYING && game.rounds.isEmpty()) {
             game.startNewRound();
@@ -206,6 +223,17 @@ public class Game implements Pollable<Game> {
                     statement.setInt(++offset, this.rounds.size() + 1);
                     statement.setInt(++offset, deck.get(i).id);
                 }
+            }
+        );
+    }
+
+    public void sendChatMessage(String message) {
+        this.database.insert("INSERT INTO chatline VALUES (?, ?, ?, ?)",
+            (statement) -> {
+                statement.setString(1, this.isHostAuthenticated() ? this.host.username : this.opponent.username);
+                statement.setInt(2, this.id);
+                statement.setTimestamp(3, new java.sql.Timestamp(new Date().getTime()));
+                statement.setString(4, message);
             }
         );
     }
