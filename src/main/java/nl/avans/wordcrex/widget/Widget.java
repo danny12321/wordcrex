@@ -1,8 +1,11 @@
 package nl.avans.wordcrex.widget;
 
+import nl.avans.wordcrex.particle.Particle;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public abstract class Widget {
@@ -10,7 +13,7 @@ public abstract class Widget {
 
     public abstract void draw(Graphics2D g);
 
-    public abstract void update();
+    public abstract void update(Consumer<Particle> addParticle);
 
     public void mouseClick(int x, int y) {
     }

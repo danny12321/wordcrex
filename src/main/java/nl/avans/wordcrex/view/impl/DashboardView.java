@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.InviteState;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
@@ -15,6 +16,7 @@ import nl.avans.wordcrex.widget.impl.ListWidget;
 
 import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class DashboardView extends View<DashboardController> {
     private final ListWidget<Game> list;
@@ -67,7 +69,7 @@ public class DashboardView extends View<DashboardController> {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
         this.list.setItems(this.controller.getGames());
     }
 

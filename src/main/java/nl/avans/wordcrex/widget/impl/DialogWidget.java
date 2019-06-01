@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.widget.impl;
 
 import nl.avans.wordcrex.Main;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.widget.Widget;
@@ -40,7 +41,7 @@ public class DialogWidget extends Widget {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
     }
 
     @Override
