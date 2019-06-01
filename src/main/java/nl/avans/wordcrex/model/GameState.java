@@ -19,6 +19,6 @@ public enum GameState {
             }
         }
 
-        return null;
+        throw new RuntimeException("Invalid game state: " + state);
     }
 }

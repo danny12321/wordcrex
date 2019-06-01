@@ -3,7 +3,6 @@ package nl.avans.wordcrex.util;
 import java.awt.*;
 
 public class Colors {
-    public static final Color CHAT_BLUE = new Color(59, 55, 123);
     public static final Color DARK_BLUE = new Color(59, 55, 113);
     public static final Color DARKER_BLUE = new Color(42, 38, 97);
     public static final Color DARKERER_BLUE = new Color(37, 32, 84);

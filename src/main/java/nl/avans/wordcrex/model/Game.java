@@ -74,7 +74,7 @@ public class Game implements Pollable<Game> {
             List<Message> messages = new ArrayList<>();
         };
         this.database.select(
-            "SELECT g.game_state, g.answer_player2 FROM game g JOIN turn t ON g.game_id = t.game_id WHERE g.game_id = ?",
+            "SELECT g.game_state, g.answer_player2 FROM game g WHERE g.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
                 ref.state = GameState.byState(result.getString("game_state"));
