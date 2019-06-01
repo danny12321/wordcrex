@@ -65,7 +65,7 @@ public class ChatView extends View<ChatController> {
             var lines = this.splitMessage(g, splitMessage);
 
             for (var line : lines) {
-                g.setColor(Colors.CHAT_BLUE);
+                g.setColor(Colors.DARK_BLUE);
                 g.fillRect(stringX - this.gap / 2, y - this.scroll, (int) width + this.gap, this.size);
 
                 g.setColor(Color.WHITE);
