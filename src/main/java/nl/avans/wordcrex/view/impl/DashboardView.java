@@ -36,6 +36,7 @@ public class DashboardView extends View<DashboardController> {
             },
             (previous, next) -> previous == null || previous.state != next.state ? next.state.state : null,
             (game) -> game.id,
+            (game) -> false,
             (game) -> this.controller.navigateGame(game.id)
         );
     }

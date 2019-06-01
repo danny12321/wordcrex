@@ -19,18 +19,20 @@ public class ListWidget<T> extends Widget {
     private final BiConsumer<Graphics2D, T> draw;
     private final BiFunction<T, T, String> header;
     private final Function<T, Integer> getId;
+    private final Function<T, Boolean> canClick;
     private final Consumer<T> click;
 
     private List<T> items = new ArrayList<>();
     private int scroll;
     private int hover;
 
-    public ListWidget(int y, int height, BiConsumer<Graphics2D, T> draw, BiFunction<T, T, String> header, Function<T, Integer> getId, Consumer<T> click) {
+    public ListWidget(int y, int height, BiConsumer<Graphics2D, T> draw, BiFunction<T, T, String> header, Function<T, Integer> getId, Function<T, Boolean> canClick, Consumer<T> click) {
         this.y = y;
         this.height = height;
         this.draw = draw;
         this.header = header;
         this.getId = getId;
+        this.canClick = canClick;
         this.click = click;
     }
 
@@ -97,7 +99,7 @@ public class ListWidget<T> extends Widget {
                 position += 64;
             }
 
-            if (y > position && y < position + this.height) {
+            if (y > position && y < position + this.height && this.canClick.apply(item)) {
                 this.hover = this.getId.apply(item);
 
                 break;
