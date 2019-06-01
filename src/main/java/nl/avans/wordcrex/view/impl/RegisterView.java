@@ -1,7 +1,9 @@
 package nl.avans.wordcrex.view.impl;
 
+import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.RegisterController;
 import nl.avans.wordcrex.particle.Particle;
+import nl.avans.wordcrex.particle.impl.TileParticle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -15,6 +17,8 @@ import java.util.function.Consumer;
 
 public class RegisterView extends View<RegisterController> {
     private final ButtonWidget submitButton = new ButtonWidget("REGISTER", 144, 312, 304, 48, this.controller::register);
+
+    private int update;
 
     public RegisterView(RegisterController controller) {
         super(controller);
@@ -34,6 +38,11 @@ public class RegisterView extends View<RegisterController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        if (this.update++ % 10 != 0) {
+            return;
+        }
+
+        addParticle.accept(new TileParticle(Main.RANDOM.nextInt(Main.FRAME_SIZE - 24), Main.RANDOM.nextFloat() - 0.5f, 10.0f + Main.RANDOM.nextFloat() * 5.0f));
     }
 
     @Override

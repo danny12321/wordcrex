@@ -4,6 +4,9 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
+import nl.avans.wordcrex.view.View;
+import nl.avans.wordcrex.view.impl.LoginView;
+import nl.avans.wordcrex.view.impl.RegisterView;
 
 import java.awt.*;
 import java.util.function.Consumer;
@@ -16,7 +19,7 @@ public class TileParticle extends Particle {
     private int update;
 
     public TileParticle(int x, float velocityX, float velocityY) {
-        super(x, 0, velocityX, velocityY, 1.0f, false, false);
+        super(x, 0, velocityX, velocityY, 1.0f, false);
         this.character = TileParticle.ALPHABET.charAt(Main.RANDOM.nextInt(TileParticle.ALPHABET.length()));
     }
 
@@ -35,5 +38,10 @@ public class TileParticle extends Particle {
         }
 
         return super.update(addParticle);
+    }
+
+    @Override
+    public boolean persist(View<?> view) {
+        return view.getClass() == LoginView.class || view.getClass() == RegisterView.class;
     }
 }

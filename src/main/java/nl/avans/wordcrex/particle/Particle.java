@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.particle;
 
 import nl.avans.wordcrex.Main;
+import nl.avans.wordcrex.view.View;
 
 import java.awt.*;
 import java.util.function.Consumer;
@@ -8,21 +9,19 @@ import java.util.function.Consumer;
 public abstract class Particle {
     public final float gravity;
     public final boolean foreground;
-    public final boolean persistent;
 
     private float x;
     private float y;
     private float velocityX;
     private float velocityY;
 
-    public Particle(int x, int y, float velocityX, float velocityY, float gravity, boolean foreground, boolean persistent) {
+    public Particle(int x, int y, float velocityX, float velocityY, float gravity, boolean foreground) {
         this.x = x;
         this.y = y;
         this.velocityX = velocityX;
         this.velocityY = velocityY;
         this.gravity = gravity;
         this.foreground = foreground;
-        this.persistent = persistent;
     }
 
     public abstract void draw(Graphics2D g);
@@ -46,5 +45,9 @@ public abstract class Particle {
 
     public int priority() {
         return 0;
+    }
+
+    public boolean persist(View<?> view) {
+        return false;
     }
 }

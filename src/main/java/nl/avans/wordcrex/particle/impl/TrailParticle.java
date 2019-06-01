@@ -2,6 +2,9 @@ package nl.avans.wordcrex.particle.impl;
 
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.view.View;
+import nl.avans.wordcrex.view.impl.LoginView;
+import nl.avans.wordcrex.view.impl.RegisterView;
 
 import java.awt.*;
 import java.util.function.Consumer;
@@ -10,7 +13,7 @@ public class TrailParticle extends Particle {
     private int age = 12;
 
     public TrailParticle(int x, int y) {
-        super(x, y, 0.0f, 0.0f, 0.0f, false, false);
+        super(x, y, 0.0f, 0.0f, 0.0f, false);
     }
 
     @Override
@@ -27,5 +30,10 @@ public class TrailParticle extends Particle {
     @Override
     public int priority() {
         return -1;
+    }
+
+    @Override
+    public boolean persist(View<?> view) {
+        return view.getClass() == LoginView.class || view.getClass() == RegisterView.class;
     }
 }

@@ -88,7 +88,7 @@ public class Main extends JPanel {
         this.widgets.clear();
 
         var dead = this.particles.stream()
-            .filter((particle) -> !particle.persistent)
+            .filter((particle) -> !particle.persist(view))
             .collect(Collectors.toList());
         this.particles.removeAll(dead);
 
