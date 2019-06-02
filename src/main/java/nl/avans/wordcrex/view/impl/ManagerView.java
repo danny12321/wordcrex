@@ -68,10 +68,10 @@ public class ManagerView extends View<ManagerController> {
                     g.setColor(Colors.DARK_BLUE);
                 }
 
-                roleButtons.add(new ButtonWidget(u.role.substring(0,1).toUpperCase(),270 + (index  * 50), ypos + this.height / 4, 30, 30,Colors.DARK_BLUE,Color.WHITE,Colors.DARK_YELLOW,()-> System.out.println("Button")));
-                //g.fillOval(270 + (index  * 50), ypos + this.height / 4, 30, 30);
-                //g.setColor(Colors.DARKERER_BLUE);
-                //StringUtil.drawCenteredString(g, 270 + (index  * 50), ypos + this.height / 4, 30, 30, u.role.substring(0,1).toUpperCase());
+                //roleButtons.add(new ButtonWidget(u.role.substring(0,1).toUpperCase(),270 + (index  * 50), ypos + this.height / 4, 30, 30,Colors.DARK_BLUE,Color.WHITE,Colors.DARK_YELLOW,()-> System.out.println("Button")));
+                g.fillOval(270 + (index  * 50), ypos + this.height / 4, 30, 30);
+                g.setColor(Colors.DARKERER_BLUE);
+                StringUtil.drawCenteredString(g, 270 + (index  * 50), ypos + this.height / 4, 30, 30, u.role.substring(0,1).toUpperCase());
                 index++;
             }
             for(ButtonWidget b : roleButtons){
@@ -94,7 +94,7 @@ public class ManagerView extends View<ManagerController> {
                 new InputWidget("Gebruikersnaam", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::searchUsersWithRoles)
 
         ));
-        widgets.addAll(roleButtons);
+        //widgets.addAll(roleButtons);
         return widgets;
     }
 }
