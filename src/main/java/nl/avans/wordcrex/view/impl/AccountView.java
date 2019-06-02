@@ -12,6 +12,7 @@ import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -43,7 +44,7 @@ public class AccountView extends View<AccountController> {
 
         List<UserRole> roles = this.controller.getRoles();
 
-        if(roles.contains(UserRole.ADMINISTRATOR)) {
+        if(this.controller.isAdmin()) {
             g.setColor(Colors.DARK_BLUE);
             g.fillRect(0, Main.TASKBAR_SIZE + 192, Main.FRAME_SIZE, 32);
             g.setColor(Colors.DARK_YELLOW);
@@ -70,16 +71,22 @@ public class AccountView extends View<AccountController> {
 
     @Override
     public java.util.List<Widget> getChildren() {
-        return List.of(
-            this.input,
+        List<Widget> list = new ArrayList<>();
+        list.add(this.input);
+        list.add(
             new ButtonWidget("+", Main.FRAME_SIZE - 64 - this.gap, Main.TASKBAR_SIZE + this.gap + 128, 64, 32, () -> {
                 this.controller.changePassword(this.passwordChange);
                 this.input.clearInput();
-            }),
-            new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + this.gap, 96, 32, () -> this.controller.switchRole(UserRole.PLAYER)),
-            new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 30 + 2 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.OBSERVER)),
-            new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 60 + 3 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.MODERATOR)),
-            new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 90 + 4 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.ADMINISTRATOR))
+            })
         );
+
+        if(this.controller.isAdmin()) {
+            list.add(new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + this.gap, 96, 32, () -> this.controller.switchRole(UserRole.PLAYER)));
+            list.add(new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 30 + 2 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.OBSERVER)));
+            list.add(new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 60 + 3 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.MODERATOR)));
+            list.add(new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 90 + 4 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.ADMINISTRATOR)));
+        }
+
+        return list;
     }
 }

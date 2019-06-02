@@ -41,4 +41,7 @@ public class AccountController extends Controller<User> {
         this.user.switchRole(role);
     }
 
+    public boolean isAdmin() {
+        return this.getModel().roles.contains(UserRole.ADMINISTRATOR);
+    }
 }
