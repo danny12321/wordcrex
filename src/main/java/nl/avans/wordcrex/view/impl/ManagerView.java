@@ -49,7 +49,7 @@ public class ManagerView extends View<ManagerController> {
                     g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
                     g.setFont(Fonts.BIG);
                     g.setColor(Colors.DARKER_BLUE);
-                    StringUtil.drawCenteredString(g, Main.TASKBAR_SIZE, 27, 42, 42, user.getInitial());
+                    StringUtil.drawCenteredString(g, Main.TASKBAR_SIZE, 27, 42, 42, user.username.substring(0, 1).toUpperCase());
                     g.setFont(Fonts.NORMAL);
                     g.setColor(Color.WHITE);
                     g.drawString(user.username, Main.TASKBAR_SIZE * 2 + 42, 52);
@@ -70,7 +70,7 @@ public class ManagerView extends View<ManagerController> {
                     }
                 },
                 (previous, next) -> null,
-                (user) -> user.username.hashCode(),
+                (user) -> user.username,
                 (user) -> true,
                 (user) -> {
                     this.controller.getCurrentUser().setCurrentUserBeingEdited(user);
