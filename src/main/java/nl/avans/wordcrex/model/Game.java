@@ -118,7 +118,7 @@ public class Game implements Pollable<Game> {
         var messages = new ArrayList<Message>();
 
         this.database.select(
-            "SELECT m.message, m.username, m.username date FROM chatline m WHERE game_id = ? ORDER BY moment",
+            "SELECT m.message, m.username, m.moment date FROM chatline m WHERE game_id = ? ORDER BY moment",
             (statement) -> statement.setInt(1, this.id),
             (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
         );
