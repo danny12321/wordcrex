@@ -45,7 +45,7 @@ public class Main extends JPanel {
         this.widgets = new CopyOnWriteArrayList<>();
         this.particles = new CopyOnWriteArrayList<>();
         this.loop = new Loop(Map.of(
-            4.0d, this::poll,
+            2.0d, this::poll,
             30.0d, this::update,
             60.0d, this::repaint
         ));
