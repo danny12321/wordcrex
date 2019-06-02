@@ -19,15 +19,15 @@ public class ListWidget<T> extends Widget {
     private final int height;
     private final BiConsumer<Graphics2D, T> draw;
     private final BiFunction<T, T, String> header;
-    private final Function<T, Integer> getId;
+    private final Function<T, String> getId;
     private final Function<T, Boolean> canClick;
     private final Consumer<T> click;
 
     private List<T> items = new ArrayList<>();
     private int scroll;
-    private int hover;
+    private String hover;
 
-    public ListWidget(int y, int height, BiConsumer<Graphics2D, T> draw, BiFunction<T, T, String> header, Function<T, Integer> getId, Function<T, Boolean> canClick, Consumer<T> click) {
+    public ListWidget(int y, int height, BiConsumer<Graphics2D, T> draw, BiFunction<T, T, String> header, Function<T, String> getId, Function<T, Boolean> canClick, Consumer<T> click) {
         this.y = y;
         this.height = height;
         this.draw = draw;
@@ -57,7 +57,7 @@ public class ListWidget<T> extends Widget {
                 position += 64;
             }
 
-            if (this.hover == this.getId.apply(item)) {
+            if (this.getId.apply(item).equals(this.hover)) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE, this.height);
             }
@@ -83,7 +83,7 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void mouseMove(int x, int y) {
-        this.hover = 0;
+        this.hover = null;
 
         if (x > Main.FRAME_SIZE - Main.TASKBAR_SIZE || y < Main.TASKBAR_SIZE) {
             return;
@@ -110,12 +110,12 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void mouseClick(int x, int y) {
-        if (this.hover == 0) {
+        if (this.hover == null) {
             return;
         }
 
         this.click.accept(this.items.stream()
-            .filter((item) -> this.getId.apply(item) == this.hover)
+            .filter((item) -> this.getId.apply(item).equals(this.hover))
             .findFirst()
             .orElse(null));
     }

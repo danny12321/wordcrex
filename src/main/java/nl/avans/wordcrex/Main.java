@@ -42,7 +42,7 @@ public class Main extends JPanel {
     private Main(JFrame frame, String config) {
         this.frame = frame;
         this.database = new Database(config);
-        this.widgets = new ArrayList<>();
+        this.widgets = new CopyOnWriteArrayList<>();
         this.particles = new CopyOnWriteArrayList<>();
         this.loop = new Loop(Map.of(
             4.0d, this::poll,

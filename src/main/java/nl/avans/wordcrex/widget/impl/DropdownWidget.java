@@ -17,24 +17,20 @@ public class DropdownWidget<T> extends Widget {
     private final int width;
     private final int height;
     private final Consumer<T> consumer;
-    private final Consumer<Boolean> updateOpen;
     private final String placeholder;
 
     private int hover = -1;
     private T selected;
     private boolean open;
 
-    public DropdownWidget(Map<T, String> options, String placeholder, int x, int y, int width, int height, Consumer<T> consumer, Consumer<Boolean> updateOpen) {
+    public DropdownWidget(Map<T, String> options, String placeholder, int x, int y, int width, int height, Consumer<T> consumer) {
         this.options = options;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.consumer = consumer;
-        this.updateOpen = updateOpen;
         this.placeholder = placeholder;
-
-        this.updateOpen.accept(false);
     }
 
     @Override
@@ -89,8 +85,6 @@ public class DropdownWidget<T> extends Widget {
             this.consumer.accept(keys.get(this.hover - 1));
             this.selected = keys.get(this.hover - 1);
         }
-
-        this.updateOpen.accept(this.open);
     }
 
     @Override

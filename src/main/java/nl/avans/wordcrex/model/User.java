@@ -83,6 +83,10 @@ public class User implements Pollable<User> {
                 var code = result.getString("code");
                 var character = characters.getOrDefault(code, new ArrayList<>());
 
+                if (character.isEmpty()) {
+                    return;
+                }
+
                 dictionaries.add(new Dictionary(this.database, code, result.getString("description"), List.copyOf(character)));
             }
         );
@@ -121,7 +125,13 @@ public class User implements Pollable<User> {
                     return;
                 }
 
-                games.add(new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary));
+                var game = new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary);
+
+                if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host.username)) {
+                    game.startGame();
+                }
+
+                games.add(game);
             }
         );
 
@@ -151,9 +161,10 @@ public class User implements Pollable<User> {
         );
 
         var insertedRole = this.database.insert(
-            "INSERT INTO accountrole VALUES(lower(?), 'player')",
+            "INSERT INTO accountrole VALUES(lower(?), ?)",
             (statement) -> {
                 statement.setString(1, username);
+                statement.setString(2, UserRole.PLAYER.role);
             }
         );
 
@@ -181,15 +192,15 @@ public class User implements Pollable<User> {
             return this;
         }
 
-        return new User(this.database, ref.username, true);
+        return new User(this.database, ref.username.toLowerCase(), true);
     }
 
     public List<Pair<String, Boolean>> findOpponents(String username) {
-        var users = new ArrayList<Pair<String, Boolean>>();
-
         if (username.isEmpty()) {
-            return users;
+            return List.of();
         }
+
+        var users = new ArrayList<Pair<String, Boolean>>();
 
         this.database.select(
             "SELECT a.username, (SELECT true FROM game g WHERE ((g.username_player1 = ? AND g.username_player2 LIKE ?) OR (g.username_player2 = ? AND g.username_player1 LIKE ?)) AND g.game_state IN ('request', 'playing') AND g.answer_player2 IN ('unknown', 'accepted') LIMIT 1) AS disabled FROM account a JOIN accountrole ar ON a.username = ar.username WHERE a.username LIKE ? AND a.username != ? AND ar.role = 'player'",
@@ -208,29 +219,26 @@ public class User implements Pollable<User> {
     }
 
     public void sendInvite(String username, Dictionary dictionary) {
-        var gameId = this.database.insert(
-            "INSERT INTO game (game_state, letterset_code, username_player1, username_player2, answer_player2) VALUES ('request', ?, ?, ?, 'unknown')",
+        this.database.insert(
+            "INSERT INTO game (game_state, letterset_code, username_player1, username_player2, answer_player2) VALUES (?, ?, ?, ?, ?)",
             (statement) -> {
-                statement.setString(1, dictionary.code);
-                statement.setString(2, this.username);
-                statement.setString(3, username);
+                statement.setString(1, GameState.PENDING.state);
+                statement.setString(2, dictionary.code);
+                statement.setString(3, this.username);
+                statement.setString(4, username);
+                statement.setString(5, InviteState.PENDING.state);
             }
         );
+    }
 
-        for (int i = 0; i < dictionary.characters.size(); i++) {
-            var character = dictionary.characters.get(i);
-            var letterId = i;
-
-            this.database.insert(
-                "INSERT INTO letter (letter_id, game_id, symbol_letterset_code, symbol) VALUES (?, ?, ?, ?)",
-                (statement) -> {
-                    statement.setInt(1, letterId);
-                    statement.setInt(2, gameId);
-                    statement.setString(3, dictionary.code);
-                    statement.setString(4, character.character);
-                }
-            );
-        }
+    public void respondInvite(Game game, InviteState state) {
+        this.database.update(
+            "UPDATE game g SET g.answer_player2 = ? WHERE g.game_id = ?",
+            (statement) -> {
+                statement.setString(1, state.state);
+                statement.setInt(2, game.id);
+            }
+        );
     }
 
     public User logout() {
