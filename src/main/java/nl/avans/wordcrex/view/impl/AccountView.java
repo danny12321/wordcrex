@@ -18,9 +18,12 @@ import java.util.function.Consumer;
 
 public class AccountView extends View<AccountController> {
     private String passwordChange = "";
-    private int gap = 16;
+    private final int gap = 16;
+    private final int header = 32;
+    private final int section = 96;
+    private final int circle = 30;
 
-    private InputWidget input = new InputWidget("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + this.gap + 128, Main.FRAME_SIZE - 64 - this.gap * 3, 32, (value) -> this.passwordChange = value);
+    private InputWidget input = new InputWidget("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, Main.FRAME_SIZE - 64 - this.gap * 3, 32, (value) -> this.passwordChange = value);
 
     public AccountView(AccountController controller) {
         super(controller);
@@ -28,38 +31,33 @@ public class AccountView extends View<AccountController> {
 
     @Override
     public void draw(Graphics2D g) {
-        var height = g.getFontMetrics().getHeight();
+        var textHeight = g.getFontMetrics().getHeight();
 
         g.setColor(Colors.DARK_BLUE);
-        g.fillRect(0, Main.TASKBAR_SIZE, Main.FRAME_SIZE, 32);
+        g.fillRect(0, Main.TASKBAR_SIZE, Main.FRAME_SIZE, this.header);
         g.setColor(Colors.DARK_YELLOW);
-        g.drawString("Gebruikersnaam", this.gap, Main.TASKBAR_SIZE + height);
+        g.drawString("Gebruikersnaam", this.gap, Main.TASKBAR_SIZE + textHeight);
         g.setColor(Color.WHITE);
-        g.drawString(this.controller.getUsername(), this.gap, Main.TASKBAR_SIZE + 48 + height);
+        g.drawString(this.controller.getUsername(), this.gap, Main.TASKBAR_SIZE + this.section / 2 + textHeight);
 
         g.setColor(Colors.DARK_BLUE);
-        g.fillRect(0, Main.TASKBAR_SIZE + 96, Main.FRAME_SIZE, 32);
+        g.fillRect(0, Main.TASKBAR_SIZE + this.section, Main.FRAME_SIZE, this.header);
         g.setColor(Colors.DARK_YELLOW);
-        g.drawString("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + 96 + height);
+        g.drawString("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + this.section + textHeight);
 
-        List<UserRole> roles = this.controller.getRoles();
+        var roles = this.controller.getRoles();
 
-        if(this.controller.isAdmin()) {
+        if (this.controller.isAdmin()) {
             g.setColor(Colors.DARK_BLUE);
-            g.fillRect(0, Main.TASKBAR_SIZE + 192, Main.FRAME_SIZE, 32);
+            g.fillRect(0, Main.TASKBAR_SIZE + (this.section * 2), Main.FRAME_SIZE, this.header);
             g.setColor(Colors.DARK_YELLOW);
-            g.drawString("Rollen (Administrator)", this.gap, Main.TASKBAR_SIZE + 192 + height);
+            g.drawString("Rollen (Administrator)", this.gap, Main.TASKBAR_SIZE + (this.section * 2) + textHeight);
 
             for(var i = 0; i < UserRole.values().length; i++) {
-                if (roles.contains(UserRole.values()[i])) {
-                    g.setColor(Colors.DARK_YELLOW);
-                } else {
-                    g.setColor(Colors.DARK_BLUE);
-                }
-
-                g.fillOval(this.gap, Main.TASKBAR_SIZE + 224 + i * 30 + (i + 1) * this.gap, 30, 30);
+                g.setColor(roles.contains(UserRole.values()[i]) ? Colors.DARK_YELLOW : Colors.DARK_BLUE);
+                g.fillOval(this.gap, Main.TASKBAR_SIZE + (this.section * 2) + this.header + i * this.circle + (i + 1) * this.gap, this.circle, this.circle);
                 g.setColor(Colors.DARKERER_BLUE);
-                StringUtil.drawCenteredString(g, this.gap, Main.TASKBAR_SIZE + 224 + i * 30 + (i + 1) * this.gap, 30, 30, UserRole.values()[i].role.substring(0,1).toUpperCase());
+                StringUtil.drawCenteredString(g, this.gap, Main.TASKBAR_SIZE + (this.section * 2) + this.header + i * this.circle + (i + 1) * this.gap, this.circle, this.circle, UserRole.values()[i].role.substring(0,1).toUpperCase());
             }
         }
     }
@@ -72,19 +70,21 @@ public class AccountView extends View<AccountController> {
     @Override
     public java.util.List<Widget> getChildren() {
         List<Widget> list = new ArrayList<>();
+
         list.add(this.input);
+
         list.add(
-            new ButtonWidget("+", Main.FRAME_SIZE - 64 - this.gap, Main.TASKBAR_SIZE + this.gap + 128, 64, 32, () -> {
+            new ButtonWidget("+", Main.FRAME_SIZE - 64 - this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, 64, 32, () -> {
                 this.controller.changePassword(this.passwordChange);
                 this.input.clearInput();
             })
         );
 
-        if(this.controller.isAdmin()) {
-            list.add(new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + this.gap, 96, 32, () -> this.controller.switchRole(UserRole.PLAYER)));
-            list.add(new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 30 + 2 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.OBSERVER)));
-            list.add(new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 60 + 3 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.MODERATOR)));
-            list.add(new ButtonWidget("Verander", this.gap * 2 + 30, Main.TASKBAR_SIZE + 224 + 90 + 4 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.ADMINISTRATOR)));
+        if (this.controller.isAdmin()) {
+            list.add(new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + this.gap, 96, 32, () -> this.controller.switchRole(UserRole.PLAYER)));
+            list.add(new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + this.circle + 2 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.OBSERVER)));
+            list.add(new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + (this.circle * 2) + 3 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.MODERATOR)));
+            list.add(new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + (this.circle * 3) + 4 * this.gap, 96, 32, () -> this.controller.switchRole(UserRole.ADMINISTRATOR)));
         }
 
         return list;

@@ -267,7 +267,7 @@ public class User implements Pollable<User> {
         var words = new ArrayList<Word>();
 
         this.database.select(
-            "SELECT w.word, w.state, w.username FROM dictionary w WHERE w.state = ? ",
+            "SELECT w.word, w.state, w.username FROM dictionary w WHERE w.state = ?",
             (statement) -> statement.setString(1, WordState.PENDING.state),
             (result) -> words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username")))
         );
@@ -349,8 +349,7 @@ public class User implements Pollable<User> {
 
     public List<User> getChangeableUsers(String name) {
         var users = new ArrayList<User>();
-
-        var sql = "SELECT username, role FROM wordcrex.accountrole WHERE username LIKE ? AND username != ? ";
+        var sql = "SELECT username, role FROM wordcrex.accountrole WHERE username LIKE ? AND username != ?";
 
         if (name.isEmpty()) {
             return users;
@@ -368,13 +367,15 @@ public class User implements Pollable<User> {
             (result) -> {
                 var roleList = new ArrayList<UserRole>();
                 var foundUser = false;
-                for (User u : users) {
+
+                for (var u : users) {
                     if (u.username.equals(result.getString("username"))) {
                         u.roles.add(UserRole.byRole(result.getString("role")));
                         foundUser = true;
                         break;
                     }
                 }
+
                 if (!foundUser) {
                     roleList.add(UserRole.byRole(result.getString("role")));
                     users.add(new User(this.database, result.getString("username"), roleList, null, null));
@@ -386,11 +387,7 @@ public class User implements Pollable<User> {
     }
 
     public User getCurrentUserBeingEdited() {
-        if (this.roles.contains(UserRole.ADMINISTRATOR)) {
-            return this.currentUserBeingEdited;
-        } else {
-            return this;
-        }
+        return this.roles.contains(UserRole.ADMINISTRATOR) ? this.currentUserBeingEdited : this;
     }
 
     public void setCurrentUserBeingEdited(User user) {
