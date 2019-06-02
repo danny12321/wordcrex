@@ -33,9 +33,9 @@ public class DashboardController extends Controller<User> {
 
     public String getLabel(Game game) {
         if (game.state == GameState.PENDING) {
-            return "UITGEDAAGD";
+            return "UITDAGINGEN";
         } else {
-            return "SPELEN";
+            return "SPELLEN";
         }
     }
 

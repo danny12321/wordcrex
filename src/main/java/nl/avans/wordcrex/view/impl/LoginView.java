@@ -33,7 +33,7 @@ public class LoginView extends View<LoginController> {
             g.setColor(Colors.DARK_RED);
             g.fillRect(64, 360, 184, 32);
             g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 64, 360, 184, 32, "invalid");
+            StringUtil.drawCenteredString(g, 64, 360, 184, 32, "ongeldig");
         }
     }
 
@@ -49,10 +49,10 @@ public class LoginView extends View<LoginController> {
     @Override
     public List<Widget> getChildren() {
         return List.of(
-            new InputWidget("USERNAME", 64, 184, 384, 48, this.controller::setUsername),
-            new InputWidget("PASSWORD", '*', 64, 248, 384, 48, this.controller::setPassword),
+            new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, this.controller::setUsername),
+            new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, this.controller::setPassword),
             this.submitButton,
-            new ButtonWidget("REGISTER", 264, 312, 184, 48, this.controller::navigateRegister)
+            new ButtonWidget("REGISTREER", 264, 312, 184, 48, this.controller::navigateRegister)
         );
     }
 }

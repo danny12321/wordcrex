@@ -23,12 +23,12 @@ import java.util.stream.Collectors;
 
 public class SidebarWidget extends Widget {
     private final List<Item> items = List.of(
-        new Item<>("GAMES", DashboardController.class, DashboardView.class, UserRole.PLAYER),
-        new Item<>("OBSERVE", null, null, UserRole.OBSERVER),
-        new Item<>("SUGGEST", SuggestController.class, SuggestView.class, UserRole.PLAYER),
-        new Item<>("ACCOUNT", AccountController.class, AccountView.class, null),
-        new Item<>("APPROVE", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
-        new Item<>("MANAGE", ManagerController.class, ManagerView.class, UserRole.ADMINISTRATOR)
+        new Item<>("SPELLEN", DashboardController.class, DashboardView.class, UserRole.PLAYER),
+        new Item<>("BEKIJKEN", null, null, UserRole.OBSERVER),
+        new Item<>("SUGGEREREN", SuggestController.class, SuggestView.class, UserRole.PLAYER),
+        new Item<>("GOEDKEUREN", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
+        new Item<>("BEHEREN", ManagerController.class, ManagerView.class, UserRole.ADMINISTRATOR),
+        new Item<>("ACCOUNT", AccountController.class, AccountView.class, null)
     );
     private final Map<String, ButtonWidget> children = new HashMap<>();
     private final Main main;
@@ -76,7 +76,7 @@ public class SidebarWidget extends Widget {
             this.children.put(item.title, new ButtonWidget(item.title, 32, 64 + 48 * i, 192, 32, () -> this.main.openController(item.controller)));
         }
 
-        this.children.put("LOGOUT", new ButtonWidget("LOGOUT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class)));
+        this.children.put("LOG UIT", new ButtonWidget("LOG UIT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class)));
 
         return List.copyOf(this.children.values());
     }
