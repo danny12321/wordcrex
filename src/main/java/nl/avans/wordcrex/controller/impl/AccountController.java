@@ -7,7 +7,6 @@ import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.AccountView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -38,11 +37,11 @@ public class AccountController extends Controller<User> {
         return this.getModel().roles;
     }
 
-    public void switchRole(UserRole role) {
-        this.getModel().switchRole(role);
+    public void toggleRole(UserRole role) {
+        this.getRoot().toggleRole(this.getModel(), role);
     }
 
-    public boolean isAdmin() {
-        return this.getRoot().roles.contains(UserRole.ADMINISTRATOR);
+    public boolean canChangeRoles() {
+        return this.getRoot().hasRole(UserRole.ADMINISTRATOR);
     }
 }

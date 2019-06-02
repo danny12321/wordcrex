@@ -10,7 +10,7 @@ import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.AccountView;
 import nl.avans.wordcrex.view.impl.ApproveView;
 import nl.avans.wordcrex.view.impl.DashboardView;
-import nl.avans.wordcrex.view.impl.ManagerView;
+import nl.avans.wordcrex.view.impl.ManageView;
 import nl.avans.wordcrex.view.impl.SuggestView;
 import nl.avans.wordcrex.widget.Widget;
 
@@ -27,7 +27,7 @@ public class SidebarWidget extends Widget {
         new Item<>("BEKIJKEN", null, null, UserRole.OBSERVER),
         new Item<>("SUGGEREREN", SuggestController.class, SuggestView.class, UserRole.PLAYER),
         new Item<>("GOEDKEUREN", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
-        new Item<>("BEHEREN", ManagerController.class, ManagerView.class, UserRole.ADMINISTRATOR),
+        new Item<>("BEHEREN", ManageController.class, ManageView.class, UserRole.ADMINISTRATOR),
         new Item<>("ACCOUNT", AccountController.class, AccountView.class, null)
     );
     private final Map<String, ButtonWidget> children = new HashMap<>();

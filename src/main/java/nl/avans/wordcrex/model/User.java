@@ -338,59 +338,48 @@ public class User implements Pollable<User> {
         );
     }
 
-    public void switchRole(UserRole role) {
-        if (this.roles.contains(role)) {
-            this.database.delete(
-                "DELETE FROM accountrole WHERE role = ? AND username = ?",
+    public void toggleRole(User user, UserRole role) {
+        if (!this.hasRole(UserRole.ADMINISTRATOR)) {
+            return;
+        }
+
+        if (user.hasRole(role)) {
+            this.database.update(
+                "DELETE FROM accountrole r WHERE r.role = ? AND r.username = ?",
                 (statement) -> {
-                    statement.setString(1, role.toString().toLowerCase());
-                    statement.setString(2, this.username);
+                    statement.setString(1, role.role);
+                    statement.setString(2, user.username);
                 }
             );
         } else {
             this.database.insert(
                 "INSERT INTO accountrole (role, username) VALUES (?, ?)",
                 (statement) -> {
-                    statement.setString(1, role.toString().toLowerCase());
-                    statement.setString(2, this.username);
+                    statement.setString(1, role.role);
+                    statement.setString(2, user.username);
                 }
             );
         }
     }
 
-    public List<User> getChangeableUsers(String name) {
+    public List<User> findChangeable(String name) {
         var users = new ArrayList<User>();
-        var sql = "SELECT username, role FROM wordcrex.accountrole WHERE username LIKE ? AND username != ?";
 
-        if (name.isEmpty()) {
-            return users;
-        } else if (name.equals("ALL")) { //get all users including logged in user
-            sql = "SELECT username, role FROM wordcrex.accountrole";
-        }
-
-        this.database.select(sql,
+        this.database.select(
+            "SELECT r.username, group_concat(r.role SEPARATOR ',') roles FROM accountrole r WHERE r.username LIKE ? AND r.username != ? GROUP BY r.username;\n",
             (statement) -> {
-                if (!name.equals("ALL")) {
-                    statement.setString(1, name + "%");
-                    statement.setString(2, this.username);
-                }
+                statement.setString(1, "%" + name + "%");
+                statement.setString(2, this.username);
             },
             (result) -> {
-                var roleList = new ArrayList<UserRole>();
-                var foundUser = false;
+                var roles = new ArrayList<UserRole>();
+                var rolesSplitted = result.getString("roles").split(",");
 
-                for (var u : users) {
-                    if (u.username.equals(result.getString("username"))) {
-                        u.roles.add(UserRole.byRole(result.getString("role")));
-                        foundUser = true;
-                        break;
-                    }
+                for (var raw : rolesSplitted) {
+                    roles.add(UserRole.byRole(raw));
                 }
 
-                if (!foundUser) {
-                    roleList.add(UserRole.byRole(result.getString("role")));
-                    users.add(new User(this.database, result.getString("username"), roleList, List.of(), List.of()));
-                }
+                users.add(new User(this.database, result.getString("username"), List.copyOf(roles), List.of(), List.of()));
             }
         );
 
