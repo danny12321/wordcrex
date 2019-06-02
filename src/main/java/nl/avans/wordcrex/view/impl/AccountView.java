@@ -1,11 +1,13 @@
 package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.controller.impl.AccountController;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class AccountView extends View<AccountController> {
     public AccountView(AccountController controller) {
@@ -18,7 +20,7 @@ public class AccountView extends View<AccountController> {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
     }
 
     @Override

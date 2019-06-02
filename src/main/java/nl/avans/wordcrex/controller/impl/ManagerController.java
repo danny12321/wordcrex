@@ -5,6 +5,7 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.util.Console;
+import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.ManagerView;
 
@@ -15,8 +16,10 @@ import java.util.function.Function;
 
 public class ManagerController extends Controller<User> {
 
-    private List<String> users = new ArrayList<>();
+    //private List<String> users = new ArrayList<>();
     private List<User> usersWithRoles = new ArrayList<>();
+
+    private List<Pair<String, Boolean>> users = new ArrayList<>();
 
     public ManagerController(Main main, Function<User, User> fn) {
         super(main, fn);
@@ -28,7 +31,7 @@ public class ManagerController extends Controller<User> {
     }
 
     public void search(String username) {
-        this.users = this.getModel().getUsers(username);
+        this.users = this.getModel().findOpponents(username);
     }
     public void searchUsersWithRoles(String username){
         this.usersWithRoles = this.getModel().getChangableUsers(username);
@@ -36,7 +39,14 @@ public class ManagerController extends Controller<User> {
 
 
     public List<String> getUsers() {
-        return this.users;
+
+        List<String> usernames = new ArrayList<>();
+
+        for(Pair p : users){
+            usernames.add(p.a.toString());
+        }
+        return usernames;
+
     }
     public List<User> getUsersWithRoles(){ return this.usersWithRoles; }
     

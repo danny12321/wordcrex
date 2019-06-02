@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.ManagerController;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.UserRole;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
@@ -17,6 +18,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class ManagerView extends View<ManagerController> {
 
@@ -83,7 +85,7 @@ public class ManagerView extends View<ManagerController> {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
     }
 
     @Override
