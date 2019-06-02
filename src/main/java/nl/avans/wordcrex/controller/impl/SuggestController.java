@@ -15,11 +15,13 @@ public class SuggestController extends Controller<User> {
 	private int page;
 	private Map<String, List<Word>> words;
 	private String languageCode;
+	private List<String> language;
 
 	public SuggestController(Main main, Function<User, User> fn)
 	{
 		super(main, fn);
 		this.setPage(0);
+		this.language = this.getModel().getLanguages();
 	}
 
 	@Override
@@ -38,11 +40,6 @@ public class SuggestController extends Controller<User> {
 		this.languageCode = languageCode;
 	}
 
-	public String getLanguage()
-	{
-		return languageCode;
-	}
-
 	public void setPage(int page) {
 		this.page = page;
 		this.words = this.getModel().getSuggestedWords(this.page);
@@ -57,4 +54,10 @@ public class SuggestController extends Controller<User> {
 	{
 		return words;
 	}
+
+	public List<String> getLanguage()
+	{
+		return language;
+	}
+
 }

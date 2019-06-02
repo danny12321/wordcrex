@@ -70,9 +70,13 @@ public class SuggestView extends View<SuggestController>
 
 	@Override
 	public List<Widget> getChildren() {
+		var codes = this.controller.getLanguage();
 		LinkedHashMap<String, String> languages = new LinkedHashMap<>();
-		languages.put("NL", "NL");
-		languages.put("EN", "EN");
+		for (String c : codes)
+		{
+		languages.put(c,c);
+		}
+
 
 		return List.of(
 			this.scrollbar,

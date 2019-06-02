@@ -3,6 +3,7 @@ package nl.avans.wordcrex.model;
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Pollable;
 
+import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -219,6 +220,24 @@ public class User implements Pollable<User> {
         );
 
         return Map.copyOf(words);
+    }
+
+    public ArrayList<String> getLanguages()
+    {
+        var languages = new ArrayList<String>();
+
+        this.database.select(
+                "SELECT code FROM letterset",
+                (statement) ->{},
+                (result) ->{
+                    var code = result.getString("code");
+                    //var beschrijving = result.getString("description");
+
+
+                    languages.add(code);
+                }
+        );
+        return languages;
     }
 
     public void submitNewWord(String word, String lettercode)
