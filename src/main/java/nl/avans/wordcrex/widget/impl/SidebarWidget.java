@@ -4,11 +4,13 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.controller.impl.*;
 import nl.avans.wordcrex.model.UserRole;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.AccountView;
 import nl.avans.wordcrex.view.impl.ApproveView;
 import nl.avans.wordcrex.view.impl.DashboardView;
+import nl.avans.wordcrex.view.impl.ManagerView;
 import nl.avans.wordcrex.view.impl.SuggestView;
 import nl.avans.wordcrex.widget.Widget;
 
@@ -16,6 +18,7 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class SidebarWidget extends Widget {
@@ -24,7 +27,7 @@ public class SidebarWidget extends Widget {
         new Item<>("OBSERVE", null, null, UserRole.OBSERVER),
         new Item<>("SUGGEST", SuggestController.class, SuggestView.class, UserRole.PLAYER),
         new Item<>("APPROVE", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
-        new Item<>("MANAGE", null, null, UserRole.ADMINISTRATOR),
+        new Item<>("MANAGE", ManagerController.class, ManagerView.class, UserRole.ADMINISTRATOR),
         new Item<>("ACCOUNT", AccountController.class, AccountView.class, null)
     );
     private final Map<String, ButtonWidget> children = new HashMap<>();
@@ -58,7 +61,7 @@ public class SidebarWidget extends Widget {
     }
 
     @Override
-    public void update() {
+    public void update(Consumer<Particle> addParticle) {
     }
 
     @Override

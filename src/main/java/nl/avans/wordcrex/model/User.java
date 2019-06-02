@@ -233,6 +233,68 @@ public class User implements Pollable<User> {
         }
     }
 
+    public List<User> getChangableUsers(String name) {
+       // if (this.roles.indexOf(UserRole.ADMINISTRATOR) == -1) {
+           // return List.of();
+        //}
+
+        List<User> users = new ArrayList<User>();
+
+        if(name.isEmpty()){
+            return users;
+        }
+        //get all users including logged in user
+        else if(name.equals("ALL"))
+        {
+            this.database.select("SELECT username, role FROM wordcrex.accountrole",
+                    (statement) -> { },
+                    (result)->{
+                        List<UserRole> roleList = new ArrayList<>();
+                        boolean foundUser = false;
+                        for(User u : users)
+                        {
+                            if(u.username.equals(result.getString("username")))
+                            {
+                                u.roles.add(UserRole.byRole(result.getString("role")));
+                                foundUser = true;
+                                break;
+                            }
+                        }
+                        if(!foundUser)
+                        {
+                            roleList.add(UserRole.byRole(result.getString("role")));
+                            users.add(new User(this.database, result.getString("username"), false, roleList, null, null));
+                        }
+                    });
+            return users;
+        }
+
+        this.database.select("SELECT username, role FROM wordcrex.accountrole WHERE username LIKE ? AND username != ? ",
+                (statement) -> {
+                    statement.setString(1, name + "%");
+                    statement.setString(2, this.username);
+                    },
+                (result)->{
+                       List<UserRole> roleList = new ArrayList<>();
+                       boolean foundUser = false;
+                       for(User u : users)
+                       {
+                           if(u.username.equals(result.getString("username")))
+                           {
+                               u.roles.add(UserRole.byRole(result.getString("role")));
+                               foundUser = true;
+                               break;
+                           }
+                       }
+                       if(!foundUser)
+                       {
+                           roleList.add(UserRole.byRole(result.getString("role")));
+                           users.add(new User(this.database, result.getString("username"), false, roleList, null, null));
+                       }
+                    });
+        return users;
+    }
+
     public User logout() {
         return new User(this.database);
     }

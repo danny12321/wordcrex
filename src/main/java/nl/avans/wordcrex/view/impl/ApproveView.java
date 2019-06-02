@@ -2,6 +2,7 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.ApproveController;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
@@ -10,6 +11,7 @@ import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 import java.awt.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class ApproveView extends View<ApproveController> {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
@@ -40,15 +42,15 @@ public class ApproveView extends View<ApproveController> {
     }
 
     @Override
+    public void update(Consumer<Particle> addParticle) {
+    }
+
+    @Override
     public List<Widget> getChildren() {
         return List.of(
             this.scrollbar
             //this.acceptButton,
             //this.declineButton
         );
-    }
-
-    @Override
-    public void update() {
     }
 }
