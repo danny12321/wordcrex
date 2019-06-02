@@ -12,12 +12,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class AccountController extends Controller<User> {
-    private User user;
-
     public AccountController(Main main, Function<User, User> fn) {
         super(main, fn);
-
-        this.user = this.getModel().getCurrentUserBeingEdited();
     }
 
     @Override
@@ -25,23 +21,28 @@ public class AccountController extends Controller<User> {
         return new AccountView(this);
     }
 
+    @Override
+    public boolean replaceable() {
+        return false;
+    }
+
     public void changePassword(String password) {
-        this.user.changePassword(password);
+        this.getModel().changePassword(password);
     }
 
     public String getUsername() {
-        return this.user.username;
+        return this.getModel().username;
     }
 
     public List<UserRole> getRoles() {
-        return this.user.roles;
+        return this.getModel().roles;
     }
 
     public void switchRole(UserRole role) {
-        this.user.switchRole(role);
+        this.getModel().switchRole(role);
     }
 
     public boolean isAdmin() {
-        return this.getModel().roles.contains(UserRole.ADMINISTRATOR);
+        return this.getRoot().roles.contains(UserRole.ADMINISTRATOR);
     }
 }

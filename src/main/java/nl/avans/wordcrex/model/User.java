@@ -15,8 +15,6 @@ public class User implements Pollable<User> {
     public final List<Game> games;
     public final List<Dictionary> dictionaries;
 
-    private User currentUserBeingEdited = this;
-
     public User(Database database) {
         this(database, "");
     }
@@ -391,7 +389,7 @@ public class User implements Pollable<User> {
 
                 if (!foundUser) {
                     roleList.add(UserRole.byRole(result.getString("role")));
-                    users.add(new User(this.database, result.getString("username"), roleList, null, null));
+                    users.add(new User(this.database, result.getString("username"), roleList, List.of(), List.of()));
                 }
             }
         );
@@ -399,14 +397,6 @@ public class User implements Pollable<User> {
         return users;
     }
 
-    public User getCurrentUserBeingEdited() {
-        return this.roles.contains(UserRole.ADMINISTRATOR) ? this.currentUserBeingEdited : this;
-    }
-
-    public void setCurrentUserBeingEdited(User user) {
-        currentUserBeingEdited = user;
-    }
-  
     public void updateWord(Word word, WordState state) {
         if (word.state != WordState.PENDING || !this.hasRole(UserRole.MODERATOR)) {
             return;

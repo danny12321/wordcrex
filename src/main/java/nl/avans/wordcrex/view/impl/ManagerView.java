@@ -11,10 +11,8 @@ import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
-import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ListWidget;
-import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -54,10 +52,7 @@ public class ManagerView extends View<ManagerController> {
             (previous, next) -> null,
             (user) -> user.username,
             (user) -> true,
-            (user) -> {
-                this.controller.getCurrentUser().setCurrentUserBeingEdited(user);
-                this.main.openController(AccountController.class);
-            }
+            (user) -> this.main.openController(AccountController.class, (model) -> user)
         );
     }
 
@@ -68,7 +63,7 @@ public class ManagerView extends View<ManagerController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-            this.list.setItems(users);
+        this.list.setItems(this.users);
     }
 
     @Override
