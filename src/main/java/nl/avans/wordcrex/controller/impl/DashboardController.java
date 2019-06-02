@@ -45,7 +45,6 @@ public class DashboardController extends Controller<User> {
 
     public void acceptInvite(Game game) {
         this.getModel().respondInvite(game, InviteState.ACCEPTED);
-        this.afterPoll(() -> this.navigateGame(game.id));
     }
 
     public void rejectInvite(Game game) {
