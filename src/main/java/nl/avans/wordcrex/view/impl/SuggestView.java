@@ -70,7 +70,7 @@ public class SuggestView extends View<SuggestController> {
             this.scrollbar,
             new InputWidget("WOORD", 0, 30, 400, 48, (value) -> this.word = value),
             new ButtonWidget("SUGGEREER", 0, 78, 480, 48, this::suggest),
-            new DropdownWidget<>(this.controller.getDictionaries(), "Taal", 400, 30, 80, 48, this.controller::setDictionary)
+            new DropdownWidget<>(this.controller.getDictionaries(), "Taal", 400, 30, 80, 48, 10, this.controller::setDictionary)
         );
     }
 
