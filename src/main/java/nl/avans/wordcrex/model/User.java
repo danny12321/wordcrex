@@ -297,16 +297,14 @@ public class User implements Pollable<User> {
         return users;
     }
 
-    public User getCurrentUserBeingEdited()
-    {
-        if(this.roles.contains(UserRole.ADMINISTRATOR))
-        {
-            return getCurrentUserBeingEdited();
-        }
-        else{
+    public User getCurrentUserBeingEdited() {
+        if(this.roles.contains(UserRole.ADMINISTRATOR)) {
+            return this.currentUserBeingEdited;
+        } else {
             return this;
         }
     }
+
     public void setCurrentUserBeingEdited(User user){
         currentUserBeingEdited = user;
     }
@@ -365,5 +363,23 @@ public class User implements Pollable<User> {
                 statement.setString(4, this.username);
             }
         );
+    }
+
+    public void changePassword(String password) {
+        this.database.update(
+            "UPDATE account SET password = ? WHERE username = ?",
+            (statement) -> {
+                statement.setString(1, password);
+                statement.setString(2, this.username);
+            }
+        );
+    }
+
+    public void switchRole(UserRole role) {
+        if(this.roles.contains(role)) {
+            System.out.println("yay");
+        } else {
+            System.out.println("Nay");
+        }
     }
 }
