@@ -99,7 +99,7 @@ public class User implements Pollable<User> {
             "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code " +
                 "FROM game g " +
                 "WHERE (g.username_player1 = ? OR g.username_player2 = ?) " +
-                    "AND g.answer_player2 != ?",
+                "AND g.answer_player2 != ?",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setString(2, this.username);
@@ -328,7 +328,7 @@ public class User implements Pollable<User> {
     }
 
     public void switchRole(UserRole role) {
-        if(this.roles.contains(role)) {
+        if (this.roles.contains(role)) {
             this.database.delete(
                 "DELETE FROM accountrole WHERE role = ? AND username = ?",
                 (statement) -> {
@@ -345,5 +345,56 @@ public class User implements Pollable<User> {
                 }
             );
         }
+    }
+
+    public List<User> getChangeableUsers(String name) {
+        var users = new ArrayList<User>();
+
+        var sql = "SELECT username, role FROM wordcrex.accountrole WHERE username LIKE ? AND username != ? ";
+
+        if (name.isEmpty()) {
+            return users;
+        } else if (name.equals("ALL")) { //get all users including logged in user
+            sql = "SELECT username, role FROM wordcrex.accountrole";
+
+            this.database.select(sql,
+                (statement) -> {
+                    if (!name.equals("ALL")) {
+                        statement.setString(1, name + "%");
+                        statement.setString(2, this.username);
+                    }
+                },
+                (result) -> {
+                    var roleList = new ArrayList<UserRole>();
+                    var foundUser = false;
+                    for (User u : users) {
+                        if (u.username.equals(result.getString("username"))) {
+                            u.roles.add(UserRole.byRole(result.getString("role")));
+                            foundUser = true;
+                            break;
+                        }
+                    }
+                    if (!foundUser) {
+                        roleList.add(UserRole.byRole(result.getString("role")));
+                        users.add(new User(this.database, result.getString("username"), roleList, null, null));
+                    }
+                }
+            );
+            return users;
+        }
+
+        return users;
+    }
+
+    public User getCurrentUserBeingEdited() {
+        if (this.roles.contains(UserRole.ADMINISTRATOR)) {
+            return this.currentUserBeingEdited;
+        } else {
+            return this;
+        }
+    }
+
+    public void setCurrentUserBeingEdited(User user) {
+        currentUserBeingEdited = user;
     }
 }
