@@ -49,4 +49,8 @@ public class GameController extends Controller<Game> {
     public void navigateChat() {
         this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
     }
+
+    public void navigateHistory() {
+        this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
+    }
 }
