@@ -63,7 +63,7 @@ public class DashboardView extends View<DashboardController> {
             this.controller::isSelectable,
             (game) -> {
                 if (game.inviteState == InviteState.PENDING) {
-                    this.dialog.show("Accepteren?", "Ja", "Nee", (positive) -> {
+                    this.dialog.show("Accepteren?", "JA", "NEE", (positive) -> {
                         if (positive) {
                             this.controller.acceptInvite(game);
                         } else {
@@ -83,7 +83,7 @@ public class DashboardView extends View<DashboardController> {
     public void draw(Graphics2D g) {
         if (this.controller.getGames().isEmpty()) {
             g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "No games");
+            StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen spellen of uitdagingen");
         }
     }
 
@@ -96,7 +96,7 @@ public class DashboardView extends View<DashboardController> {
     public List<Widget> getChildren() {
         return List.of(
             this.list,
-            new ButtonWidget("Nieuw spel", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::navigateInvite),
+            new ButtonWidget("NIEUW SPEL", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::navigateInvite),
             this.dialog
         );
     }
