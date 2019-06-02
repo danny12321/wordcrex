@@ -32,7 +32,7 @@ public class SuggestController extends Controller<User> {
         var dictionaries = new LinkedHashMap<Dictionary, String>();
 
         for (int i = 0; i < this.getModel().dictionaries.size(); i++) {
-            dictionaries.put(this.getModel().dictionaries.get(i), this.getModel().dictionaries.get(i).description);
+            dictionaries.put(this.getModel().dictionaries.get(i), this.getModel().dictionaries.get(i).code);
         }
 
         return dictionaries;

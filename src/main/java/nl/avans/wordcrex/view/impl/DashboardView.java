@@ -3,6 +3,7 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.DashboardController;
 import nl.avans.wordcrex.model.Game;
+import nl.avans.wordcrex.model.GameState;
 import nl.avans.wordcrex.model.InviteState;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
@@ -30,7 +31,8 @@ public class DashboardView extends View<DashboardController> {
             (g, game) -> {
                 var host = this.controller.isCurrentUser(game.host);
                 var other = host ? game.opponent : game.host;
-                var extra = game.inviteState == InviteState.PENDING ? host ? "Naar " : "Van " : "";
+                var bigExtra = game.inviteState == InviteState.PENDING ? host ? "Naar " : "Van " : "";
+                var smallExtra = game.state == GameState.PLAYING ? host == (game.getLastRound().hostTurn == null) ? "Jouw beurt - " : "Hun beurt - " : "";
 
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
@@ -39,11 +41,22 @@ public class DashboardView extends View<DashboardController> {
                 StringUtil.drawCenteredString(g, Main.TASKBAR_SIZE, 27, 42, 42, other.substring(0, 1).toUpperCase());
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Color.WHITE);
-                g.drawString(extra + other, Main.TASKBAR_SIZE * 2 + 42, 44);
+                g.drawString(bigExtra + other, Main.TASKBAR_SIZE * 2 + 42, 44);
                 g.setFont(Fonts.SMALL);
                 g.setColor(Color.LIGHT_GRAY);
-                g.drawString(game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);
+                g.drawString(smallExtra + game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);
                 g.setFont(Fonts.NORMAL);
+
+                if (game.state == GameState.PLAYING) {
+                    var metrics = g.getFontMetrics();
+                    var score = " " + game.getHostScore() + " - " + game.getOpponentScore() + " ";
+                    var width = metrics.stringWidth(score);
+
+                    g.setColor(Colors.DARK_BLUE);
+                    g.fillRect(450 - width, 34, width, 28);
+                    g.setColor(Color.WHITE);
+                    g.drawString(score, 450 - width, 54);
+                }
             },
             (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (game) -> String.valueOf(game.id),

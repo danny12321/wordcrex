@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class Game implements Pollable<Game> {
@@ -28,12 +27,12 @@ public class Game implements Pollable<Game> {
         this(game.database, game.id, game.host, game.opponent, game.state, game.inviteState, game.dictionary, tiles, game.pool, game.rounds, game.messages);
     }
 
-    public Game(Game game, GameState state, InviteState inviteState, List<Letter> pool, List<Round> rounds, List<Message> messages) {
-        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, pool, rounds, messages);
+    public Game(Game game, GameState state, InviteState inviteState, List<Letter> pool, List<Message> messages) {
+        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, pool, null, messages);
     }
 
     public Game(Database database, int id, String host, String opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
-        this(database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), List.of(), List.of());
+        this(database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), null, List.of());
     }
 
     public Game(Database database, int id, String host, String opponent, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Letter> pool, List<Round> rounds, List<Message> messages) {
@@ -46,7 +45,7 @@ public class Game implements Pollable<Game> {
         this.dictionary = dictionary;
         this.tiles = tiles;
         this.pool = pool;
-        this.rounds = rounds;
+        this.rounds = rounds == null ? this.getRounds() : rounds;
         this.messages = messages;
     }
 
@@ -96,6 +95,24 @@ public class Game implements Pollable<Game> {
             }
         );
 
+        var messages = new ArrayList<Message>();
+
+        this.database.select(
+            "SELECT m.message, m.username, m.moment date FROM chatline m WHERE game_id = ? ORDER BY moment",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
+        );
+
+        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(pool), List.copyOf(messages));
+
+        if (game.state == GameState.PLAYING && game.rounds.isEmpty()) {
+            game.startNewRound();
+        }
+
+        return game;
+    }
+
+    private List<Round> getRounds() {
         var rounds = new ArrayList<Round>();
 
         this.database.select(
@@ -115,21 +132,7 @@ public class Game implements Pollable<Game> {
             }
         );
 
-        var messages = new ArrayList<Message>();
-
-        this.database.select(
-            "SELECT m.message, m.username, m.moment date FROM chatline m WHERE game_id = ? ORDER BY moment",
-            (statement) -> statement.setInt(1, this.id),
-            (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
-        );
-
-        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(pool), List.copyOf(rounds), List.copyOf(messages));
-
-        if (game.state == GameState.PLAYING && game.rounds.isEmpty()) {
-            game.startNewRound();
-        }
-
-        return game;
+        return List.copyOf(rounds);
     }
 
     private Turn parseTurn(ResultSet result, String player) throws SQLException {
