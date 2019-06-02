@@ -10,6 +10,8 @@ import java.util.function.Consumer;
 public class DragWidget extends Widget {
     public final int width;
     public final int height;
+    public final int initialX;
+    public final int initialY;
 
     private final BiConsumer<Graphics2D, Boolean> draw;
 
@@ -21,8 +23,8 @@ public class DragWidget extends Widget {
     private boolean dragging;
 
     public DragWidget(int x, int y, int width, int height, BiConsumer<Graphics2D, Boolean> draw) {
-        this.x = x;
-        this.y = y;
+        this.x = this.initialX = x;
+        this.y = this.initialY = y;
         this.width = width;
         this.height = height;
         this.draw = draw;
@@ -65,7 +67,8 @@ public class DragWidget extends Widget {
     @Override
     public void mouseRelease(int x, int y) {
         if (this.dragging) {
-            // drop lmao
+            this.x = this.initialX;
+            this.y = this.initialY;
         }
 
         this.dragging = false;

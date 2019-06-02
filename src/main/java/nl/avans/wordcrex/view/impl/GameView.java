@@ -12,6 +12,7 @@ import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -95,17 +96,25 @@ public class GameView extends View<GameController> {
 
     @Override
     public List<Widget> getChildren() {
-        return List.of(
-            new ButtonWidget("CHAT", 6, 52 + 24, 64, 32, this.controller::navigateChat),
-            new DragWidget(100, 100, 24, 24, (g, hover) -> {
+        var list = new ArrayList<Widget>();
+
+        list.add(new ButtonWidget("CHAT", 6, 52 + 24, 64, 32, this.controller::navigateChat));
+
+        var deck = this.controller.getDeck();
+        for (var i = 0; i < deck.size(); i++) {
+            var character = deck.get(i);
+
+            list.add(new DragWidget(142 + i * 34, 462, 24, 24, (g, hover) -> {
                 g.setColor(hover ? Color.LIGHT_GRAY : Color.WHITE);
                 g.fillRect(0, 0, 24, 24);
                 g.setColor(Colors.DARK_BLUE);
-                g.drawString("A", 3, 21);
+                g.drawString(character.character, 3, 21);
                 g.setFont(Fonts.SMALL);
-                g.drawString(String.valueOf(1), 15, 11);
+                g.drawString(String.valueOf(character.value), 15, 11);
                 g.setFont(Fonts.NORMAL);
-            })
-        );
+            }));
+        }
+
+        return list;
     }
 }

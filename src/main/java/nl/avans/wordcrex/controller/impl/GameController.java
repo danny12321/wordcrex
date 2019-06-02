@@ -2,6 +2,7 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
+import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Tile;
 import nl.avans.wordcrex.model.User;
@@ -36,6 +37,10 @@ public class GameController extends Controller<Game> {
 
     public List<Tile> getTiles() {
         return this.getModel().tiles;
+    }
+
+    public List<Character> getDeck() {
+        return this.getModel().getLastRound().characters;
     }
 
     public int getPoolSize() {
