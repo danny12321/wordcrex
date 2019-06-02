@@ -9,7 +9,7 @@ import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
-import nl.avans.wordcrex.widget.impl.ComboBoxWidget;
+import nl.avans.wordcrex.widget.impl.DropdownWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
@@ -99,7 +99,7 @@ public class InviteView extends View<InviteController> {
         return List.of(
             this.scrollbar,
             new InputWidget("Zoek op gebruikersnaam", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::findOpponents),
-            new ComboBoxWidget<>(dictionaries, "Selecteer taal", 20, this.offset - 48 - 10, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, 48, this.controller::setDictionary, (open) -> this.disabled = open)
+            new DropdownWidget<>(dictionaries, "Selecteer taal", 20, this.offset - 48 - 10, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, 48, this.controller::setDictionary, (open) -> this.disabled = open)
         );
     }
 }
