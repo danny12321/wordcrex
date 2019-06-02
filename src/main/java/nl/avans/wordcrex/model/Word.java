@@ -13,6 +13,6 @@ public class Word {
 
     public WordState getState()
     {
-        return state;
+        return this.state;
     }
 }

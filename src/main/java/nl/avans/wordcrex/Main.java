@@ -4,6 +4,7 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.controller.impl.LoginController;
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.Loop;
@@ -16,14 +17,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Main extends JPanel {
+    public static final Random RANDOM = new Random();
     public static final int FRAME_SIZE = 512;
     public static final int TASKBAR_SIZE = 32;
 
@@ -32,6 +33,7 @@ public class Main extends JPanel {
     private final JFrame frame;
     private final Database database;
     private final List<Widget> widgets;
+    private final List<Particle> particles;
     private final Loop loop;
 
     private Controller<?> controller;
@@ -40,7 +42,8 @@ public class Main extends JPanel {
     private Main(JFrame frame, String config) {
         this.frame = frame;
         this.database = new Database(config);
-        this.widgets = new ArrayList<>();
+        this.widgets = new CopyOnWriteArrayList<>();
+        this.particles = new CopyOnWriteArrayList<>();
         this.loop = new Loop(Map.of(
             4.0d, this::poll,
             30.0d, this::update,
@@ -78,9 +81,18 @@ public class Main extends JPanel {
 
     public <T extends Pollable<T>> void openController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
         this.controller = this.createController(cls, fn);
+        this.openView(this.controller.createView());
+    }
+
+    private void openView(View<?> view) {
         this.widgets.clear();
 
-        this.addWidget(this.controller.createView(), new ArrayList<>());
+        var dead = this.particles.stream()
+            .filter((particle) -> !particle.persist(view))
+            .collect(Collectors.toList());
+        this.particles.removeAll(dead);
+
+        this.addWidget(view, new ArrayList<>());
         this.addWidget(new FrameWidget(this), new ArrayList<>());
     }
 
@@ -100,6 +112,10 @@ public class Main extends JPanel {
 
         parents.add(widget);
         children.forEach((child) -> this.addWidget(child, parents));
+    }
+
+    public void addParticle(Particle particle) {
+        this.particles.add(particle);
     }
 
     public boolean isOpen(Class<? extends View<?>> cls) {
@@ -124,7 +140,19 @@ public class Main extends JPanel {
     }
 
     private void update() {
-        this.widgets.forEach(Widget::update);
+        this.widgets.forEach((widget) -> widget.update(this::addParticle));
+
+        var dead = this.particles.stream()
+                .filter((particle) -> !particle.update(this::addParticle))
+                .collect(Collectors.toList());
+        this.particles.removeAll(dead);
+
+        this.widgets.stream()
+            .filter(View.class::isInstance)
+            .map(View.class::cast)
+            .filter(View::shouldReinitialize)
+            .findAny()
+            .ifPresent(this::openView);
     }
 
     @Override
@@ -135,9 +163,17 @@ public class Main extends JPanel {
 
         g.setRenderingHints(Main.RENDERING_HINTS);
 
+        this.particles.stream()
+            .filter((particle) -> !particle.foreground)
+            .sorted(Comparator.comparingInt(Particle::priority))
+            .forEach((particle) -> particle.draw(g));
         this.widgets.stream()
             .sorted(Comparator.comparingInt((ui) -> ui.treeMatch(Widget::forceTop) ? 1 : 0))
             .forEach((widget) -> widget.draw(g));
+        this.particles.stream()
+            .filter((particle) -> particle.foreground)
+            .sorted(Comparator.comparingInt(Particle::priority))
+            .forEach((particle) -> particle.draw(g));
     }
 
     public List<Widget> getWidgets(boolean blocked) {
@@ -151,7 +187,7 @@ public class Main extends JPanel {
         }
 
         return this.widgets.stream()
-            .filter((widget) -> widget.isChild(blocker))
+            .filter((widget) -> widget == blocker || widget.isChild(blocker))
             .collect(Collectors.toList());
     }
 

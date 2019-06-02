@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
+import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 
 import javax.print.DocFlavor;
@@ -26,12 +27,12 @@ public class User implements Pollable<User> {
         this(database, username, authenticated, List.of(), List.of(), List.of());
     }
 
-    public User(User user, List<Dictionary> dictionaries) {
-        this(user.database, user.username, user.authenticated, user.roles, user.games, dictionaries);
+    public User(User user, List<UserRole> roles, List<Dictionary> dictionaries) {
+        this(user.database, user.username, user.authenticated, roles, user.games, dictionaries);
     }
 
-    public User(User user, List<UserRole> roles, List<Game> games) {
-        this(user.database, user.username, user.authenticated, roles, games, user.dictionaries);
+    public User(User user, List<Game> games) {
+        this(user.database, user.username, user.authenticated, user.roles, games, user.dictionaries);
     }
 
     public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
@@ -49,11 +50,20 @@ public class User implements Pollable<User> {
             return this;
         }
 
+        var roles = new ArrayList<UserRole>();
+
+        this.database.select(
+            "SELECT r.role FROM accountrole r WHERE r.username = ?",
+            (statement) -> statement.setString(1, this.username),
+            (result) -> roles.add(UserRole.byRole(result.getString("role")))
+        );
+
         var characters = new HashMap<String, List<Character>>();
 
         this.database.select(
             "SELECT * FROM symbol",
-            (statement) -> {},
+            (statement) -> {
+            },
             (result) -> {
                 var code = result.getString("letterset_code");
                 var list = characters.getOrDefault(code, new ArrayList<>());
@@ -68,16 +78,21 @@ public class User implements Pollable<User> {
 
         this.database.select(
             "SELECT * FROM letterset",
-            (statement) -> {},
+            (statement) -> {
+            },
             (result) -> {
                 var code = result.getString("code");
                 var character = characters.getOrDefault(code, new ArrayList<>());
+
+                if (character.isEmpty()) {
+                    return;
+                }
 
                 dictionaries.add(new Dictionary(this.database, code, result.getString("description"), List.copyOf(character)));
             }
         );
 
-        return new User(this, List.copyOf(dictionaries));
+        return new User(this, List.copyOf(roles), List.copyOf(dictionaries));
     }
 
     @Override
@@ -86,21 +101,14 @@ public class User implements Pollable<User> {
             return this;
         }
 
-        var roles = new ArrayList<UserRole>();
-
-        this.database.select(
-            "SELECT r.role FROM accountrole r WHERE r.username = ?",
-            (statement) -> statement.setString(1, username),
-            (result) -> roles.add(UserRole.byRole(result.getString("role")))
-        );
-
         var games = new ArrayList<Game>();
 
         this.database.select(
-            "SELECT * FROM game g WHERE g.username_player1 = ? OR g.username_player2 = ?",
+            "SELECT * FROM game g WHERE (g.username_player1 = ? OR g.username_player2 = ?) AND g.answer_player2 != ? ORDER BY g.game_state DESC",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setString(2, this.username);
+                statement.setString(3, InviteState.REJECTED.state);
             },
             (result) -> {
                 var id = result.getInt("game_id");
@@ -118,11 +126,17 @@ public class User implements Pollable<User> {
                     return;
                 }
 
-                games.add(new Game(this.database, id, false, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary));
+                var game = new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary);
+
+                if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host.username)) {
+                    game.startGame();
+                }
+
+                games.add(game);
             }
         );
 
-        return new User(this, List.copyOf(roles), List.copyOf(games));
+        return new User(this, List.copyOf(games));
     }
 
     @Override
@@ -138,12 +152,36 @@ public class User implements Pollable<User> {
         return this.username.substring(0, 1).toUpperCase();
     }
 
+    public User register(String username, String password) {
+        var insertedUser = this.database.insert(
+            "INSERT INTO `account` VALUES(lower(?), lower(?));",
+            (statement) -> {
+                statement.setString(1, username);
+                statement.setString(2, password);
+            }
+        );
+
+        var insertedRole = this.database.insert(
+            "INSERT INTO accountrole VALUES(lower(?), ?)",
+            (statement) -> {
+                statement.setString(1, username);
+                statement.setString(2, UserRole.PLAYER.role);
+            }
+        );
+
+        if (insertedUser == -1 || insertedRole == -1) {
+            return this;
+        }
+
+        return this.login(username, password);
+    }
+
     public User login(String username, String password) {
         var ref = new Object() {
             String username;
         };
         var selected = this.database.select(
-            "SELECT a.username FROM account a WHERE a.username = ? AND a.password = ?",
+            "SELECT a.username FROM account a WHERE lower(a.username) = lower(?) AND lower(a.password) = lower(?)",
             (statement) -> {
                 statement.setString(1, username);
                 statement.setString(2, password);
@@ -155,105 +193,108 @@ public class User implements Pollable<User> {
             return this;
         }
 
-        return new User(this.database, ref.username, true);
+        return new User(this.database, ref.username.toLowerCase(), true);
     }
 
-    public List<String> getUsers(String username) {
-        List<String> users = new ArrayList<>();
+    public List<Pair<String, Boolean>> findOpponents(String username) {
+        if (username.isEmpty()) {
+            return List.of();
+        }
 
-        if(username.isEmpty()) return users;
+        var users = new ArrayList<Pair<String, Boolean>>();
 
         this.database.select(
-                "SELECT a.username FROM account a JOIN accountrole ar ON a.username = ar.username WHERE a.username LIKE ? AND a.username != ? AND ar.role = 'player'",
-                (statement) -> {
-                    statement.setString(1, username + "%");
-                    statement.setString(2, this.username);
-                },
-                (result) -> users.add(result.getString("username"))
+            "SELECT a.username, (SELECT true FROM game g WHERE ((g.username_player1 = ? AND g.username_player2 LIKE ?) OR (g.username_player2 = ? AND g.username_player1 LIKE ?)) AND g.game_state IN ('request', 'playing') AND g.answer_player2 IN ('unknown', 'accepted') LIMIT 1) AS disabled FROM account a JOIN accountrole ar ON a.username = ar.username WHERE a.username LIKE ? AND a.username != ? AND ar.role = 'player'",
+            (statement) -> {
+                statement.setString(1, this.username);
+                statement.setString(2, username + "%");
+                statement.setString(3, username + "%");
+                statement.setString(4, this.username);
+                statement.setString(5, username + "%");
+                statement.setString(6, this.username);
+            },
+            (result) -> users.add(new Pair<>(result.getString("username"), !result.getBoolean("disabled")))
         );
 
-        return users;
+        return List.copyOf(users);
+    }
+
+    public void sendInvite(String username, Dictionary dictionary) {
+        this.database.insert(
+            "INSERT INTO game (game_state, letterset_code, username_player1, username_player2, answer_player2) VALUES (?, ?, ?, ?, ?)",
+            (statement) -> {
+                statement.setString(1, GameState.PENDING.state);
+                statement.setString(2, dictionary.code);
+                statement.setString(3, this.username);
+                statement.setString(4, username);
+                statement.setString(5, InviteState.PENDING.state);
+            }
+        );
+    }
+
+    public void respondInvite(Game game, InviteState state) {
+        this.database.update(
+            "UPDATE game g SET g.answer_player2 = ? WHERE g.game_id = ?",
+            (statement) -> {
+                statement.setString(1, state.state);
+                statement.setInt(2, game.id);
+            }
+        );
     }
 
     public User logout() {
         return new User(this.database);
     }
 
-    public List<Word> getPendingWords()
-    {
+    public List<Word> getPendingWords() {
+        if (this.roles.indexOf(UserRole.MODERATOR) == -1) {
+            return List.of();
+        }
+
         var words = new ArrayList<Word>();
 
         this.database.select(
-                "SELECT word, state FROM dictionary WHERE state = ? ",
-                (statement) -> {
-                    statement.setString(1, WordState.PENDING.state);
-                },
-                (result) -> {
-                    words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), ""));
-                }
+            "SELECT word, state FROM dictionary WHERE state = ? ",
+            (statement) -> statement.setString(1, WordState.PENDING.state),
+            (result) -> words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), ""))
         );
 
         return List.copyOf(words);
     }
 
-
-    public Map<String, List<Word>> getSuggestedWords(int page)
-    {
-    	var size = 100;
+    public Map<String, List<Word>> getSuggestedWords(int page) {
+        var size = 100;
         var words = new HashMap<String, List<Word>>();
 
         this.database.select(
-        		"SELECT word, letterset_code, state FROM dictionary WHERE username = ? LIMIT ?, ?",
-                (statement) -> {
-					statement.setString(1,this.username);
-					statement.setInt(2, page * size);
-					statement.setInt(3, size);
-				},
-                (result) -> {
-        			var code  = result.getString("letterset_code");
-        			var list = words.getOrDefault(code, new ArrayList<>());
+            "SELECT word, letterset_code, state FROM dictionary WHERE username = ? LIMIT ?, ?",
+            (statement) -> {
+                statement.setString(1, this.username);
+                statement.setInt(2, page * size);
+                statement.setInt(3, size);
+            },
+            (result) -> {
+                var code = result.getString("letterset_code");
+                var list = words.getOrDefault(code, new ArrayList<>());
 
-        			list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username));
+                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username));
 
-                    words.put(code, list);
-                }
+                words.put(code, list);
+            }
         );
 
         return Map.copyOf(words);
     }
 
-    public ArrayList<String> getLanguages()
-    {
-        var languages = new ArrayList<String>();
-
-        this.database.select(
-                "SELECT code FROM letterset",
-                (statement) ->{},
-                (result) ->{
-                    var code = result.getString("code");
-                    //var beschrijving = result.getString("description");
-
-
-                    languages.add(code);
-                }
+    public void submitNewWord(String word, String languageCode) {
+        this.database.insert(
+            "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
+            (statement) -> {
+                statement.setString(1, word);
+                statement.setString(2, languageCode);
+                statement.setString(3, WordState.PENDING.state);
+                statement.setString(4, this.username);
+            }
         );
-        return languages;
     }
-
-    public void submitNewWord(String word, String lettercode)
-	{
-
-		this.database.insert(
-				"INSERT INTO dictionary VALUES (?,?,?,?)",
-				(statement) ->
-				{
-					statement.setString(1, word);
-					statement.setString(2, lettercode);
-					statement.setString(3, WordState.PENDING.state);
-					statement.setString(4, this.username);
-				}
-		);
-	}
-
-
 }

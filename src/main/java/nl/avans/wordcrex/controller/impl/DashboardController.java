@@ -27,10 +27,6 @@ public class DashboardController extends Controller<User> {
         return user.username.equals(this.getModel().username);
     }
 
-    public boolean isVisible(Game game) {
-        return (game.state == GameState.PENDING || game.state == GameState.PLAYING) && game.inviteState != InviteState.REJECTED;
-    }
-
     public boolean isSelectable(Game game) {
         return game.state == GameState.PLAYING || (game.state == GameState.PENDING && !this.isCurrentUser(game.host));
     }
@@ -38,10 +34,8 @@ public class DashboardController extends Controller<User> {
     public String getLabel(Game game) {
         if (game.state == GameState.PENDING) {
             return "UITGEDAAGD";
-        } else if (game.turn) {
-            return "JOUW BEURT";
         } else {
-            return "HUN BEURT";
+            return "SPELEN";
         }
     }
 
@@ -49,12 +43,19 @@ public class DashboardController extends Controller<User> {
         return this.getModel().games;
     }
 
+    public void acceptInvite(Game game) {
+        this.getModel().respondInvite(game, InviteState.ACCEPTED);
+    }
+
+    public void rejectInvite(Game game) {
+        this.getModel().respondInvite(game, InviteState.REJECTED);
+    }
+
     public void navigateGame(int id) {
         this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
     }
 
-    public void newGame() {
-        System.out.println("Open new game view");
-        this.main.openController(NewGameController.class);
+    public void navigateInvite() {
+        this.main.openController(InviteController.class);
     }
 }
