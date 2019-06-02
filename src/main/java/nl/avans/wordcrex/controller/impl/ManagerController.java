@@ -36,8 +36,8 @@ public class ManagerController extends Controller<User> {
     public void searchUsersWithRoles(String username){
         this.usersWithRoles = this.getModel().getChangableUsers(username);
     }
-    public User getUser(){
-        return this.getUser();
+    public User getCurrentUser(){
+        return this.getModel();
     }
 
     public List<String> getUsers() {

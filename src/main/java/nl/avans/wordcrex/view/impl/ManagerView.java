@@ -73,7 +73,7 @@ public class ManagerView extends View<ManagerController> {
                 (user) -> user.username.hashCode(),
                 (user) -> true,
                 (user) -> {
-                    //this.controller.getUser().setCurrentUserBeingEdited(user);
+                    this.controller.getCurrentUser().setCurrentUserBeingEdited(user);
                     this.main.openController(AccountController.class);
                 }
         );
