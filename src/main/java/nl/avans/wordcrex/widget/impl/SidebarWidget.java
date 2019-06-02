@@ -26,9 +26,9 @@ public class SidebarWidget extends Widget {
         new Item<>("GAMES", DashboardController.class, DashboardView.class, UserRole.PLAYER),
         new Item<>("OBSERVE", null, null, UserRole.OBSERVER),
         new Item<>("SUGGEST", SuggestController.class, SuggestView.class, UserRole.PLAYER),
+        new Item<>("ACCOUNT", AccountController.class, AccountView.class, UserRole.PLAYER),
         new Item<>("APPROVE", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
-        new Item<>("MANAGE", ManagerController.class, ManagerView.class, UserRole.ADMINISTRATOR),
-        new Item<>("ACCOUNT", AccountController.class, AccountView.class, null)
+        new Item<>("MANAGE", ManagerController.class, ManagerView.class, UserRole.ADMINISTRATOR)
     );
     private final Map<String, ButtonWidget> children = new HashMap<>();
     private final Main main;
