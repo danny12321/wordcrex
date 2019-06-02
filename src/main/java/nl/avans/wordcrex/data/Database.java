@@ -41,7 +41,7 @@ public class Database {
         var updated = 0;
 
         try (var connection = this.getConnection();
-             var statement = connection.prepareStatement(sql)) {
+            var statement = connection.prepareStatement(sql)) {
             prepare.accept(statement);
 
             updated = statement.executeUpdate();
@@ -75,5 +75,20 @@ public class Database {
         }
 
         return -1;
+    }
+
+    public int delete(String sql, SqlConsumer<PreparedStatement> prepare) {
+        var deleted = 0;
+
+        try (var connection = this.getConnection();
+            var statement = connection.prepareStatement(sql)) {
+            prepare.accept(statement);
+
+            deleted = statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return deleted;
     }
 }

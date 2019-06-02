@@ -34,7 +34,7 @@ public class ManagerController extends Controller<User> {
         this.users = this.getModel().findOpponents(username);
     }
     public void searchUsersWithRoles(String username){
-        this.usersWithRoles = this.getModel().getChangableUsers(username);
+        this.usersWithRoles = this.getModel().getChangeableUsers(username);
     }
     public User getCurrentUser(){
         return this.getModel();
@@ -57,7 +57,7 @@ public class ManagerController extends Controller<User> {
     }
 
     public List<User> getUserRoles(String name){
-        return this.getModel().getChangableUsers(name);
+        return this.getModel().getChangeableUsers(name);
     }
 
 
