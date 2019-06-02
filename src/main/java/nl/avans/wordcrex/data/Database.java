@@ -17,6 +17,10 @@ public class Database {
         return this.source.getConnection();
     }
 
+    public int select(String sql, SqlConsumer<ResultSet> consumer) {
+        return this.select(sql, (statement) -> {}, consumer);
+    }
+
     public int select(String sql, SqlConsumer<PreparedStatement> prepare, SqlConsumer<ResultSet> consumer) {
         System.out.println(sql);
 

@@ -27,7 +27,7 @@ public class RegisterController extends Controller<User> {
     public void register() {
         this.replace((user) -> user.register(this.username, this.password));
 
-        if (!this.getModel().authenticated) {
+        if (this.getModel().username.isEmpty()) {
             this.failed = true;
 
             return;

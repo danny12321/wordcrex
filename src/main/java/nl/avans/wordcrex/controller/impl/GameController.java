@@ -27,11 +27,11 @@ public class GameController extends Controller<Game> {
     }
 
     public String getHostName() {
-        return this.getModel().host.username;
+        return this.getModel().host;
     }
 
     public String getOpponentName() {
-        return this.getModel().opponent.username;
+        return this.getModel().opponent;
     }
 
     public List<Tile> getTiles() {

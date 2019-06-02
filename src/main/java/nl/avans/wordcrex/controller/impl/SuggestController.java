@@ -27,7 +27,7 @@ public class SuggestController extends Controller<User> {
     }
 
     public void addWord(String word) {
-        this.getModel().submitNewWord(word, this.languageCode);
+        this.getModel().suggestWord(word, this.languageCode);
         this.setPage(this.page);
     }
 
@@ -41,7 +41,7 @@ public class SuggestController extends Controller<User> {
 
     public void setPage(int page) {
         this.page = page;
-        this.words = this.getModel().getSuggestedWords(this.page);
+        this.words = this.getModel().getSuggested(this.page);
     }
 
     public int getPage() {

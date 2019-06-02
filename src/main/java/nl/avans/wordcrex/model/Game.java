@@ -3,11 +3,10 @@ package nl.avans.wordcrex.model;
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Pollable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -15,8 +14,8 @@ public class Game implements Pollable<Game> {
     private final Database database;
 
     public final int id;
-    public final User host;
-    public final User opponent;
+    public final String host;
+    public final String opponent;
     public final GameState state;
     public final InviteState inviteState;
     public final Dictionary dictionary;
@@ -33,11 +32,11 @@ public class Game implements Pollable<Game> {
         this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, pool, rounds, messages);
     }
 
-    public Game(Database database, int id, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
+    public Game(Database database, int id, String host, String opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
         this(database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), List.of(), List.of());
     }
 
-    public Game(Database database, int id, User host, User opponent, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Letter> pool, List<Round> rounds, List<Message> messages) {
+    public Game(Database database, int id, String host, String opponent, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Letter> pool, List<Round> rounds, List<Message> messages) {
         this.database = database;
         this.id = id;
         this.host = host;
@@ -70,53 +69,101 @@ public class Game implements Pollable<Game> {
         var ref = new Object() {
             GameState state;
             InviteState inviteState;
-            List<Letter> pool = new ArrayList<>();
-            List<Round> rounds = new ArrayList<>();
-            List<Message> messages = new ArrayList<>();
         };
         this.database.select(
-            "SELECT g.game_state, g.answer_player2 FROM game g WHERE g.game_id = ?",
+            "SELECT g.game_state state, g.answer_player2 invite_state FROM game g WHERE g.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
-                ref.state = GameState.byState(result.getString("game_state"));
-                ref.inviteState = InviteState.byState(result.getString("answer_player2"));
-            }
-        );
-        this.database.select(
-            "SELECT * FROM pot p WHERE p.game_id = ?",
-            (statement) -> statement.setInt(1, this.id),
-            (result) -> {
-                var id = result.getInt("letter_id");
-                var character = result.getString("symbol");
-                ref.pool.add(new Letter(id, character));
-            }
-        );
-        this.database.select(
-            "SELECT t.turn_id FROM turn t WHERE t.game_id = ?",
-            (statement) -> statement.setInt(1, this.id),
-            (result) -> ref.rounds.add(new Round(result.getInt("turn_id"), List.of(), null, null))
-        );
-        this.database.select(
-            "SELECT * FROM chatline WHERE game_id = ? ORDER BY moment ASC",
-            (statement) -> statement.setInt(1, this.id),
-            (result) -> {
-                ref.messages.add(
-                    new Message(
-                        this.host.username.equals(result.getString("username")) ? this.host : this.opponent,
-                        result.getDate("moment"),
-                        result.getString("message")
-                    )
-                );
+                ref.state = GameState.byState(result.getString("state"));
+                ref.inviteState = InviteState.byState(result.getString("invite_state"));
             }
         );
 
-        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(ref.pool), List.copyOf(ref.rounds), List.copyOf(ref.messages));
+        var pool = new ArrayList<Letter>();
+
+        this.database.select(
+            "SELECT p.letter_id id, p.symbol `character` FROM pot p WHERE p.game_id = ?",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> {
+                var id = result.getInt("id");
+                var symbol = result.getString("character");
+                var character = this.dictionary.characters.stream()
+                    .filter((c) -> c.character.equals(symbol))
+                    .findFirst()
+                    .orElseThrow();
+
+                pool.add(new Letter(id, character));
+            }
+        );
+
+        var rounds = new ArrayList<Round>();
+
+        this.database.select(
+            "SELECT t.turn_id turn, h.turnaction_type host_action, h.score host_score, h.bonus host_bonus, hp.woorddeel host_played, hp.`x-waarden` host_x, hp.`y-waarden` host_y, o.turnaction_type opponent_action, o.score opponent_score, o.bonus opponent_bonus, op.woorddeel opponent_played, op.`x-waarden` opponent_x, op.`y-waarden` opponent_y " +
+                "FROM turn t" +
+                "         LEFT JOIN turnplayer1 h ON t.game_id = h.game_id AND t.turn_id = h.turn_id" +
+                "         LEFT JOIN gelegdplayer1 hp ON t.game_id = hp.game_id AND t.turn_id = hp.turn_id" +
+                "         LEFT JOIN turnplayer2 o ON t.game_id = o.game_id AND t.turn_id = o.turn_id" +
+                "         LEFT JOIN gelegdplayer2 op ON t.game_id = op.game_id AND t.turn_id = op.turn_id " +
+                "WHERE t.game_id = ?",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> {
+                var hostTurn = this.parseTurn(result, "host");
+                var opponentTurn = this.parseTurn(result, "opponent");
+
+                rounds.add(new Round(result.getInt("turn"), hostTurn, opponentTurn));
+            }
+        );
+
+        var messages = new ArrayList<Message>();
+
+        this.database.select(
+            "SELECT m.message, m.username, m.username date FROM chatline m WHERE game_id = ? ORDER BY moment",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
+        );
+
+        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(pool), List.copyOf(rounds), List.copyOf(messages));
 
         if (game.state == GameState.PLAYING && game.rounds.isEmpty()) {
             game.startNewRound();
         }
 
         return game;
+    }
+
+    private Turn parseTurn(ResultSet result, String player) throws SQLException {
+        var action = result.getString(player + "_action");
+
+        if (action == null) {
+            return null;
+        }
+
+        var played = new ArrayList<Played>();
+        var raw = result.getString(player + "_played");
+        var playedX = result.getString(player + "_x");
+        var playedY = result.getString(player + "_y");
+
+        if (raw != null) {
+            var rawSplitted = raw.split(",");
+            var xSplitted = playedX.split(",");
+            var ySplitted = playedY.split(",");
+
+            for (var i = 0; i < rawSplitted.length; i++) {
+                var index = i;
+
+                var character = this.dictionary.characters.stream()
+                    .filter((c) -> c.character.equals(rawSplitted[index]))
+                    .findFirst()
+                    .orElseThrow();
+                var x = Integer.parseInt(xSplitted[index]);
+                var y = Integer.parseInt(ySplitted[index]);
+
+                played.add(new Played(character, x, y));
+            }
+        }
+
+        return new Turn(TurnAction.byAction(action), result.getInt(player + "_score"), result.getInt(player + "_bonus"), played);
     }
 
     @Override
@@ -126,10 +173,6 @@ public class Game implements Pollable<Game> {
             .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
         return new User(user, matches);
-    }
-
-    public boolean isHostAuthenticated() {
-        return this.host.authenticated;
     }
 
     public Round getLastRound() {
@@ -173,23 +216,32 @@ public class Game implements Pollable<Game> {
             }
         );
 
-        var id = new AtomicInteger();
+        var insert = new ArrayList<String>();
 
-        for (int i = 0; i < this.dictionary.characters.size(); i++) {
-            var character = this.dictionary.characters.get(i);
-
-            for (var j = 0; j < character.amount; j++) {
-                this.database.insert(
-                    "INSERT INTO letter (letter_id, game_id, symbol_letterset_code, symbol) VALUES (?, ?, ?, ?)",
-                    (statement) -> {
-                        statement.setInt(1, id.incrementAndGet());
-                        statement.setInt(2, this.id);
-                        statement.setString(3, this.dictionary.code);
-                        statement.setString(4, character.character);
-                    }
-                );
+        this.dictionary.characters.forEach((character) -> {
+            for (var i = 0; i < character.amount; i++) {
+                insert.add("(?, ?, ?, ?)");
             }
-        }
+        });
+
+        this.database.insert(
+            "INSERT INTO letter (letter_id, game_id, symbol_letterset_code, symbol) VALUES " + String.join(", ", insert),
+            (statement) -> {
+                var id = 0;
+                var index = 0;
+
+                for (var i = 0; i < this.dictionary.characters.size(); i++) {
+                    var character = this.dictionary.characters.get(i);
+
+                    for (var j = 0; j < character.amount; j++) {
+                        statement.setInt(++index, ++id);
+                        statement.setInt(++index, this.id);
+                        statement.setString(++index, this.dictionary.code);
+                        statement.setString(++index, character.character);
+                    }
+                }
+            }
+        );
     }
 
     public void startNewRound() {
@@ -227,12 +279,16 @@ public class Game implements Pollable<Game> {
         );
     }
 
-    public void sendChatMessage(String message) {
+    public void sendMessage(User user, String message) {
+        if (!this.host.equals(user.username) && !this.opponent.equals(user.username)) {
+            return;
+        }
+
         this.database.insert("INSERT INTO chatline VALUES (?, ?, ?, ?)",
             (statement) -> {
-                statement.setString(1, this.isHostAuthenticated() ? this.host.username : this.opponent.username);
+                statement.setString(1, user.username);
                 statement.setInt(2, this.id);
-                statement.setTimestamp(3, new java.sql.Timestamp(new Date().getTime()));
+                statement.setTimestamp(3, new Timestamp(new Date().getTime()));
                 statement.setString(4, message);
             }
         );

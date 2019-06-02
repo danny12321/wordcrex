@@ -36,10 +36,10 @@ public class DashboardView extends View<DashboardController> {
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
                 g.setFont(Fonts.BIG);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, Main.TASKBAR_SIZE, 27, 42, 42, other.getInitial());
+                StringUtil.drawCenteredString(g, Main.TASKBAR_SIZE, 27, 42, 42, other.substring(0, 1).toUpperCase());
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Color.WHITE);
-                g.drawString(extra + other.username, Main.TASKBAR_SIZE * 2 + 42, 44);
+                g.drawString(extra + other, Main.TASKBAR_SIZE * 2 + 42, 44);
                 g.setFont(Fonts.SMALL);
                 g.setColor(Color.LIGHT_GRAY);
                 g.drawString(game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);

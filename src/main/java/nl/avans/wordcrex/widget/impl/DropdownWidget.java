@@ -37,7 +37,7 @@ public class DropdownWidget<T> extends Widget {
     public void draw(Graphics2D g) {
         g.setColor(this.hover == 0 ? Colors.DARKER_YELLOW : Colors.DARK_YELLOW);
         g.fillRect(this.x, this.y, this.width, this.height);
-        g.setColor(Colors.DARKERER_BLUE);
+        g.setColor(Colors.DARKER_BLUE);
         g.drawString(this.selected != null ? this.options.get(this.selected) : this.placeholder, this.x + 10, this.y + this.height / 2 + 5);
 
         if (this.open) {
@@ -46,9 +46,9 @@ public class DropdownWidget<T> extends Widget {
             this.options.forEach((key, value) -> {
                 var offset = this.y + index.get() * this.height;
 
-                g.setColor(this.hover == index.get() ? Colors.DARKERER_BLUE : Color.WHITE);
+                g.setColor(this.hover == index.get() ? Color.LIGHT_GRAY : Color.WHITE);
                 g.fillRect(this.x, offset, this.width, this.height);
-                g.setColor(this.hover == index.get() ? Color.WHITE : Color.BLACK);
+                g.setColor(Colors.DARKER_BLUE);
                 g.drawString(value, this.x + 10, offset + this.height / 2 + 5);
 
                 index.getAndIncrement();
