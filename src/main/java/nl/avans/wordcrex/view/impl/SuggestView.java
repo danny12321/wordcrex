@@ -8,7 +8,7 @@ import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
-import nl.avans.wordcrex.widget.impl.ComboBoxWidget;
+import nl.avans.wordcrex.widget.impl.DropdownWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
@@ -75,7 +75,7 @@ public class SuggestView extends View<SuggestController> {
             this.scrollbar,
             new InputWidget("Word", 0, 30, 400, 48, (value) -> this.word = value),
             new ButtonWidget("Suggest", 0, 78, 480, 48, this::Suggest),
-            new ComboBoxWidget<>(languages, "Taal", 400, 30, 80, 48, this.controller::setLanguage, (open) -> this.disabled = open)
+            new DropdownWidget<>(languages, "Taal", 400, 30, 80, 48, this.controller::setLanguage, (open) -> this.disabled = open)
         );
     }
 

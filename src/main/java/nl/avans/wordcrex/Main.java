@@ -187,7 +187,7 @@ public class Main extends JPanel {
         }
 
         return this.widgets.stream()
-            .filter((widget) -> widget.isChild(blocker))
+            .filter((widget) -> widget == blocker || widget.isChild(blocker))
             .collect(Collectors.toList());
     }
 
