@@ -18,7 +18,6 @@ public enum UserRole {
                 return r;
             }
         }
-
         return null;
     }
 }

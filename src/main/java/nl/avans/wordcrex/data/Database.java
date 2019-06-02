@@ -49,7 +49,7 @@ public class Database {
         var updated = 0;
 
         try (var connection = this.getConnection();
-             var statement = connection.prepareStatement(sql)) {
+            var statement = connection.prepareStatement(sql)) {
             prepare.accept(statement);
 
             updated = statement.executeUpdate();
