@@ -44,6 +44,8 @@ public class ManagerView extends View<ManagerController> {
     public void draw(Graphics2D g) {
         List<User> users = this.controller.getUsersWithRoles();
 
+
+
         for (int i = 0; i < users.size(); i++) {
             int ypos = this.offset + this.height * i - this.scroll;
             //frame

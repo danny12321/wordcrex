@@ -18,6 +18,8 @@ public class User implements Pollable<User> {
     public final List<Game> games;
     public final List<Dictionary> dictionaries;
 
+    private User currentUserBeingEdited = this;
+
     public User(Database database) {
         this(database, "", false);
     }
@@ -293,6 +295,20 @@ public class User implements Pollable<User> {
                        }
                     });
         return users;
+    }
+
+    public User getCurrentUserBeingEdited()
+    {
+        if(this.roles.contains(UserRole.ADMINISTRATOR))
+        {
+            return getCurrentUserBeingEdited();
+        }
+        else{
+            return this;
+        }
+    }
+    public void setCurrentUserBeingEdited(User user){
+        currentUserBeingEdited = user;
     }
 
     public User logout() {

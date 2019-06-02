@@ -13,6 +13,8 @@ public class AccountController extends Controller<User> {
         super(main, fn);
     }
 
+
+
     @Override
     public View<? extends Controller<User>> createView() {
         return new AccountView(this);
