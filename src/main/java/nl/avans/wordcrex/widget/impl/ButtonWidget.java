@@ -9,7 +9,6 @@ import java.awt.*;
 import java.util.function.Consumer;
 
 public class ButtonWidget extends Widget {
-    private final String text;
     private final int x;
     private final int y;
     private final int width;
@@ -19,6 +18,7 @@ public class ButtonWidget extends Widget {
     private final Color foreground;
     private final Runnable runnable;
 
+    private String text;
     private boolean hover;
     private boolean enabled = true;
     private boolean visible = true;
@@ -65,6 +65,10 @@ public class ButtonWidget extends Widget {
         if (this.hover && this.enabled && this.visible) {
             this.runnable.run();
         }
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     public void setEnabled(boolean enabled) {

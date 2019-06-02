@@ -5,6 +5,8 @@ import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.Pollable;
 import nl.avans.wordcrex.view.View;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
 public abstract class Controller<T extends Pollable<T>> {
@@ -20,6 +22,10 @@ public abstract class Controller<T extends Pollable<T>> {
 
     protected T getModel() {
         return this.fn.apply(this.main.getModel());
+    }
+
+    protected User getRoot() {
+        return this.main.getModel();
     }
 
     public void poll() {

@@ -8,7 +8,7 @@ import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
-import nl.avans.wordcrex.widget.impl.ComboBoxWidget;
+import nl.avans.wordcrex.widget.impl.DropdownWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
@@ -23,7 +23,6 @@ public class SuggestView extends View<SuggestController> {
 
     private String word = "";
     private boolean invalid;
-    private Boolean disabled = false;
     private int scroll;
 
     public SuggestView(SuggestController controller) {
@@ -67,19 +66,15 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public List<Widget> getChildren() {
-        LinkedHashMap<String, String> languages = new LinkedHashMap<>();
-        languages.put("NL", "NL");
-        languages.put("EN", "EN");
-
         return List.of(
             this.scrollbar,
             new InputWidget("Word", 0, 30, 400, 48, (value) -> this.word = value),
-            new ButtonWidget("Suggest", 0, 78, 480, 48, this::Suggest),
-            new ComboBoxWidget<>(languages, "Taal", 400, 30, 80, 48, this.controller::setLanguage, (open) -> this.disabled = open)
+            new ButtonWidget("Suggest", 0, 78, 480, 48, this::suggest),
+            new DropdownWidget<>(this.controller.getDictionaries(), "Taal", 400, 30, 80, 48, this.controller::setDictionary)
         );
     }
 
-    private void Suggest() {
-        this.controller.addWord(this.word);
+    private void suggest() {
+        this.invalid = this.controller.addWord(this.word);
     }
 }

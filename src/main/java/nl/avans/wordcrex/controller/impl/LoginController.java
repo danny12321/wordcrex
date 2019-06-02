@@ -25,7 +25,7 @@ public class LoginController extends Controller<User> {
     public void login() {
         this.replace((user) -> user.login(this.username, this.password));
 
-        if (!this.getModel().authenticated) {
+        if (this.getModel().username.isEmpty()) {
             this.failed = true;
 
             return;
