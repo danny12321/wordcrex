@@ -38,9 +38,11 @@ public class SuggestController extends Controller<User> {
         return dictionaries;
     }
 
-    public void addWord(String word) {
-        this.getModel().submitNewWord(word, this.dictionary.code);
+    public boolean addWord(String word) {
+        var result = this.getModel().suggestWord(word, this.dictionary);
         this.setPage(this.page);
+
+        return result;
     }
 
     public void setDictionary(Dictionary dictionary) {
@@ -49,7 +51,7 @@ public class SuggestController extends Controller<User> {
 
     public void setPage(int page) {
         this.page = page;
-        this.words = this.getModel().getSuggestedWords(this.page);
+        this.words = this.getModel().getSuggested(this.page);
     }
 
     public int getPage() {

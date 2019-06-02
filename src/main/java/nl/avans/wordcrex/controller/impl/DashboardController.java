@@ -23,8 +23,8 @@ public class DashboardController extends Controller<User> {
         return new DashboardView(this);
     }
 
-    public boolean isCurrentUser(User user) {
-        return user.username.equals(this.getModel().username);
+    public boolean isCurrentUser(String user) {
+        return user.equals(this.getModel().username);
     }
 
     public boolean isSelectable(Game game) {
@@ -44,11 +44,11 @@ public class DashboardController extends Controller<User> {
     }
 
     public void acceptInvite(Game game) {
-        this.getModel().respondInvite(game, InviteState.ACCEPTED);
+        this.getModel().respondToInvite(game, InviteState.ACCEPTED);
     }
 
     public void rejectInvite(Game game) {
-        this.getModel().respondInvite(game, InviteState.REJECTED);
+        this.getModel().respondToInvite(game, InviteState.REJECTED);
     }
 
     public void navigateGame(int id) {

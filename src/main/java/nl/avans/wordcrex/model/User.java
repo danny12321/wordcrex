@@ -4,41 +4,35 @@ import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 
-import javax.print.DocFlavor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class User implements Pollable<User> {
     private final Database database;
 
     public final String username;
-    public final boolean authenticated;
     public final List<UserRole> roles;
     public final List<Game> games;
     public final List<Dictionary> dictionaries;
 
     public User(Database database) {
-        this(database, "", false);
+        this(database, "");
     }
 
-    public User(Database database, String username, boolean authenticated) {
-        this(database, username, authenticated, List.of(), List.of(), List.of());
+    public User(Database database, String username) {
+        this(database, username, List.of(), List.of(), List.of());
     }
 
     public User(User user, List<UserRole> roles, List<Dictionary> dictionaries) {
-        this(user.database, user.username, user.authenticated, roles, user.games, dictionaries);
+        this(user.database, user.username, roles, user.games, dictionaries);
     }
 
     public User(User user, List<Game> games) {
-        this(user.database, user.username, user.authenticated, user.roles, games, user.dictionaries);
+        this(user.database, user.username, user.roles, games, user.dictionaries);
     }
 
-    public User(Database database, String username, boolean authenticated, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
+    public User(Database database, String username, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
         this.database = database;
         this.username = username;
-        this.authenticated = authenticated;
         this.roles = roles;
         this.games = games;
         this.dictionaries = dictionaries;
@@ -61,14 +55,12 @@ public class User implements Pollable<User> {
         var characters = new HashMap<String, List<Character>>();
 
         this.database.select(
-            "SELECT * FROM symbol",
-            (statement) -> {
-            },
+            "SELECT c.letterset_code code, c.symbol `character`, c.value, c.counted amount FROM symbol c",
             (result) -> {
-                var code = result.getString("letterset_code");
+                var code = result.getString("code");
                 var list = characters.getOrDefault(code, new ArrayList<>());
 
-                list.add(new Character(result.getString("symbol"), result.getInt("value"), result.getInt("counted")));
+                list.add(new Character(result.getString("character"), result.getInt("value"), result.getInt("amount")));
 
                 characters.put(code, list);
             }
@@ -77,9 +69,7 @@ public class User implements Pollable<User> {
         var dictionaries = new ArrayList<Dictionary>();
 
         this.database.select(
-            "SELECT * FROM letterset",
-            (statement) -> {
-            },
+            "SELECT d.* FROM letterset d",
             (result) -> {
                 var code = result.getString("code");
                 var character = characters.getOrDefault(code, new ArrayList<>());
@@ -97,44 +87,51 @@ public class User implements Pollable<User> {
 
     @Override
     public User poll() {
-        if (!this.authenticated) {
+        if (this.username.isEmpty()) {
             return this;
         }
 
         var games = new ArrayList<Game>();
 
         this.database.select(
-            "SELECT * FROM game g WHERE (g.username_player1 = ? OR g.username_player2 = ?) AND g.answer_player2 != ? ORDER BY g.game_state DESC",
+            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code " +
+                "FROM game g " +
+                "WHERE (g.username_player1 = ? OR g.username_player2 = ?) " +
+                    "AND g.answer_player2 != ?",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setString(2, this.username);
                 statement.setString(3, InviteState.REJECTED.state);
             },
             (result) -> {
-                var id = result.getInt("game_id");
-                var state = result.getString("game_state");
-                var inviteState = result.getString("answer_player2");
-                var host = result.getString("username_player1").equals(this.username) ? this : new User(this.database, result.getString("username_player1"), false);
-                var opponent = result.getString("username_player2").equals(this.username) ? this : new User(this.database, result.getString("username_player2"), false);
-                var code = result.getString("letterset_code");
+                var id = result.getInt("id");
+                var state = GameState.byState(result.getString("state"));
+                var inviteState = InviteState.byState(result.getString("invite_state"));
+                var host = result.getString("host");
+                var opponent = result.getString("opponent");
+                var code = result.getString("code");
                 var dictionary = this.dictionaries.stream()
                     .filter((d) -> d.code.equals(code))
                     .findAny()
                     .orElse(null);
 
                 if (dictionary == null) {
+                    System.out.println("Dictionary not found: " + code);
+
                     return;
                 }
 
-                var game = new Game(this.database, id, host, opponent, GameState.byState(state), InviteState.byState(inviteState), dictionary);
+                var game = new Game(this.database, id, host, opponent, state, inviteState, dictionary);
 
-                if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host.username)) {
+                if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host)) {
                     game.startGame();
                 }
 
                 games.add(game);
             }
         );
+
+        games.sort(Comparator.comparingInt((game) -> game.state.order));
 
         return new User(this, List.copyOf(games));
     }
@@ -144,17 +141,9 @@ public class User implements Pollable<User> {
         return this;
     }
 
-    public String getInitial() {
-        if (this.username.isEmpty()) {
-            return "?";
-        }
-
-        return this.username.substring(0, 1).toUpperCase();
-    }
-
     public User register(String username, String password) {
         var insertedUser = this.database.insert(
-            "INSERT INTO `account` VALUES(lower(?), lower(?));",
+            "INSERT INTO account VALUES (?, ?)",
             (statement) -> {
                 statement.setString(1, username);
                 statement.setString(2, password);
@@ -162,7 +151,7 @@ public class User implements Pollable<User> {
         );
 
         var insertedRole = this.database.insert(
-            "INSERT INTO accountrole VALUES(lower(?), ?)",
+            "INSERT INTO accountrole VALUES (?, ?)",
             (statement) -> {
                 statement.setString(1, username);
                 statement.setString(2, UserRole.PLAYER.role);
@@ -193,33 +182,55 @@ public class User implements Pollable<User> {
             return this;
         }
 
-        return new User(this.database, ref.username.toLowerCase(), true);
+        return new User(this.database, ref.username);
+    }
+
+    public User logout() {
+        return new User(this.database);
+    }
+
+    public boolean hasRole(UserRole role) {
+        return this.roles.indexOf(role) != -1;
     }
 
     public List<Pair<String, Boolean>> findOpponents(String username) {
-        if (username.isEmpty()) {
+        if (!this.hasRole(UserRole.PLAYER) || username.isEmpty()) {
             return List.of();
         }
 
         var users = new ArrayList<Pair<String, Boolean>>();
 
         this.database.select(
-            "SELECT a.username, (SELECT true FROM game g WHERE ((g.username_player1 = ? AND g.username_player2 LIKE ?) OR (g.username_player2 = ? AND g.username_player1 LIKE ?)) AND g.game_state IN ('request', 'playing') AND g.answer_player2 IN ('unknown', 'accepted') LIMIT 1) AS disabled FROM account a JOIN accountrole ar ON a.username = ar.username WHERE a.username LIKE ? AND a.username != ? AND ar.role = 'player'",
+            "SELECT a.username," +
+                "       (SELECT count(*) = 0" +
+                "        FROM game g" +
+                "        WHERE ((g.username_player1 = ? AND g.username_player2 = a.username)" +
+                "            OR (g.username_player1 = a.username AND g.username_player2 = ?))" +
+                "          AND g.game_state IN (?, ?)) enabled " +
+                "FROM account a" +
+                "         JOIN accountrole r ON a.username = r.username AND r.role = ?" +
+                "WHERE a.username != ?" +
+                "  AND a.username LIKE ?",
             (statement) -> {
                 statement.setString(1, this.username);
-                statement.setString(2, username + "%");
-                statement.setString(3, username + "%");
-                statement.setString(4, this.username);
-                statement.setString(5, username + "%");
+                statement.setString(2, this.username);
+                statement.setString(3, GameState.PENDING.state);
+                statement.setString(4, GameState.PLAYING.state);
+                statement.setString(5, UserRole.PLAYER.role);
                 statement.setString(6, this.username);
+                statement.setString(7, "%" + username + "%");
             },
-            (result) -> users.add(new Pair<>(result.getString("username"), !result.getBoolean("disabled")))
+            (result) -> users.add(new Pair<>(result.getString("username"), result.getBoolean("enabled")))
         );
 
         return List.copyOf(users);
     }
 
     public void sendInvite(String username, Dictionary dictionary) {
+        if (!this.hasRole(UserRole.PLAYER)) {
+            return;
+        }
+
         this.database.insert(
             "INSERT INTO game (game_state, letterset_code, username_player1, username_player2, answer_player2) VALUES (?, ?, ?, ?, ?)",
             (statement) -> {
@@ -232,7 +243,11 @@ public class User implements Pollable<User> {
         );
     }
 
-    public void respondInvite(Game game, InviteState state) {
+    public void respondToInvite(Game game, InviteState state) {
+        if (!this.hasRole(UserRole.PLAYER) || !game.opponent.equals(this.username)) {
+            return;
+        }
+
         this.database.update(
             "UPDATE game g SET g.answer_player2 = ? WHERE g.game_id = ?",
             (statement) -> {
@@ -242,39 +257,53 @@ public class User implements Pollable<User> {
         );
     }
 
-    public User logout() {
-        return new User(this.database);
-    }
-
     public List<Word> getPendingWords() {
-        if (this.roles.indexOf(UserRole.MODERATOR) == -1) {
+        if (!this.hasRole(UserRole.MODERATOR)) {
             return List.of();
         }
 
         var words = new ArrayList<Word>();
 
         this.database.select(
-            "SELECT word, state FROM dictionary WHERE state = ? ",
+            "SELECT w.word, w.state, w.username FROM dictionary w WHERE w.state = ? ",
             (statement) -> statement.setString(1, WordState.PENDING.state),
-            (result) -> words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), ""))
+            (result) -> words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username")))
         );
 
         return List.copyOf(words);
     }
 
-    public Map<String, List<Word>> getSuggestedWords(int page) {
+    public boolean suggestWord(String word, Dictionary dictionary) {
+        if (dictionary.isWord(word)) {
+            return false;
+        }
+
+        this.database.insert(
+            "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
+            (statement) -> {
+                statement.setString(1, word);
+                statement.setString(2, dictionary.code);
+                statement.setString(3, WordState.PENDING.state);
+                statement.setString(4, this.username);
+            }
+        );
+
+        return true;
+    }
+
+    public Map<String, List<Word>> getSuggested(int page) {
         var size = 100;
         var words = new HashMap<String, List<Word>>();
 
         this.database.select(
-            "SELECT word, letterset_code, state FROM dictionary WHERE username = ? LIMIT ?, ?",
+            "SELECT w.word, w.letterset_code code, w.state FROM dictionary w WHERE w.username = ? LIMIT ?, ?",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setInt(2, page * size);
                 statement.setInt(3, size);
             },
             (result) -> {
-                var code = result.getString("letterset_code");
+                var code = result.getString("code");
                 var list = words.getOrDefault(code, new ArrayList<>());
 
                 list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username));
@@ -284,17 +313,5 @@ public class User implements Pollable<User> {
         );
 
         return Map.copyOf(words);
-    }
-
-    public void submitNewWord(String word, String languageCode) {
-        this.database.insert(
-            "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
-            (statement) -> {
-                statement.setString(1, word);
-                statement.setString(2, languageCode);
-                statement.setString(3, WordState.PENDING.state);
-                statement.setString(4, this.username);
-            }
-        );
     }
 }

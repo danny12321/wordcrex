@@ -3,17 +3,15 @@ package nl.avans.wordcrex.model;
 import java.util.List;
 
 public class Turn {
-    public final int id;
+    public final TurnAction action;
     public final int score;
     public final int bonus;
-    public final TurnAction action;
     public final List<Played> played;
 
-    public Turn(int id, int score, int bonus, TurnAction action, List<Played> played) {
-        this.id = id;
+    public Turn(TurnAction action, int score, int bonus, List<Played> played) {
+        this.action = action;
         this.score = score;
         this.bonus = bonus;
-        this.action = action;
         this.played = played;
     }
 }

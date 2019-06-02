@@ -2,9 +2,9 @@ package nl.avans.wordcrex.model;
 
 public class Letter {
     public final int id;
-    public final String character;
+    public final Character character;
 
-    public Letter(int id, String character) {
+    public Letter(int id, Character character) {
         this.id = id;
         this.character = character;
     }

@@ -2,20 +2,14 @@ package nl.avans.wordcrex.model;
 
 import java.util.Date;
 
-public class Message implements Comparable<Message> {
-    public final User user;
-    public final Date date;
+public class Message {
     public final String message;
+    public final String user;
+    public final Date date;
 
-    public Message(User user, Date date, String message) {
+    public Message(String message, String user, Date date) {
+        this.message = message;
         this.user = user;
         this.date = date;
-        this.message = message;
-    }
-
-    @Override
-    public int compareTo(Message m) {
-        if(this.date.equals(m.date)) return 0;
-        return this.date.after(m.date) ? 1 : -1;
     }
 }

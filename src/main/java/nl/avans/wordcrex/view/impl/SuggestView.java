@@ -75,6 +75,6 @@ public class SuggestView extends View<SuggestController> {
     }
 
     private void suggest() {
-        this.controller.addWord(this.word);
+        this.invalid = this.controller.addWord(this.word);
     }
 }
