@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class RegisterView extends View<RegisterController> {
-    private final ButtonWidget submitButton = new ButtonWidget("REGISTER", 144, 312, 304, 48, this.controller::register);
+    private final ButtonWidget submitButton = new ButtonWidget("REGISTREER", 144, 312, 304, 48, this.controller::register);
 
     private int update;
 
@@ -32,7 +32,7 @@ public class RegisterView extends View<RegisterController> {
             g.setColor(Colors.DARK_RED);
             g.fillRect(144, 360, 304, 32);
             g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 144, 360, 304, 32, "invalid");
+            StringUtil.drawCenteredString(g, 144, 360, 304, 32, "ongeldig");
         }
     }
 
@@ -48,8 +48,8 @@ public class RegisterView extends View<RegisterController> {
     @Override
     public List<Widget> getChildren() {
         return List.of(
-            new InputWidget("USERNAME", 64, 184, 384, 48, this.controller::setUsername),
-            new InputWidget("PASSWORD", '*', 64, 248, 384, 48, this.controller::setPassword),
+            new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, this.controller::setUsername),
+            new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, this.controller::setPassword),
             new ButtonWidget("<", 64, 312, 64, 48, this.controller::navigateLogin),
             this.submitButton
         );

@@ -21,7 +21,7 @@ public class ChatView extends View<ChatController> {
     private String message;
 
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
-    private final InputWidget input = new InputWidget("MESSAGE", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
+    private final InputWidget input = new InputWidget("BERICHT", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
     private final int size = 32;
     private final int gap = 16;
     private final int maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (this.gap * 4 + this.size * 2);
