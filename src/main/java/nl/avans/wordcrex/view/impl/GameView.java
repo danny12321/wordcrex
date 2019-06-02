@@ -4,10 +4,12 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.GameController;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
+import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
 import java.util.List;
@@ -40,10 +42,33 @@ public class GameView extends View<GameController> {
         g.drawString(this.controller.getPoolSize() + " characters left", 32, 512);
 
         for (var tile : this.controller.getTiles()) {
-            g.setColor(Colors.DARKERER_BLUE);
+            switch (tile.type) {
+                case "--":
+                    g.setColor(Colors.DARKERER_BLUE);
+                    break;
+                case "*":
+                    g.setColor(Colors.DARK_YELLOW);
+                    break;
+                case "2L":
+                    g.setColor(Colors.DARK_CYAN);
+                    break;
+                case "4L":
+                    g.setColor(Colors.DARKER_CYAN);
+                    break;
+                case "6L":
+                    g.setColor(Colors.DARKERER_CYAN);
+                    break;
+                case "3W":
+                    g.setColor(Colors.DARK_PURPLE);
+                    break;
+                case "4W":
+                    g.setColor(Colors.DARKER_PURPLE);
+                    break;
+            }
+
             g.fillRect(52 + tile.x * 24, 52 + tile.y * 24, 24, 24);
 
-            if (!tile.type.equals("--")) {
+            if (!tile.type.equals("--") && !tile.type.equals("*")) {
                 g.setColor(Color.WHITE);
                 StringUtil.drawCenteredString(g, 52 + tile.x * 24, 52 + tile.y * 24, 24, 24, tile.type);
             }
@@ -71,7 +96,16 @@ public class GameView extends View<GameController> {
     @Override
     public List<Widget> getChildren() {
         return List.of(
-            new ButtonWidget("CHAT", 6, 52 + 24, 64, 32, this.controller::navigateChat)
+            new ButtonWidget("CHAT", 6, 52 + 24, 64, 32, this.controller::navigateChat),
+            new DragWidget(100, 100, 24, 24, (g, hover) -> {
+                g.setColor(hover ? Color.LIGHT_GRAY : Color.WHITE);
+                g.fillRect(0, 0, 24, 24);
+                g.setColor(Colors.DARK_BLUE);
+                g.drawString("A", 3, 21);
+                g.setFont(Fonts.SMALL);
+                g.drawString(String.valueOf(1), 15, 11);
+                g.setFont(Fonts.NORMAL);
+            })
         );
     }
 }

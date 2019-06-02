@@ -90,6 +90,8 @@ public class User implements Pollable<User> {
     public User poll() {
         if (this.username.isEmpty()) {
             return this;
+        } else if (this.dictionaries.isEmpty()) {
+            return this.initialize();
         }
 
         var games = new ArrayList<Game>();

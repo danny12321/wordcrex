@@ -1,9 +1,9 @@
 package nl.avans.wordcrex.model;
 
 public enum TurnAction {
-    PASS("pass"),
-    PLAY("play"),
-    RESIGN("resign");
+    PASSED("pass"),
+    PLAYED("play"),
+    RESIGNED("resign");
 
     public final String action;
 
