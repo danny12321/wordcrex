@@ -23,11 +23,11 @@ public class ChatController extends Controller<Game> {
     }
 
     public void sendChat(String message) {
-        this.getModel().sendMessage(message);
+        this.getModel().sendMessage(this.getRoot(), message);
     }
 
     public String getUsername() {
-        return this.getModel().isHostAuthenticated() ? this.getModel().host : this.getModel().opponent;
+        return this.getRoot().username;
     }
 
     public List<Message> getMessages() {

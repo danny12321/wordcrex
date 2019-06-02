@@ -68,7 +68,7 @@ public class SidebarWidget extends Widget {
     @Override
     public List<Widget> getChildren() {
         var filtered = this.items.stream()
-            .filter((i) -> i.role == null || this.main.getModel().roles.indexOf(i.role) != -1)
+            .filter((i) -> i.role == null || this.main.getModel().hasRole(i.role))
             .collect(Collectors.toList());
 
         for (var i = 0; i < filtered.size(); i++) {

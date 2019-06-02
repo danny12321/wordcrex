@@ -24,6 +24,10 @@ public abstract class Controller<T extends Pollable<T>> {
         return this.fn.apply(this.main.getModel());
     }
 
+    protected User getRoot() {
+        return this.main.getModel();
+    }
+
     public void poll() {
         this.replace(Pollable::poll);
     }

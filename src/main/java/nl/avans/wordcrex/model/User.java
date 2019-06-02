@@ -54,7 +54,7 @@ public class User implements Pollable<User> {
 
         var characters = new HashMap<String, List<Character>>();
 
-        this.database.select(
+        System.out.println("Found " + this.database.select(
             "SELECT c.letterset_code code, c.symbol `character`, c.value, c.counted amount FROM symbol c",
             (result) -> {
                 var code = result.getString("code");
@@ -64,11 +64,11 @@ public class User implements Pollable<User> {
 
                 characters.put(code, list);
             }
-        );
+        ) + " characters");
 
         var dictionaries = new ArrayList<Dictionary>();
 
-        this.database.select(
+        System.out.println("Found " + this.database.select(
             "SELECT d.* FROM letterset d",
             (result) -> {
                 var code = result.getString("code");
@@ -80,7 +80,7 @@ public class User implements Pollable<User> {
 
                 dictionaries.add(new Dictionary(this.database, code, result.getString("description"), List.copyOf(character)));
             }
-        );
+        ) + " dictionaries");
 
         return new User(this, List.copyOf(roles), List.copyOf(dictionaries));
     }

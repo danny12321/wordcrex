@@ -66,19 +66,15 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public List<Widget> getChildren() {
-        LinkedHashMap<String, String> languages = new LinkedHashMap<>();
-        languages.put("NL", "NL");
-        languages.put("EN", "EN");
-
         return List.of(
             this.scrollbar,
             new InputWidget("Word", 0, 30, 400, 48, (value) -> this.word = value),
-            new ButtonWidget("Suggest", 0, 78, 480, 48, this::Suggest),
-            new DropdownWidget<>(languages, "Taal", 400, 30, 80, 48, this.controller::setLanguage)
+            new ButtonWidget("Suggest", 0, 78, 480, 48, this::suggest),
+            new DropdownWidget<>(this.controller.getDictionaries(), "Taal", 400, 30, 80, 48, this.controller::setDictionary)
         );
     }
 
-    private void Suggest() {
-        this.controller.addWord(this.word);
+    private void suggest() {
+        this.invalid = this.controller.addWord(this.word);
     }
 }
