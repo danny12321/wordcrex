@@ -3,6 +3,7 @@ package nl.avans.wordcrex.model;
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
+import nl.avans.wordcrex.util.StringUtil;
 
 import java.util.*;
 
@@ -265,16 +266,24 @@ public class User implements Pollable<User> {
         var words = new ArrayList<Word>();
 
         this.database.select(
-            "SELECT w.word, w.state, w.username FROM dictionary w WHERE w.state = ? ",
+            "SELECT w.word, w.state, w.username, w.letterset_code code FROM dictionary w WHERE w.state = ? ",
             (statement) -> statement.setString(1, WordState.PENDING.state),
-            (result) -> words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username")))
+            (result) -> {
+                var code = result.getString("code");
+                var dictionary = this.dictionaries.stream()
+                    .filter((d) -> d.code.equals(code))
+                    .findFirst()
+                    .orElseThrow();
+
+                words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username"), dictionary));
+            }
         );
 
         return List.copyOf(words);
     }
 
     public boolean suggestWord(String word, Dictionary dictionary) {
-        if (dictionary.isWord(word)) {
+        if (dictionary.isWord(word) || StringUtil.containsWhitespace(word)) {
             return false;
         }
 
@@ -305,13 +314,31 @@ public class User implements Pollable<User> {
             (result) -> {
                 var code = result.getString("code");
                 var list = words.getOrDefault(code, new ArrayList<>());
+                var dictionary = this.dictionaries.stream()
+                    .filter((d) -> d.code.equals(code))
+                    .findFirst()
+                    .orElseThrow();
 
-                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username));
+                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username, dictionary));
 
                 words.put(code, list);
             }
         );
 
         return Map.copyOf(words);
+    }
+
+    public void updateWord(Word word, WordState state) {
+        if (word.state != WordState.PENDING || !this.hasRole(UserRole.MODERATOR)) {
+            return;
+        }
+
+        this.database.update(
+            "UPDATE dictionary w SET w.state = ? WHERE w.word = ?",
+            (statement) -> {
+                statement.setString(1, state.state);
+                statement.setString(2, word.word);
+            }
+        );
     }
 }
