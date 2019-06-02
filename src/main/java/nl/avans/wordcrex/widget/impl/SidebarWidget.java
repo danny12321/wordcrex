@@ -2,16 +2,15 @@ package nl.avans.wordcrex.widget.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.controller.impl.ApproveController;
-import nl.avans.wordcrex.controller.impl.DashboardController;
-import nl.avans.wordcrex.controller.impl.LoginController;
-import nl.avans.wordcrex.controller.impl.SuggestController;
+import nl.avans.wordcrex.controller.impl.*;
 import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
+import nl.avans.wordcrex.view.impl.AccountView;
 import nl.avans.wordcrex.view.impl.ApproveView;
 import nl.avans.wordcrex.view.impl.DashboardView;
+import nl.avans.wordcrex.view.impl.ManageView;
 import nl.avans.wordcrex.view.impl.SuggestView;
 import nl.avans.wordcrex.widget.Widget;
 
@@ -28,8 +27,8 @@ public class SidebarWidget extends Widget {
         new Item<>("BEKIJKEN", null, null, UserRole.OBSERVER),
         new Item<>("SUGGEREREN", SuggestController.class, SuggestView.class, UserRole.PLAYER),
         new Item<>("GOEDKEUREN", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
-        new Item<>("BEHEREN", null, null, UserRole.ADMINISTRATOR),
-        new Item<>("ACCOUNT", null, null, null)
+        new Item<>("BEHEREN", ManageController.class, ManageView.class, UserRole.ADMINISTRATOR),
+        new Item<>("ACCOUNT", AccountController.class, AccountView.class, null)
     );
     private final Map<String, ButtonWidget> children = new HashMap<>();
     private final Main main;
