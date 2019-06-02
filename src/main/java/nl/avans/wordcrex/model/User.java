@@ -4,6 +4,7 @@ import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 
+import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

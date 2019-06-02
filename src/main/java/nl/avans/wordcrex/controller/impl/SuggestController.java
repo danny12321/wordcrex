@@ -2,11 +2,13 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
+import nl.avans.wordcrex.model.Dictionary;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.Word;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.SuggestView;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -14,7 +16,7 @@ import java.util.function.Function;
 public class SuggestController extends Controller<User> {
     private int page;
     private Map<String, List<Word>> words;
-    private String languageCode;
+    private Dictionary dictionary;
 
     public SuggestController(Main main, Function<User, User> fn) {
         super(main, fn);
@@ -26,17 +28,23 @@ public class SuggestController extends Controller<User> {
         return new SuggestView(this);
     }
 
+    public Map<Dictionary, String> getDictionaries() {
+        var dictionaries = new LinkedHashMap<Dictionary, String>();
+
+        for (int i = 0; i < this.getModel().dictionaries.size(); i++) {
+            dictionaries.put(this.getModel().dictionaries.get(i), this.getModel().dictionaries.get(i).code);
+        }
+
+        return dictionaries;
+    }
+
     public void addWord(String word) {
-        this.getModel().submitNewWord(word, this.languageCode);
+        this.getModel().submitNewWord(word, this.dictionary.code);
         this.setPage(this.page);
     }
 
-    public void setLanguage(String languageCode) {
-        this.languageCode = languageCode;
-    }
-
-    public String getLanguage() {
-        return this.languageCode;
+    public void setDictionary(Dictionary dictionary) {
+        this.dictionary = dictionary;
     }
 
     public void setPage(int page) {
