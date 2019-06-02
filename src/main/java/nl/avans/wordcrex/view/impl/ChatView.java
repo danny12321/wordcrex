@@ -21,7 +21,7 @@ public class ChatView extends View<ChatController> {
     private String message;
 
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
-    private final InputWidget input = new InputWidget("MESSAGE", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
+    private final InputWidget input = new InputWidget("BERICHT", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
     private final int size = 32;
     private final int gap = 16;
     private final int maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (this.gap * 4 + this.size * 2);
@@ -41,17 +41,17 @@ public class ChatView extends View<ChatController> {
             var userMessage = false;
             var x = this.gap;
 
-            if (messages.get(i).user.username.equals(this.controller.getUsername())) {
+            if (messages.get(i).user.equals(this.controller.getUsername())) {
                 userMessage = true;
                 x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.size - this.gap;
             }
 
-            if (!(i != 0 && messages.get(i - 1).user.username.equals(messages.get(i).user.username))) {
+            if (!(i != 0 && messages.get(i - 1).user.equals(messages.get(i).user))) {
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(x, y - this.scroll, this.size, this.size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, y - this.scroll, this.size, this.size, messages.get(i).user.getInitial());
+                StringUtil.drawCenteredString(g, x, y - this.scroll, this.size, this.size, messages.get(i).user.substring(0, 1).toUpperCase());
             }
 
             var message = messages.get(i).message;

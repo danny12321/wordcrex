@@ -14,4 +14,16 @@ public class StringUtil {
 
         g.drawString(text, x + (width - metrics.stringWidth(text)) / 2, y);
     }
+
+    public static boolean containsWhitespace(String str) {
+        var length = str.length();
+
+        for (var i = 0; i < length; i++) {
+            if (Character.isWhitespace(str.charAt(i))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

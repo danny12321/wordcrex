@@ -23,7 +23,6 @@ public class SuggestView extends View<SuggestController> {
 
     private String word = "";
     private boolean invalid;
-    private Boolean disabled = false;
     private int scroll;
 
     public SuggestView(SuggestController controller) {
@@ -36,7 +35,7 @@ public class SuggestView extends View<SuggestController> {
             g.setColor(Colors.DARK_RED);
             g.fillRect(64, 360, 184, 32);
             g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 64, 360, 184, 32, "Word already known");
+            StringUtil.drawCenteredString(g, 64, 360, 184, 32, "Woord al bekend");
         }
 
         var metrics = g.getFontMetrics(g.getFont());
@@ -67,19 +66,15 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public List<Widget> getChildren() {
-        LinkedHashMap<String, String> languages = new LinkedHashMap<>();
-        languages.put("NL", "NL");
-        languages.put("EN", "EN");
-
         return List.of(
             this.scrollbar,
-            new InputWidget("Word", 0, 30, 400, 48, (value) -> this.word = value),
-            new ButtonWidget("Suggest", 0, 78, 480, 48, this::Suggest),
-            new DropdownWidget<>(languages, "Taal", 400, 30, 80, 48, this.controller::setLanguage, (open) -> this.disabled = open)
+            new InputWidget("WOORD", 0, 30, 400, 48, (value) -> this.word = value),
+            new ButtonWidget("SUGGEREER", 0, 78, 480, 48, this::suggest),
+            new DropdownWidget<>(this.controller.getDictionaries(), "Taal", 400, 30, 80, 48, 10, this.controller::setDictionary)
         );
     }
 
-    private void Suggest() {
-        this.controller.addWord(this.word);
+    private void suggest() {
+        this.invalid = this.controller.addWord(this.word);
     }
 }

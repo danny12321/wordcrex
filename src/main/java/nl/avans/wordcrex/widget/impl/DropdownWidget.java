@@ -14,35 +14,33 @@ public class DropdownWidget<T> extends Widget {
     private final Map<T, String> options;
     private final int x;
     private final int y;
+    private final int textOffsetX;
     private final int width;
     private final int height;
     private final Consumer<T> consumer;
-    private final Consumer<Boolean> updateOpen;
     private final String placeholder;
 
     private int hover = -1;
     private T selected;
     private boolean open;
 
-    public DropdownWidget(Map<T, String> options, String placeholder, int x, int y, int width, int height, Consumer<T> consumer, Consumer<Boolean> updateOpen) {
+    public DropdownWidget(Map<T, String> options, String placeholder, int x, int y, int width, int height, int textOffsetX, Consumer<T> consumer) {
         this.options = options;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.textOffsetX = textOffsetX;
         this.consumer = consumer;
-        this.updateOpen = updateOpen;
         this.placeholder = placeholder;
-
-        this.updateOpen.accept(false);
     }
 
     @Override
     public void draw(Graphics2D g) {
         g.setColor(this.hover == 0 ? Colors.DARKER_YELLOW : Colors.DARK_YELLOW);
         g.fillRect(this.x, this.y, this.width, this.height);
-        g.setColor(Colors.DARKERER_BLUE);
-        g.drawString(this.selected != null ? this.options.get(this.selected) : this.placeholder, this.x + 10, this.y + this.height / 2 + 5);
+        g.setColor(Colors.DARKER_BLUE);
+        g.drawString(this.selected != null ? this.options.get(this.selected) : this.placeholder, this.x + this.textOffsetX, this.y + this.height / 2 + 5);
 
         if (this.open) {
             var index = new AtomicInteger(1);
@@ -50,10 +48,10 @@ public class DropdownWidget<T> extends Widget {
             this.options.forEach((key, value) -> {
                 var offset = this.y + index.get() * this.height;
 
-                g.setColor(this.hover == index.get() ? Colors.DARKERER_BLUE : Color.WHITE);
+                g.setColor(this.hover == index.get() ? Color.LIGHT_GRAY : Color.WHITE);
                 g.fillRect(this.x, offset, this.width, this.height);
-                g.setColor(this.hover == index.get() ? Color.WHITE : Color.BLACK);
-                g.drawString(value, this.x + 10, offset + this.height / 2 + 5);
+                g.setColor(Colors.DARKER_BLUE);
+                g.drawString(value, this.x + this.textOffsetX, offset + this.height / 2 + 5);
 
                 index.getAndIncrement();
             });
@@ -89,8 +87,6 @@ public class DropdownWidget<T> extends Widget {
             this.consumer.accept(keys.get(this.hover - 1));
             this.selected = keys.get(this.hover - 1);
         }
-
-        this.updateOpen.accept(this.open);
     }
 
     @Override

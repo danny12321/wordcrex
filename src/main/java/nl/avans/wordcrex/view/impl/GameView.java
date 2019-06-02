@@ -14,6 +14,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class GameView extends View<GameController> {
+    private boolean hover;
+    private int offset;
+    private int hostWidth;
+    private int scoreWidth;
+
     public GameView(GameController controller) {
         super(controller);
     }
@@ -24,12 +29,14 @@ public class GameView extends View<GameController> {
         var score = " " + this.controller.getScore() + " ";
         var host = this.controller.getHostName() + " ";
         var full = host + score + " " + this.controller.getOpponentName();
-        var offset = (Main.FRAME_SIZE - metrics.stringWidth(full)) / 2;
+        this.hostWidth = metrics.stringWidth(host);
+        this.scoreWidth = metrics.stringWidth(score);
+        this.offset = (Main.FRAME_SIZE - metrics.stringWidth(full)) / 2;
 
-        g.setColor(Colors.DARK_BLUE);
-        g.fillRect(offset + metrics.stringWidth(host), 40, metrics.stringWidth(score), 28);
+        g.setColor(this.hover ? Colors.DARKERER_BLUE : Colors.DARK_BLUE);
+        g.fillRect(this.offset + this.hostWidth, 40, this.scoreWidth, 28);
         g.setColor(Color.WHITE);
-        g.drawString(full, offset, 60);
+        g.drawString(full, this.offset, 60);
         g.drawString(this.controller.getPoolSize() + " characters left", 32, 512);
 
         for (var tile : this.controller.getTiles()) {
@@ -45,6 +52,20 @@ public class GameView extends View<GameController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+    }
+
+    @Override
+    public void mouseMove(int x, int y) {
+        var i = this.offset + this.hostWidth;
+
+        this.hover = x > i && x < i + this.scoreWidth && y > 40 && y < 68;
+    }
+
+    @Override
+    public void mouseClick(int x, int y) {
+        if (this.hover) {
+            this.controller.navigateHistory();
+        }
     }
 
     @Override
