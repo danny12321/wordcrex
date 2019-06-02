@@ -356,32 +356,31 @@ public class User implements Pollable<User> {
             return users;
         } else if (name.equals("ALL")) { //get all users including logged in user
             sql = "SELECT username, role FROM wordcrex.accountrole";
+        }
 
-            this.database.select(sql,
-                (statement) -> {
-                    if (!name.equals("ALL")) {
-                        statement.setString(1, name + "%");
-                        statement.setString(2, this.username);
-                    }
-                },
-                (result) -> {
-                    var roleList = new ArrayList<UserRole>();
-                    var foundUser = false;
-                    for (User u : users) {
-                        if (u.username.equals(result.getString("username"))) {
-                            u.roles.add(UserRole.byRole(result.getString("role")));
-                            foundUser = true;
-                            break;
-                        }
-                    }
-                    if (!foundUser) {
-                        roleList.add(UserRole.byRole(result.getString("role")));
-                        users.add(new User(this.database, result.getString("username"), roleList, null, null));
+        this.database.select(sql,
+            (statement) -> {
+                if (!name.equals("ALL")) {
+                    statement.setString(1, name + "%");
+                    statement.setString(2, this.username);
+                }
+            },
+            (result) -> {
+                var roleList = new ArrayList<UserRole>();
+                var foundUser = false;
+                for (User u : users) {
+                    if (u.username.equals(result.getString("username"))) {
+                        u.roles.add(UserRole.byRole(result.getString("role")));
+                        foundUser = true;
+                        break;
                     }
                 }
-            );
-            return users;
-        }
+                if (!foundUser) {
+                    roleList.add(UserRole.byRole(result.getString("role")));
+                    users.add(new User(this.database, result.getString("username"), roleList, null, null));
+                }
+            }
+        );
 
         return users;
     }
