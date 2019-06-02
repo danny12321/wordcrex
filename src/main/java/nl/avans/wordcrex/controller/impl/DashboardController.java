@@ -32,16 +32,10 @@ public class DashboardController extends Controller<User> {
     }
 
     public String getLabel(Game game) {
-        if (game.getLastRound() == null) {
-            return "?";
-        }
-
         if (game.state == GameState.PENDING) {
             return "UITGEDAAGD";
-        } else if (game.getLastRound().isHostTurn() == game.isHostAuthenticated()) {
-            return "JOUW BEURT";
         } else {
-            return "HUN BEURT";
+            return "SPELEN";
         }
     }
 

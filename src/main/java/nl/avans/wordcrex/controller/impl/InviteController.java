@@ -41,18 +41,12 @@ public class InviteController extends Controller<User> {
         this.users = this.getModel().findOpponents(username);
     }
 
-    public List<Pair<String, Boolean>> getUsers() {
+    public List<Pair<String, Boolean>> getOpponents() {
         return this.users;
     }
 
     public void invite(Pair<String, Boolean> user) {
-        if (this.dictionary == null) {
-            System.out.println("Selecteer een taal");
-            return;
-        }
-
-        if (!user.b) {
-            System.out.println("Er word al een spel gespeeld met deze user");
+        if (!this.hasDictionary() || !user.b) {
             return;
         }
 
@@ -62,5 +56,9 @@ public class InviteController extends Controller<User> {
 
     public void setDictionary(Dictionary dictionary) {
         this.dictionary = dictionary;
+    }
+
+    public boolean hasDictionary() {
+        return this.dictionary != null;
     }
 }

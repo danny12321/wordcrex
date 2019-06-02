@@ -28,7 +28,9 @@ public class DashboardView extends View<DashboardController> {
             72,
             96,
             (g, game) -> {
-                var other = this.controller.isCurrentUser(game.host) ? game.opponent : game.host;
+                var host = this.controller.isCurrentUser(game.host);
+                var other = host ? game.opponent : game.host;
+                var extra = game.inviteState == InviteState.PENDING ? host ? "Naar " : "Van " : "";
 
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
@@ -37,10 +39,14 @@ public class DashboardView extends View<DashboardController> {
                 StringUtil.drawCenteredString(g, Main.TASKBAR_SIZE, 27, 42, 42, other.getInitial());
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Color.WHITE);
-                g.drawString(other.username, Main.TASKBAR_SIZE * 2 + 42, 52);
+                g.drawString(extra + other.username, Main.TASKBAR_SIZE * 2 + 42, 44);
+                g.setFont(Fonts.SMALL);
+                g.setColor(Color.LIGHT_GRAY);
+                g.drawString(game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);
+                g.setFont(Fonts.NORMAL);
             },
-            (previous, next) -> previous == null || previous.state != next.state ? next.state.state : null,
-            (game) -> game.id,
+            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
+            (game) -> String.valueOf(game.id),
             this.controller::isSelectable,
             (game) -> {
                 if (game.inviteState == InviteState.PENDING) {

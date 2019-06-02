@@ -83,6 +83,10 @@ public class User implements Pollable<User> {
                 var code = result.getString("code");
                 var character = characters.getOrDefault(code, new ArrayList<>());
 
+                if (character.isEmpty()) {
+                    return;
+                }
+
                 dictionaries.add(new Dictionary(this.database, code, result.getString("description"), List.copyOf(character)));
             }
         );
@@ -192,11 +196,11 @@ public class User implements Pollable<User> {
     }
 
     public List<Pair<String, Boolean>> findOpponents(String username) {
-        var users = new ArrayList<Pair<String, Boolean>>();
-
         if (username.isEmpty()) {
-            return users;
+            return List.of();
         }
+
+        var users = new ArrayList<Pair<String, Boolean>>();
 
         this.database.select(
             "SELECT a.username, (SELECT true FROM game g WHERE ((g.username_player1 = ? AND g.username_player2 LIKE ?) OR (g.username_player2 = ? AND g.username_player1 LIKE ?)) AND g.game_state IN ('request', 'playing') AND g.answer_player2 IN ('unknown', 'accepted') LIMIT 1) AS disabled FROM account a JOIN accountrole ar ON a.username = ar.username WHERE a.username LIKE ? AND a.username != ? AND ar.role = 'player'",
