@@ -116,19 +116,30 @@ public class Game implements Pollable<Game> {
         var rounds = new ArrayList<Round>();
 
         this.database.select(
-            "SELECT t.turn_id turn, h.turnaction_type host_action, h.score host_score, h.bonus host_bonus, hp.woorddeel host_played, hp.`x-waarden` host_x, hp.`y-waarden` host_y, o.turnaction_type opponent_action, o.score opponent_score, o.bonus opponent_bonus, op.woorddeel opponent_played, op.`x-waarden` opponent_x, op.`y-waarden` opponent_y " +
+            "SELECT t.turn_id turn, d.inhoud deck, h.turnaction_type host_action, h.score host_score, h.bonus host_bonus, hp.woorddeel host_played, hp.`x-waarden` host_x, hp.`y-waarden` host_y, o.turnaction_type opponent_action, o.score opponent_score, o.bonus opponent_bonus, op.woorddeel opponent_played, op.`x-waarden` opponent_x, op.`y-waarden` opponent_y " +
                 "FROM turn t" +
                 "         LEFT JOIN turnplayer1 h ON t.game_id = h.game_id AND t.turn_id = h.turn_id" +
                 "         LEFT JOIN gelegdplayer1 hp ON t.game_id = hp.game_id AND t.turn_id = hp.turn_id" +
                 "         LEFT JOIN turnplayer2 o ON t.game_id = o.game_id AND t.turn_id = o.turn_id" +
-                "         LEFT JOIN gelegdplayer2 op ON t.game_id = op.game_id AND t.turn_id = op.turn_id " +
+                "         LEFT JOIN gelegdplayer2 op ON t.game_id = op.game_id AND t.turn_id = op.turn_id" +
+                "         LEFT JOIN hand d ON t.game_id = d.game_id AND t.turn_id = d.turn_id " +
                 "WHERE t.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
                 var hostTurn = this.parseTurn(result, "host");
                 var opponentTurn = this.parseTurn(result, "opponent");
 
-                rounds.add(new Round(result.getInt("turn"), hostTurn, opponentTurn));
+                var deck = new ArrayList<Character>();
+                var deckRaw = result.getString("deck").split(",");
+
+                for (String character : deckRaw) {
+                    deck.add(this.dictionary.characters.stream()
+                        .filter((c) -> c.character.equals(character))
+                        .findFirst()
+                        .orElseThrow());
+                }
+
+                rounds.add(new Round(result.getInt("turn"), List.copyOf(deck), hostTurn, opponentTurn));
             }
         );
 
