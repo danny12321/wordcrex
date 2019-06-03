@@ -99,8 +99,7 @@ public class ChatView extends View<ChatController> {
         );
     }
 
-    private void chat()
-    {
+    private void chat() {
         this.controller.sendChat(this.message);
         this.input.clearInput();
     }
