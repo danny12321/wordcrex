@@ -31,7 +31,7 @@ public class HistoryView extends View<HistoryController> {
                 this.drawScore(g, round.hostTurn, 30, this.controller.getHost());
                 this.drawScore(g, round.opponentTurn, 82, this.controller.getOpponent());
             },
-            (previous, next) -> "Ronde " + next.round + " - " + next.character.stream().map((c) -> c.character).collect(Collectors.joining()),
+            (previous, next) -> "Ronde " + next.round + " - " + next.characters.stream().map((c) -> c.character).collect(Collectors.joining()),
             (round) -> String.valueOf(round.round),
             (round) -> false,
             (round) -> {
@@ -71,7 +71,7 @@ public class HistoryView extends View<HistoryController> {
 
         if (turn == null) {
             wordStatus = "Nog geen woord gespeeld";
-        } else if (turn.action == TurnAction.PLAY) {
+        } else if (turn.action == TurnAction.PLAYED) {
             var score = " +" + (turn.score + turn.bonus) + " ";
             var width = metrics.stringWidth(score);
 
@@ -82,9 +82,9 @@ public class HistoryView extends View<HistoryController> {
             g.fillRect(450 - width, yPos - 10, width, 28);
             g.setColor(Color.WHITE);
             g.drawString(score, 450 - width, yPos + 10);
-        } else if (turn.action == TurnAction.PASS) {
+        } else if (turn.action == TurnAction.PASSED) {
             wordStatus = "Gepast";
-        } else if (turn.action == TurnAction.RESIGN) {
+        } else if (turn.action == TurnAction.RESIGNED) {
             wordStatus = "Opgegeven";
         }
 
