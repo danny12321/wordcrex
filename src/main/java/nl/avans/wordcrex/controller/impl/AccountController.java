@@ -41,7 +41,7 @@ public class AccountController extends Controller<User> {
     }
 
     public boolean canChangeRole(UserRole role) {
-        return !(this.getModel().roles.size() == 1 && this.getModel().hasRole(role));
+        return !(this.user.roles.size() == 1 && this.user.hasRole(role));
     }
 
     public void toggleRole(UserRole role) {
