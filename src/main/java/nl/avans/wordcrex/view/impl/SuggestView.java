@@ -5,6 +5,7 @@ import nl.avans.wordcrex.controller.impl.SuggestController;
 import nl.avans.wordcrex.model.Word;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
@@ -27,27 +28,17 @@ public class SuggestView extends View<SuggestController> {
         super(controller);
         this.list = new ListWidget<>(
                 96,
-                96,
+                64,
                 (g, word) -> {
 
-                    g.setColor(Colors.DARKER_YELLOW);
-                    g.fillRect(0, 100, 200, 50);
-
-                    var metrics = g.getFontMetrics(g.getFont());
-
-
                     g.setColor(Color.WHITE);
-                    g.drawString(word.dictionary.code, Main.TASKBAR_SIZE, 170);
-                    g.drawString(word.state.toString(), 200, 170);
-                    g.drawString(word.word, Main.FRAME_SIZE - Main.TASKBAR_SIZE * 2 - metrics.stringWidth(word.word), 170);
-
-
-
-                    g.setColor(Colors.DARKERER_BLUE);
-                    g.fillRect(0, 204, 480, 4);
-
+                    g.drawString(word.word, Main.TASKBAR_SIZE, 30);
+                    g.setColor(Color.LIGHT_GRAY);
+                    g.setFont(Fonts.SMALL);
+                    g.drawString(word.state.toString(), Main.TASKBAR_SIZE, 50);
+                    g.setFont(Fonts.NORMAL);
                 },
-                (previous, next) -> null,
+                (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.description : null,
                 (word) -> word.word,
                 (word) -> false,
                 null
@@ -66,6 +57,7 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        this.list.setItems(this.controller.getWords());
     }
 
     @Override
