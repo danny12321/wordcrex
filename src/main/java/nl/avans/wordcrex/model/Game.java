@@ -27,8 +27,8 @@ public class Game implements Pollable<Game> {
         this(game.database, game.id, game.host, game.opponent, game.state, game.inviteState, game.dictionary, tiles, game.pool, game.rounds, game.messages);
     }
 
-    public Game(Game game, GameState state, InviteState inviteState, List<Letter> pool, List<Message> messages) {
-        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, pool, null, messages);
+    public Game(Game game, GameState state, InviteState inviteState, List<Message> messages) {
+        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, null, null, messages);
     }
 
     public Game(Database database, int id, String host, String opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
@@ -44,7 +44,7 @@ public class Game implements Pollable<Game> {
         this.inviteState = inviteState;
         this.dictionary = dictionary;
         this.tiles = tiles;
-        this.pool = pool;
+        this.pool = pool == null ? this.getPool() : pool;
         this.rounds = rounds == null ? this.getRounds() : rounds;
         this.messages = messages;
     }
@@ -54,7 +54,7 @@ public class Game implements Pollable<Game> {
         var tiles = new ArrayList<Tile>();
 
         this.database.select(
-            "SELECT t.x, t.y, t.tile_type FROM tile t",
+            "SELECT t.x, t.y, t.tile_type FROM tile t ORDER BY t.x, t.y",
             (statement) -> {
             },
             (result) -> tiles.add(new Tile(result.getInt("x"), result.getInt("y"), result.getString("tile_type")))
@@ -78,6 +78,18 @@ public class Game implements Pollable<Game> {
             }
         );
 
+        var messages = new ArrayList<Message>();
+
+        this.database.select(
+            "SELECT m.message, m.username, m.moment date FROM chatline m WHERE game_id = ? ORDER BY moment",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
+        );
+
+        return new Game(this, ref.state, ref.inviteState, List.copyOf(messages));
+    }
+
+    private List<Letter> getPool() {
         var pool = new ArrayList<Letter>();
 
         this.database.select(
@@ -95,40 +107,37 @@ public class Game implements Pollable<Game> {
             }
         );
 
-        var messages = new ArrayList<Message>();
-
-        this.database.select(
-            "SELECT m.message, m.username, m.moment date FROM chatline m WHERE game_id = ? ORDER BY moment",
-            (statement) -> statement.setInt(1, this.id),
-            (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
-        );
-
-        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(pool), List.copyOf(messages));
-
-        if (game.state == GameState.PLAYING && game.rounds.isEmpty()) {
-            game.startNewRound();
-        }
-
-        return game;
+        return List.copyOf(pool);
     }
 
     private List<Round> getRounds() {
         var rounds = new ArrayList<Round>();
 
         this.database.select(
-            "SELECT t.turn_id turn, h.turnaction_type host_action, h.score host_score, h.bonus host_bonus, hp.woorddeel host_played, hp.`x-waarden` host_x, hp.`y-waarden` host_y, o.turnaction_type opponent_action, o.score opponent_score, o.bonus opponent_bonus, op.woorddeel opponent_played, op.`x-waarden` opponent_x, op.`y-waarden` opponent_y " +
+            "SELECT t.turn_id turn, d.inhoud deck, h.turnaction_type host_action, h.score host_score, h.bonus host_bonus, hp.woorddeel host_played, hp.`x-waarden` host_x, hp.`y-waarden` host_y, o.turnaction_type opponent_action, o.score opponent_score, o.bonus opponent_bonus, op.woorddeel opponent_played, op.`x-waarden` opponent_x, op.`y-waarden` opponent_y " +
                 "FROM turn t" +
                 "         LEFT JOIN turnplayer1 h ON t.game_id = h.game_id AND t.turn_id = h.turn_id" +
                 "         LEFT JOIN gelegdplayer1 hp ON t.game_id = hp.game_id AND t.turn_id = hp.turn_id" +
                 "         LEFT JOIN turnplayer2 o ON t.game_id = o.game_id AND t.turn_id = o.turn_id" +
-                "         LEFT JOIN gelegdplayer2 op ON t.game_id = op.game_id AND t.turn_id = op.turn_id " +
+                "         LEFT JOIN gelegdplayer2 op ON t.game_id = op.game_id AND t.turn_id = op.turn_id" +
+                "         LEFT JOIN hand d ON t.game_id = d.game_id AND t.turn_id = d.turn_id " +
                 "WHERE t.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
                 var hostTurn = this.parseTurn(result, "host");
                 var opponentTurn = this.parseTurn(result, "opponent");
 
-                rounds.add(new Round(result.getInt("turn"), hostTurn, opponentTurn));
+                var deck = new ArrayList<Character>();
+                var deckRaw = result.getString("deck").split(",");
+
+                for (String character : deckRaw) {
+                    deck.add(this.dictionary.characters.stream()
+                        .filter((c) -> c.character.equals(character))
+                        .findFirst()
+                        .orElseThrow());
+                }
+
+                rounds.add(new Round(result.getInt("turn"), List.copyOf(deck), hostTurn, opponentTurn));
             }
         );
 
@@ -210,6 +219,10 @@ public class Game implements Pollable<Game> {
             .sum();
     }
 
+    public int getScore(List<Played> played) {
+        return 0;
+    }
+
     public void startGame() {
         this.database.update(
             "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",
@@ -256,15 +269,16 @@ public class Game implements Pollable<Game> {
             }
         );
 
+        var pool = this.pool.isEmpty() ? this.getPool() : this.pool;
         var values = new ArrayList<String>();
         var deck = new ArrayList<Letter>();
-        var size = Math.min(7, this.pool.size() - 1);
+        var size = Math.min(7, pool.size() - 1);
         var random = new Random();
 
         for (int i = 0; i < size; i++) {
-            var next = random.nextInt(this.pool.size());
+            var next = random.nextInt(pool.size());
 
-            deck.add(this.pool.get(next));
+            deck.add(pool.get(next));
             values.add("(?, ?, ?)");
         }
 
@@ -292,7 +306,7 @@ public class Game implements Pollable<Game> {
                 statement.setString(1, user.username);
                 statement.setInt(2, this.id);
                 statement.setTimestamp(3, new Timestamp(new Date().getTime()));
-                statement.setString(4, message);
+                statement.setString(4, message.trim().replaceAll("( )+", " "));
             }
         );
     }

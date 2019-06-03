@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.UserRole;
+import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.AccountView;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class AccountController extends Controller<User> {
+    private String password;
     private User user;
 
     public AccountController(Main main, Function<User, User> fn) {
@@ -25,11 +27,27 @@ public class AccountController extends Controller<User> {
 
     @Override
     public void poll() {
-        this.user = this.user.poll();
+        if (!this.user.username.equals(this.getModel().username)) {
+            this.user = this.user.poll();
+
+            return;
+        }
+
+        super.poll();
+
+        this.user = this.getModel();
     }
 
-    public void changePassword(String password) {
-        this.user.changePassword(password);
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void changePassword() {
+        this.getModel().changePassword(this.password);
+    }
+
+    public boolean isValid(){
+        return StringUtil.isAuthInput(this.password);
     }
 
     public String getUsername() {
@@ -45,7 +63,7 @@ public class AccountController extends Controller<User> {
     }
 
     public void toggleRole(UserRole role) {
-        this.getModel().toggleRole(user, role);
+        this.getModel().toggleRole(this.user, role);
     }
 
     public boolean canChangeRoles() {

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class AccountView extends View<AccountController> {
-    private String password = "";
     private final int gap = 16;
     private final int header = 32;
     private final int section = 96;
@@ -30,7 +29,8 @@ public class AccountView extends View<AccountController> {
         new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + (this.circle * 3) + 4 * this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.ADMINISTRATOR))
     );
 
-    private InputWidget input = new InputWidget("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, Main.FRAME_SIZE - 64 - this.gap * 3, 32, (value) -> this.password = value);
+    private final InputWidget input = new InputWidget("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, Main.FRAME_SIZE - 64 - this.gap * 3, 32, this.controller::setPassword);
+    private final ButtonWidget changeButton = new ButtonWidget("+", Main.FRAME_SIZE - 64 - this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, 64, 32, this::changePassword);
 
     public AccountView(AccountController controller) {
         super(controller);
@@ -75,6 +75,7 @@ public class AccountView extends View<AccountController> {
         this.buttons.get(1).setEnabled(this.controller.canChangeRole(UserRole.OBSERVER));
         this.buttons.get(2).setEnabled(this.controller.canChangeRole(UserRole.MODERATOR));
         this.buttons.get(3).setEnabled(this.controller.canChangeRole(UserRole.ADMINISTRATOR));
+        this.changeButton.setEnabled(this.controller.isValid());
     }
 
     @Override
@@ -82,7 +83,7 @@ public class AccountView extends View<AccountController> {
         var list = new ArrayList<Widget>();
 
         list.add(this.input);
-        list.add(new ButtonWidget("+", Main.FRAME_SIZE - 64 - this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, 64, 32, this::changePassword));
+        list.add(this.changeButton);
 
         if (this.controller.canChangeRoles()) {
             list.addAll(this.buttons);
@@ -92,7 +93,7 @@ public class AccountView extends View<AccountController> {
     }
 
     private void changePassword() {
-        this.controller.changePassword(this.password);
+        this.controller.changePassword();
         this.input.clearInput();
     }
 }
