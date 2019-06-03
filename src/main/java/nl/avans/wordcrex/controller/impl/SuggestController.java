@@ -5,6 +5,7 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Dictionary;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.Word;
+import nl.avans.wordcrex.model.WordState;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.SuggestView;
 
@@ -15,7 +16,7 @@ import java.util.function.Function;
 
 public class SuggestController extends Controller<User> {
     private int page;
-    private Map<String, List<Word>> words;
+    private List<Word> words;
     private Dictionary dictionary;
 
     public SuggestController(Main main, Function<User, User> fn) {
@@ -45,6 +46,19 @@ public class SuggestController extends Controller<User> {
         return result;
     }
 
+    public String getLabel(Word word) {
+        switch (word.state) {
+            case ACCEPTED:
+                return "Geaccepteerd";
+            case PENDING:
+                return "In afwachting";
+            case REJECTED:
+                return "Afgewezen";
+            default:
+                return "?";
+        }
+    }
+
     public void setDictionary(Dictionary dictionary) {
         this.dictionary = dictionary;
     }
@@ -54,11 +68,15 @@ public class SuggestController extends Controller<User> {
         this.words = this.getModel().getSuggested(this.page);
     }
 
+    public boolean hasDictionary() {
+        return this.dictionary != null;
+    }
+
     public int getPage() {
         return this.page;
     }
 
-    public Map<String, List<Word>> getWords() {
+    public List<Word> getWords() {
         return this.words;
     }
 }
