@@ -13,7 +13,7 @@ public class User implements Pollable<User> {
     public final List<UserRole> roles;
     public final List<Game> games;
     public final List<Dictionary> dictionaries;
-    private static final String REGEX = "^[a-zA-Z0-9]{5,25}$";
+
 
     public User(Database database) {
         this(database, "");
@@ -143,7 +143,7 @@ public class User implements Pollable<User> {
     }
 
     public User register(String username, String password) {
-        if (!password.matches(REGEX)){
+        if (!StringUtil.isAuthInput(username) || !StringUtil.isAuthInput(password)){
             return this;
         }
 
@@ -333,7 +333,7 @@ public class User implements Pollable<User> {
     }
 
     public void changePassword(String password) {
-        if (!password.matches(REGEX)) {
+        if (!StringUtil.isAuthInput(password)) {
             return;
         }
 

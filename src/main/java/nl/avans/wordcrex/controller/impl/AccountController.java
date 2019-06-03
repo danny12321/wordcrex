@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.UserRole;
+import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.AccountView;
 
@@ -12,7 +13,6 @@ import java.util.function.Function;
 
 public class AccountController extends Controller<User> {
     private String newPassword;
-    private static final String REGEX = "^[a-zA-Z0-9]{5,25}$";
 
     public AccountController(Main main, Function<User, User> fn) {
         super(main, fn);
@@ -37,7 +37,7 @@ public class AccountController extends Controller<User> {
     }
 
     public boolean isValid(){
-        return this.newPassword.matches(REGEX);
+        return StringUtil.isAuthInput(this.newPassword);
     }
 
     public String getUsername() {
