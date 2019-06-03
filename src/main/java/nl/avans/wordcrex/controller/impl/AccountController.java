@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.function.Function;
 
 public class AccountController extends Controller<User> {
+    private static final String REGEX = "^[a-zA-Z0-9]{5,25}$";
+    private String newPassword;
+
     public AccountController(Main main, Function<User, User> fn) {
         super(main, fn);
     }
@@ -25,7 +28,18 @@ public class AccountController extends Controller<User> {
         return false;
     }
 
+   public boolean isValid(){
+
+       return this.newPassword.matches(AccountController.REGEX);
+    }
+
+    public void setPassword(String password) {
+        this.newPassword = password;
+    }
+
     public void changePassword(String password) {
+
+
         this.getModel().changePassword(password);
     }
 
