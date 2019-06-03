@@ -3,14 +3,13 @@ package nl.avans.wordcrex.controller.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.RegisterView;
 
 import java.util.function.Function;
 
 public class RegisterController extends Controller<User> {
-    private static final String REGEX = "^[a-zA-Z0-9]{5,25}$";
-
     private String username;
     private String password;
     private boolean failed;
@@ -47,7 +46,7 @@ public class RegisterController extends Controller<User> {
     }
 
     public boolean isValid() {
-        return this.username.matches(RegisterController.REGEX) && this.password.matches(RegisterController.REGEX);
+        return StringUtil.isAuthInput(this.username) && StringUtil.isAuthInput(this.password);
     }
 
     public boolean hasFailed() {
