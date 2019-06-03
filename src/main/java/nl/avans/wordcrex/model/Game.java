@@ -27,8 +27,8 @@ public class Game implements Pollable<Game> {
         this(game.database, game.id, game.host, game.opponent, game.state, game.inviteState, game.dictionary, tiles, game.pool, game.rounds, game.messages);
     }
 
-    public Game(Game game, GameState state, InviteState inviteState, List<Letter> pool, List<Message> messages) {
-        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, pool, null, messages);
+    public Game(Game game, GameState state, InviteState inviteState, List<Message> messages) {
+        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, null, null, messages);
     }
 
     public Game(Database database, int id, String host, String opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
@@ -44,7 +44,7 @@ public class Game implements Pollable<Game> {
         this.inviteState = inviteState;
         this.dictionary = dictionary;
         this.tiles = tiles;
-        this.pool = pool;
+        this.pool = pool == null ? this.getPool() : pool;
         this.rounds = rounds == null ? this.getRounds() : rounds;
         this.messages = messages;
     }
@@ -78,6 +78,18 @@ public class Game implements Pollable<Game> {
             }
         );
 
+        var messages = new ArrayList<Message>();
+
+        this.database.select(
+            "SELECT m.message, m.username, m.moment date FROM chatline m WHERE game_id = ? ORDER BY moment",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
+        );
+
+        return new Game(this, ref.state, ref.inviteState, List.copyOf(messages));
+    }
+
+    private List<Letter> getPool() {
         var pool = new ArrayList<Letter>();
 
         this.database.select(
@@ -95,21 +107,7 @@ public class Game implements Pollable<Game> {
             }
         );
 
-        var messages = new ArrayList<Message>();
-
-        this.database.select(
-            "SELECT m.message, m.username, m.moment date FROM chatline m WHERE game_id = ? ORDER BY moment",
-            (statement) -> statement.setInt(1, this.id),
-            (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
-        );
-
-        var game = new Game(this, ref.state, ref.inviteState, List.copyOf(pool), List.copyOf(messages));
-
-        if (game.state == GameState.PLAYING && game.rounds.isEmpty()) {
-            game.startNewRound();
-        }
-
-        return game;
+        return List.copyOf(pool);
     }
 
     private List<Round> getRounds() {
@@ -221,6 +219,10 @@ public class Game implements Pollable<Game> {
             .sum();
     }
 
+    public int getScore(List<Played> played) {
+        return 0;
+    }
+
     public void startGame() {
         this.database.update(
             "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",
@@ -267,15 +269,16 @@ public class Game implements Pollable<Game> {
             }
         );
 
+        var pool = this.pool.isEmpty() ? this.getPool() : this.pool;
         var values = new ArrayList<String>();
         var deck = new ArrayList<Letter>();
-        var size = Math.min(7, this.pool.size() - 1);
+        var size = Math.min(7, pool.size() - 1);
         var random = new Random();
 
         for (int i = 0; i < size; i++) {
-            var next = random.nextInt(this.pool.size());
+            var next = random.nextInt(pool.size());
 
-            deck.add(this.pool.get(next));
+            deck.add(pool.get(next));
             values.add("(?, ?, ?)");
         }
 

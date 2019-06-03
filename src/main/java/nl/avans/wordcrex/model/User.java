@@ -132,6 +132,7 @@ public class User implements Pollable<User> {
 
                 if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host)) {
                     game.startGame();
+                    game.startNewRound();
                 }
 
                 games.add(game);
