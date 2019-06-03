@@ -2,6 +2,7 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.SuggestController;
+import nl.avans.wordcrex.model.Word;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
@@ -10,23 +11,47 @@ import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.DropdownWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
-import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
+import nl.avans.wordcrex.widget.impl.ListWidget;
 
 import java.awt.*;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class SuggestView extends View<SuggestController> {
-    private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
+    private final ListWidget<Word> list;
 
     private String word = "";
     private boolean invalid;
-    private int scroll;
 
     public SuggestView(SuggestController controller) {
         super(controller);
+        this.list = new ListWidget<>(
+                96,
+                96,
+                (g, word) -> {
+
+                    g.setColor(Colors.DARKER_YELLOW);
+                    g.fillRect(0, 100, 200, 50);
+
+                    var metrics = g.getFontMetrics(g.getFont());
+
+
+                    g.setColor(Color.WHITE);
+                    g.drawString(word.dictionary.code, Main.TASKBAR_SIZE, 170);
+                    g.drawString(word.state.toString(), 200, 170);
+                    g.drawString(word.word, Main.FRAME_SIZE - Main.TASKBAR_SIZE * 2 - metrics.stringWidth(word.word), 170);
+
+
+
+                    g.setColor(Colors.DARKERER_BLUE);
+                    g.fillRect(0, 204, 480, 4);
+
+                },
+                (previous, next) -> null,
+                (word) -> word.word,
+                (word) -> false,
+                null
+        );
     }
 
     @Override
@@ -37,27 +62,6 @@ public class SuggestView extends View<SuggestController> {
             g.setColor(Color.WHITE);
             StringUtil.drawCenteredString(g, 64, 360, 184, 32, "Woord al bekend");
         }
-
-        var metrics = g.getFontMetrics(g.getFont());
-        var index = new AtomicInteger();
-        var words = this.controller.getWords();
-
-        words.forEach((key, list) -> list.forEach((value) -> {
-            var offset = index.getAndIncrement() * 88 - this.scroll;
-            String state = value.state.toString();
-
-            g.setColor(Color.WHITE);
-            g.drawString(key, Main.TASKBAR_SIZE, 170 + offset);
-            g.drawString(state, 200, 170 + offset);
-            g.drawString(value.word, Main.FRAME_SIZE - Main.TASKBAR_SIZE * 2 - metrics.stringWidth(value.word), 170 + offset);
-
-            if (index.get() < list.size()) {
-                g.setColor(Colors.DARKERER_BLUE);
-                g.fillRect(0, 204 + offset, 480, 4);
-            }
-        }));
-
-        this.scrollbar.setHeight(100 * 88 + 128);
     }
 
     @Override
@@ -66,11 +70,12 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public List<Widget> getChildren() {
+        var dictionaries = this.controller.getDictionaries();
         return List.of(
-            this.scrollbar,
+            this.list,
             new InputWidget("WOORD", 0, 30, 400, 48, (value) -> this.word = value),
             new ButtonWidget("SUGGEREER", 0, 78, 480, 48, this::suggest),
-            new DropdownWidget<>(this.controller.getDictionaries(), "Taal", 400, 30, 80, 48, 10, this.controller::setDictionary)
+            new DropdownWidget<>(dictionaries, "Taal", 400, 30, 80, 48, 10, this.controller::setDictionary)
         );
     }
 
