@@ -404,4 +404,47 @@ public class User implements Pollable<User> {
             }
         );
     }
+
+    public List<Game> observeGames(String search){
+        var games = new ArrayList<Game>();
+        this.database.select(
+                "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code " +
+                        "FROM game g " +
+                        "WHERE g.game_state = 'playing' or g.game_state = 'finished'"+
+                        "AND g.username_player1 LIKE ? OR g.username_player2 LIKE ?",
+                (statement) -> {
+                    statement.setString(1, search);
+                    statement.setString(2, search);
+                },
+                (result) -> {
+                    var id = result.getInt("id");
+                    var state = GameState.byState(result.getString("state"));
+                    var inviteState = InviteState.byState(result.getString("invite_state"));
+                    var host = result.getString("host");
+                    var opponent = result.getString("opponent");
+                    var code = result.getString("code");
+                    var dictionary = this.dictionaries.stream()
+                            .filter((d) -> d.code.equals(code))
+                            .findAny()
+                            .orElse(null);
+
+                    if (dictionary == null) {
+                        System.out.println("Dictionary not found: " + code);
+
+                        return;
+                    }
+
+                    var game = new Game(this.database, id, host, opponent, state, inviteState, dictionary);
+
+                    if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host)) {
+                        game.startGame();
+                    }
+
+                    games.add(game);
+                }
+        );
+
+
+        return List.copyOf(games);
+    }
 }

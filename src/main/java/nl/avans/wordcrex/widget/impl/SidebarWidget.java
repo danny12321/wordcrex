@@ -7,11 +7,7 @@ import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
-import nl.avans.wordcrex.view.impl.AccountView;
-import nl.avans.wordcrex.view.impl.ApproveView;
-import nl.avans.wordcrex.view.impl.DashboardView;
-import nl.avans.wordcrex.view.impl.ManageView;
-import nl.avans.wordcrex.view.impl.SuggestView;
+import nl.avans.wordcrex.view.impl.*;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
@@ -24,7 +20,7 @@ import java.util.stream.Collectors;
 public class SidebarWidget extends Widget {
     private final List<Item> items = List.of(
         new Item<>("SPELLEN", DashboardController.class, DashboardView.class, UserRole.PLAYER),
-        new Item<>("BEKIJKEN", null, null, UserRole.OBSERVER),
+        new Item<>("BEKIJKEN", ObserveController.class, ObserveView.class, UserRole.OBSERVER),
         new Item<>("SUGGEREREN", SuggestController.class, SuggestView.class, UserRole.PLAYER),
         new Item<>("GOEDKEUREN", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
         new Item<>("BEHEREN", ManageController.class, ManageView.class, UserRole.ADMINISTRATOR),
