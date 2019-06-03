@@ -58,7 +58,7 @@ public class SuggestView extends View<SuggestController> {
     @Override
     public void update(Consumer<Particle> addParticle) {
         this.list.setItems(this.controller.getWords());
-        this.submitButton.setEnabled(this.controller.hasDictionary());
+        this.submitButton.setEnabled(this.controller.hasDictionary() && this.word.trim().length() > 0);
     }
 
     @Override

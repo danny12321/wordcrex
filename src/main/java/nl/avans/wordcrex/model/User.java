@@ -287,7 +287,7 @@ public class User implements Pollable<User> {
     }
 
     public boolean suggestWord(String word, Dictionary dictionary) {
-        if (dictionary.isWord(word) || StringUtil.containsWhitespace(word)) {
+        if (dictionary.isWord(word) || StringUtil.containsWhitespace(word) || word.length() == 0) {
             return false;
         }
 
