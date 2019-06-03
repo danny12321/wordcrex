@@ -15,7 +15,7 @@ public class AccountController extends Controller<User> {
 
     public AccountController(Main main, Function<User, User> fn) {
         super(main, Function.identity());
-        this.user = fn.apply(null).initialize();
+        this.user = fn.apply(this.getRoot()).initialize();
     }
 
     @Override
