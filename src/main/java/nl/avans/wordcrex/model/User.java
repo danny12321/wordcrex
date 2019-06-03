@@ -5,11 +5,13 @@ import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 import nl.avans.wordcrex.util.StringUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 
 public class User implements Pollable<User> {
     private final Database database;
-
     public final String username;
     public final List<UserRole> roles;
     public final List<Game> games;
@@ -23,12 +25,8 @@ public class User implements Pollable<User> {
         this(database, username, List.of(), List.of(), List.of());
     }
 
-    public User(User user, List<UserRole> roles, List<Dictionary> dictionaries) {
-        this(user.database, user.username, roles, user.games, dictionaries);
-    }
-
-    public User(User user, List<Game> games) {
-        this(user.database, user.username, user.roles, games, user.dictionaries);
+    public User(User user, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
+        this(user.database, user.username, roles, games, dictionaries);
     }
 
     public User(Database database, String username, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
@@ -83,7 +81,7 @@ public class User implements Pollable<User> {
             }
         );
 
-        return new User(this, List.copyOf(roles), List.copyOf(dictionaries));
+        return new User(this, List.copyOf(roles), this.games, List.copyOf(dictionaries));
     }
 
     @Override
@@ -91,6 +89,14 @@ public class User implements Pollable<User> {
         if (this.username.isEmpty()) {
             return this;
         }
+
+        var roles = new ArrayList<UserRole>();
+
+        this.database.select(
+            "SELECT r.role FROM accountrole r WHERE r.username = ?",
+            (statement) -> statement.setString(1, this.username),
+            (result) -> roles.add(UserRole.byRole(result.getString("role")))
+        );
 
         var games = new ArrayList<Game>();
 
@@ -134,7 +140,7 @@ public class User implements Pollable<User> {
 
         games.sort(Comparator.comparingInt((game) -> game.state.order));
 
-        return new User(this, List.copyOf(games));
+        return new User(this, List.copyOf(roles), List.copyOf(games), this.dictionaries);
     }
 
     @Override
@@ -143,6 +149,10 @@ public class User implements Pollable<User> {
     }
 
     public User register(String username, String password) {
+        if (!StringUtil.isAuthInput(username) || !StringUtil.isAuthInput(password)) {
+            return this;
+        }
+
         var insertedUser = this.database.insert(
             "INSERT INTO account VALUES (?, ?)",
             (statement) -> {
@@ -266,7 +276,7 @@ public class User implements Pollable<User> {
         var words = new ArrayList<Word>();
 
         this.database.select(
-              "SELECT w.word, w.state, w.username, w.letterset_code code FROM dictionary w WHERE w.state = ? ",
+            "SELECT w.word, w.state, w.username, w.letterset_code code FROM dictionary w WHERE w.state = ? ",
             (statement) -> statement.setString(1, WordState.PENDING.state),
             (result) -> {
                 var code = result.getString("code");
@@ -283,7 +293,7 @@ public class User implements Pollable<User> {
     }
 
     public boolean suggestWord(String word, Dictionary dictionary) {
-        if (dictionary.isWord(word) || StringUtil.containsWhitespace(word)) {
+        if (dictionary.isWord(word) || StringUtil.containsWhitespace(word) || word.length() == 0) {
             return false;
         }
 
@@ -300,12 +310,12 @@ public class User implements Pollable<User> {
         return true;
     }
 
-    public Map<String, List<Word>> getSuggested(int page) {
+    public List<Word> getSuggested(int page) {
         var size = 100;
-        var words = new HashMap<String, List<Word>>();
+        var words = new ArrayList<Word>();
 
         this.database.select(
-            "SELECT w.word, w.letterset_code code, w.state FROM dictionary w WHERE w.username = ? LIMIT ?, ?",
+            "SELECT w.word, w.letterset_code code, w.state FROM dictionary w WHERE w.username = ? ORDER BY w.letterset_code LIMIT ?, ?",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setInt(2, page * size);
@@ -313,22 +323,23 @@ public class User implements Pollable<User> {
             },
             (result) -> {
                 var code = result.getString("code");
-                var list = words.getOrDefault(code, new ArrayList<>());
                 var dictionary = this.dictionaries.stream()
                     .filter((d) -> d.code.equals(code))
                     .findFirst()
                     .orElseThrow();
 
-                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username, dictionary));
-
-                words.put(code, list);
+                words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username, dictionary));
             }
         );
 
-        return Map.copyOf(words);
+        return List.copyOf(words);
     }
 
     public void changePassword(String password) {
+        if (!StringUtil.isAuthInput(password)) {
+            return;
+        }
+
         this.database.update(
             "UPDATE account SET password = ? WHERE username = ?",
             (statement) -> {
@@ -338,12 +349,17 @@ public class User implements Pollable<User> {
         );
     }
 
+
     public void toggleRole(User user, UserRole role) {
         if (!this.hasRole(UserRole.ADMINISTRATOR)) {
             return;
         }
 
         if (user.hasRole(role)) {
+            if (user.roles.size() <= 1) {
+                return;
+            }
+
             this.database.update(
                 "DELETE FROM accountrole WHERE role = ? AND username = ?",
                 (statement) -> {

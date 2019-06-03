@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class ApproveController extends Controller<User> {
-    public final List<Word> words;
+    public List<Word> words;
 
     public ApproveController(Main main, Function<User, User> fn) {
         super(main, fn);
@@ -22,6 +22,13 @@ public class ApproveController extends Controller<User> {
     @Override
     public View<? extends Controller<User>> createView() {
         return new ApproveView(this);
+    }
+
+    @Override
+    public void poll() {
+        super.poll();
+
+        this.words = this.getModel().getPendingWords();
     }
 
     public void accept(Word word) {
