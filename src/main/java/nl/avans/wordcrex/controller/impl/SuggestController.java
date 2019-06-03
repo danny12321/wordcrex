@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 public class SuggestController extends Controller<User> {
     private int page;
-    private Map<String, List<Word>> words;
+    private List<Word> words;
     private Dictionary dictionary;
 
     public SuggestController(Main main, Function<User, User> fn) {
@@ -58,7 +58,7 @@ public class SuggestController extends Controller<User> {
         return this.page;
     }
 
-    public Map<String, List<Word>> getWords() {
+    public List<Word> getWords() {
         return this.words;
     }
 }

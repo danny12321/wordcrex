@@ -300,12 +300,12 @@ public class User implements Pollable<User> {
         return true;
     }
 
-    public Map<String, List<Word>> getSuggested(int page) {
+    public List<Word> getSuggested(int page) {
         var size = 100;
-        var words = new HashMap<String, List<Word>>();
+        var words = new ArrayList<Word>();
 
         this.database.select(
-            "SELECT w.word, w.letterset_code code, w.state FROM dictionary w WHERE w.username = ? LIMIT ?, ?",
+            "SELECT w.word, w.letterset_code code, w.state FROM dictionary w WHERE w.username = ? ORDER BY w.letterset_code LIMIT ?, ?",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setInt(2, page * size);
@@ -313,19 +313,16 @@ public class User implements Pollable<User> {
             },
             (result) -> {
                 var code = result.getString("code");
-                var list = words.getOrDefault(code, new ArrayList<>());
                 var dictionary = this.dictionaries.stream()
                     .filter((d) -> d.code.equals(code))
                     .findFirst()
                     .orElseThrow();
 
-                list.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username, dictionary));
-
-                words.put(code, list);
+                words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username, dictionary));
             }
         );
 
-        return Map.copyOf(words);
+        return List.copyOf(words);
     }
 
     public void changePassword(String password) {
