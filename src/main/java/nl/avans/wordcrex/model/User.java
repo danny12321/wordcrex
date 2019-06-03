@@ -9,11 +9,11 @@ import java.util.*;
 
 public class User implements Pollable<User> {
     private final Database database;
-
     public final String username;
     public final List<UserRole> roles;
     public final List<Game> games;
     public final List<Dictionary> dictionaries;
+    private static final String REGEX = "^[a-zA-Z0-9]{5,25}$";
 
     public User(Database database) {
         this(database, "");
@@ -143,6 +143,10 @@ public class User implements Pollable<User> {
     }
 
     public User register(String username, String password) {
+        if (!password.matches(REGEX)){
+            return this;
+        }
+
         var insertedUser = this.database.insert(
             "INSERT INTO account VALUES (?, ?)",
             (statement) -> {
@@ -329,14 +333,19 @@ public class User implements Pollable<User> {
     }
 
     public void changePassword(String password) {
+        if (!password.matches(REGEX)) {
+            return;
+        }
+
         this.database.update(
-            "UPDATE account SET password = ? WHERE username = ?",
-            (statement) -> {
-                statement.setString(1, password);
-                statement.setString(2, this.username);
-            }
+                "UPDATE account SET password = ? WHERE username = ?",
+                (statement) -> {
+                    statement.setString(1, password);
+                    statement.setString(2, this.username);
+                }
         );
     }
+
 
     public void toggleRole(User user, UserRole role) {
         if (!this.hasRole(UserRole.ADMINISTRATOR)) {

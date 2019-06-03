@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class AccountView extends View<AccountController> {
-    private String password = "";
     private final int gap = 16;
     private final int header = 32;
     private final int section = 96;
@@ -87,7 +86,7 @@ public class AccountView extends View<AccountController> {
     }
 
     private void changePassword() {
-        this.controller.changePassword(this.password);
+        this.controller.changePassword();
         this.input.clearInput();
     }
 }
