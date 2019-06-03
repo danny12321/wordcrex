@@ -22,6 +22,7 @@ public class ChatView extends View<ChatController> {
 
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll, true);
     private final InputWidget input = new InputWidget("BERICHT", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
+    private final ButtonWidget sendMessage = new ButtonWidget("+", Main.FRAME_SIZE - Main.TASKBAR_SIZE - 48, Main.FRAME_SIZE - 48, 48, 48, this::chat);
     private final int size = 32;
     private final int gap = 16;
     private final int maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (this.gap * 4 + this.size * 2);
@@ -85,6 +86,7 @@ public class ChatView extends View<ChatController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        sendMessage.setEnabled(this.message.trim().length() > 0);
     }
 
     @Override
@@ -92,12 +94,14 @@ public class ChatView extends View<ChatController> {
         return List.of(
             new ButtonWidget("<", 0, Main.FRAME_SIZE - 48, 48, 48, this.controller::navigateGame),
             this.input,
-            new ButtonWidget("+", Main.FRAME_SIZE - Main.TASKBAR_SIZE - 48, Main.FRAME_SIZE - 48, 48, 48, () -> {
-                this.controller.sendChat(this.message);
-                this.input.clearInput();
-            }),
+            this.sendMessage,
             this.scrollbar
         );
+    }
+
+    private void chat() {
+        this.controller.sendChat(this.message);
+        this.input.clearInput();
     }
 
     private List<String> splitMessage(Graphics2D g, String[] words) {
