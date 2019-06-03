@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 public class ChatView extends View<ChatController> {
     private String message;
 
-    private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
+    private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll, true);
     private final InputWidget input = new InputWidget("BERICHT", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
     private final int size = 32;
     private final int gap = 16;
@@ -35,9 +35,10 @@ public class ChatView extends View<ChatController> {
     @Override
     public void draw(Graphics2D g) {
         var messages = this.controller.getMessages();
-        var y = 48;
+        int contentHeight = (this.size + this.gap) * messages.size();
+        var y = Main.FRAME_SIZE - 92;
 
-        for (var i = 0; i < messages.size(); i++) {
+            for (var i = 0; i < messages.size(); i++) {
             var userMessage = false;
             var x = this.gap;
 
@@ -48,10 +49,10 @@ public class ChatView extends View<ChatController> {
 
             if (!(i != 0 && messages.get(i - 1).user.equals(messages.get(i).user))) {
                 g.setColor(Colors.DARK_YELLOW);
-                g.fillOval(x, y - this.scroll, this.size, this.size);
+                g.fillOval(x, y + this.scroll - contentHeight, this.size, this.size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, y - this.scroll, this.size, this.size, messages.get(i).user.substring(0, 1).toUpperCase());
+                StringUtil.drawCenteredString(g, x, y + this.scroll - contentHeight, this.size, this.size, messages.get(i).user.substring(0, 1).toUpperCase());
             }
 
             var message = messages.get(i).message;
@@ -68,10 +69,10 @@ public class ChatView extends View<ChatController> {
 
             for (var line : lines) {
                 g.setColor(Colors.DARK_BLUE);
-                g.fillRect(stringX - this.gap / 2, y - this.scroll, (int) width + this.gap, this.size);
+                g.fillRect(stringX - this.gap / 2, y + this.scroll - contentHeight, (int) width + this.gap, this.size);
 
                 g.setColor(Color.WHITE);
-                g.drawString(line.trim(), stringX, y + (int) height - this.scroll);
+                g.drawString(line.trim(), stringX, y + (int) height + this.scroll - contentHeight);
 
                 y += this.size;
             }
@@ -79,7 +80,7 @@ public class ChatView extends View<ChatController> {
             y += this.gap;
         }
 
-        this.scrollbar.setHeight(y + this.gap);
+        this.scrollbar.setHeight(y + this.gap - Main.FRAME_SIZE - 96);
     }
 
     @Override

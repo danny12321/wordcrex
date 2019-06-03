@@ -12,13 +12,19 @@ public class ScrollbarWidget extends Widget {
     private final Consumer<Integer> scroll;
 
     private int height;
-    private int offset;
+    private int offset = -1;
     private boolean hover;
     private boolean dragging;
     private int from;
+    private boolean reverse;
 
     public ScrollbarWidget(Consumer<Integer> scroll) {
         this.scroll = scroll;
+    }
+
+    public ScrollbarWidget(Consumer<Integer> scroll, boolean reverse) {
+        this.scroll = scroll;
+        this.reverse = reverse;
     }
 
     @Override
@@ -77,7 +83,13 @@ public class ScrollbarWidget extends Widget {
         var scroller = (float) height / this.height * (float) height;
 
         this.offset = (int) Math.min(height - scroller, Math.max(0, y - this.from));
-        this.scroll.accept((int) (this.offset / (height - scroller) * extra));
+
+        int scroll;
+
+        if (this.reverse) scroll = (this.height - height) - (int) (this.offset / (height - scroller) * extra);
+        else scroll = (int) (this.offset / (height - scroller) * extra);
+
+        this.scroll.accept(scroll);
     }
 
     @Override
@@ -87,5 +99,12 @@ public class ScrollbarWidget extends Widget {
 
     public void setHeight(int height) {
         this.height = height;
+
+        if(this.offset == -1 && this.reverse) {
+            var e = Main.FRAME_SIZE - Main.TASKBAR_SIZE;
+            var scroller = (int) ((float) e / height * (float) e);
+
+            this.offset =  e - scroller;
+        }
     }
 }
