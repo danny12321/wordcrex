@@ -86,7 +86,7 @@ public class ChatView extends View<ChatController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-            sendMessage.setEnabled(this.message.trim().length() > 0);
+        sendMessage.setEnabled(this.message.trim().length() > 0);
     }
 
     @Override
