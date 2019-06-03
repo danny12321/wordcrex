@@ -28,20 +28,20 @@ public class SuggestView extends View<SuggestController> {
     public SuggestView(SuggestController controller) {
         super(controller);
         this.list = new ListWidget<>(
-                90,
-                64,
-                (g, word) -> {
-                    g.setColor(Color.WHITE);
-                    g.drawString(word.word, Main.TASKBAR_SIZE, 30);
-                    g.setColor(Color.LIGHT_GRAY);
-                    g.setFont(Fonts.SMALL);
-                    g.drawString(this.controller.getLabel(word), Main.TASKBAR_SIZE, 50);
-                    g.setFont(Fonts.NORMAL);
-                },
-                (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.description : null,
-                (word) -> word.word,
-                (word) -> false,
-                null
+            90,
+            64,
+            (g, word) -> {
+                g.setColor(Color.WHITE);
+                g.drawString(word.word, Main.TASKBAR_SIZE, 30);
+                g.setColor(Color.LIGHT_GRAY);
+                g.setFont(Fonts.SMALL);
+                g.drawString(this.controller.getLabel(word), Main.TASKBAR_SIZE, 50);
+                g.setFont(Fonts.NORMAL);
+            },
+            (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.description : null,
+            (word) -> word.word,
+            (word) -> false,
+            null
         );
     }
 
@@ -64,6 +64,7 @@ public class SuggestView extends View<SuggestController> {
     @Override
     public List<Widget> getChildren() {
         var dictionaries = this.controller.getDictionaries();
+        
         return List.of(
             this.list,
             new InputWidget("WOORD", 0, 30, 400, 48, (value) -> this.word = value),
