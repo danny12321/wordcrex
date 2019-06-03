@@ -13,14 +13,13 @@ import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class SuggestView extends View<SuggestController> {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
-
+    private final ButtonWidget submitButton = new ButtonWidget("SUGGEREER", 0, 78, 480, 48, this::suggest);
     private String word = "";
     private boolean invalid;
     private int scroll;
@@ -33,9 +32,9 @@ public class SuggestView extends View<SuggestController> {
     public void draw(Graphics2D g) {
         if (this.invalid) {
             g.setColor(Colors.DARK_RED);
-            g.fillRect(64, 360, 184, 32);
+            g.fillRect(0, 480, 500, 32);
             g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 64, 360, 184, 32, "Woord al bekend");
+            StringUtil.drawCenteredString(g, 150, 480, 184, 32, "Woord al bekend");
         }
 
         var metrics = g.getFontMetrics(g.getFont());
@@ -62,19 +61,25 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        this.submitButton.setEnabled(this.controller.hasDictionary());
     }
 
     @Override
     public List<Widget> getChildren() {
         return List.of(
             this.scrollbar,
-            new InputWidget("WOORD", 0, 30, 400, 48, (value) -> this.word = value),
-            new ButtonWidget("SUGGEREER", 0, 78, 480, 48, this::suggest),
+            this.submitButton,
+            new InputWidget("WOORD", 0, 30, 400, 48, this::type),
             new DropdownWidget<>(this.controller.getDictionaries(), "Taal", 400, 30, 80, 48, 10, this.controller::setDictionary)
         );
     }
 
     private void suggest() {
-        this.invalid = this.controller.addWord(this.word);
+        this.invalid = !this.controller.addWord(this.word);
+    }
+
+    private void type(String input) {
+        this.word = input;
+        this.invalid = false;
     }
 }
