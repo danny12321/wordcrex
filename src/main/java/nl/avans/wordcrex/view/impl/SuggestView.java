@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 
 public class SuggestView extends View<SuggestController> {
     private final ListWidget<Word> list;
+    private final ButtonWidget submitButton = new ButtonWidget("SUGGEREER", 0, 78, 480, 48, this::suggest);
 
     private String word = "";
     private boolean invalid;
@@ -48,15 +49,16 @@ public class SuggestView extends View<SuggestController> {
     public void draw(Graphics2D g) {
         if (this.invalid) {
             g.setColor(Colors.DARK_RED);
-            g.fillRect(64, 360, 184, 32);
+            g.fillRect(0, 480, 500, 32);
             g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 64, 360, 184, 32, "Woord al bekend");
+            StringUtil.drawCenteredString(g, 150, 480, 184, 32, "Woord al bekend");
         }
     }
 
     @Override
     public void update(Consumer<Particle> addParticle) {
         this.list.setItems(this.controller.getWords());
+        this.submitButton.setEnabled(this.controller.hasDictionary());
     }
 
     @Override
@@ -65,12 +67,17 @@ public class SuggestView extends View<SuggestController> {
         return List.of(
             this.list,
             new InputWidget("WOORD", 0, 30, 400, 48, (value) -> this.word = value),
-            new ButtonWidget("SUGGEREER", 0, 78, 480, 48, this::suggest),
+            this.submitButton,
             new DropdownWidget<>(dictionaries, "Taal", 400, 30, 80, 48, 10, this.controller::setDictionary)
         );
     }
 
     private void suggest() {
-        this.invalid = this.controller.addWord(this.word);
+        this.invalid = !this.controller.addWord(this.word);
+    }
+
+    private void type(String input) {
+        this.word = input;
+        this.invalid = false;
     }
 }

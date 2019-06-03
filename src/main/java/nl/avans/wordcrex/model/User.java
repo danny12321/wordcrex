@@ -23,12 +23,8 @@ public class User implements Pollable<User> {
         this(database, username, List.of(), List.of(), List.of());
     }
 
-    public User(User user, List<UserRole> roles, List<Dictionary> dictionaries) {
-        this(user.database, user.username, roles, user.games, dictionaries);
-    }
-
-    public User(User user, List<Game> games) {
-        this(user.database, user.username, user.roles, games, user.dictionaries);
+    public User(User user, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
+        this(user.database, user.username, roles, games, dictionaries);
     }
 
     public User(Database database, String username, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
@@ -83,7 +79,7 @@ public class User implements Pollable<User> {
             }
         );
 
-        return new User(this, List.copyOf(roles), List.copyOf(dictionaries));
+        return new User(this, List.copyOf(roles), this.games, List.copyOf(dictionaries));
     }
 
     @Override
@@ -91,6 +87,14 @@ public class User implements Pollable<User> {
         if (this.username.isEmpty()) {
             return this;
         }
+
+        var roles = new ArrayList<UserRole>();
+
+        this.database.select(
+            "SELECT r.role FROM accountrole r WHERE r.username = ?",
+            (statement) -> statement.setString(1, this.username),
+            (result) -> roles.add(UserRole.byRole(result.getString("role")))
+        );
 
         var games = new ArrayList<Game>();
 
@@ -134,7 +138,7 @@ public class User implements Pollable<User> {
 
         games.sort(Comparator.comparingInt((game) -> game.state.order));
 
-        return new User(this, List.copyOf(games));
+        return new User(this, List.copyOf(roles), List.copyOf(games), this.dictionaries);
     }
 
     @Override
@@ -341,8 +345,12 @@ public class User implements Pollable<User> {
         }
 
         if (user.hasRole(role)) {
+            if (user.roles.size() <= 1) {
+                return;
+            }
+
             this.database.update(
-                "DELETE FROM accountrole r WHERE r.role = ? AND r.username = ?",
+                "DELETE FROM accountrole WHERE role = ? AND username = ?",
                 (statement) -> {
                     statement.setString(1, role.role);
                     statement.setString(2, user.username);

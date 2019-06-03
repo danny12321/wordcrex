@@ -68,6 +68,10 @@ public class SuggestController extends Controller<User> {
         this.words = this.getModel().getSuggested(this.page);
     }
 
+    public boolean hasDictionary() {
+        return this.dictionary != null;
+    }
+
     public int getPage() {
         return this.page;
     }

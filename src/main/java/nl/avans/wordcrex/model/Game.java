@@ -171,11 +171,11 @@ public class Game implements Pollable<Game> {
 
     @Override
     public User persist(User user) {
-        var matches = user.games.stream()
+        var games = user.games.stream()
             .map((match) -> match.id == this.id ? this : match)
             .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
-        return new User(user, matches);
+        return new User(user, user.roles, games, user.dictionaries);
     }
 
     public Round getLastRound() {
