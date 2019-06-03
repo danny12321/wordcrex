@@ -292,7 +292,7 @@ public class Game implements Pollable<Game> {
                 statement.setString(1, user.username);
                 statement.setInt(2, this.id);
                 statement.setTimestamp(3, new Timestamp(new Date().getTime()));
-                statement.setString(4, message);
+                statement.setString(4, message.trim());
             }
         );
     }
