@@ -11,11 +11,11 @@ public abstract class Controller<T extends Pollable<T>> {
     protected final Main main;
 
     private Function<User, T> fn;
+    private boolean initial = true;
 
     public Controller(Main main, Function<User, T> fn) {
         this.main = main;
         this.fn = fn;
-        this.replace(Pollable::initialize);
     }
 
     protected T getModel() {
@@ -27,7 +27,15 @@ public abstract class Controller<T extends Pollable<T>> {
     }
 
     public void poll() {
-        this.replace(Pollable::poll);
+        this.replace((model) -> {
+            if (this.initial) {
+                model = model.initialize();
+
+                this.initial = false;
+            }
+
+            return model.poll();
+        });
     }
 
     protected void replace(Function<T, T> mutate) {
