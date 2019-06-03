@@ -31,8 +31,8 @@ public class DashboardView extends View<DashboardController> {
             (g, game) -> {
                 var host = this.controller.isCurrentUser(game.host);
                 var other = host ? game.opponent : game.host;
-                var bigExtra = game.inviteState == InviteState.PENDING ? host ? "Naar " : "Van " : "";
-                var smallExtra = game.state == GameState.PLAYING ? host == (game.getLastRound().hostTurn == null) ? "Jouw beurt - " : "Hun beurt - " : "";
+                var bigExtra = game.state == GameState.PENDING ? host ? "Naar " : "Van " : "";
+                var smallExtra = game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED ? "Wachten op bevestiging - " : game.state == GameState.PLAYING ? host == (game.getLastRound().hostTurn == null) ? "Jouw beurt - " : "Hun beurt - " : "";
 
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);

@@ -5,6 +5,7 @@ import nl.avans.wordcrex.controller.impl.GameController;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
+import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
@@ -112,9 +113,22 @@ public class GameView extends View<GameController> {
                 g.setFont(Fonts.SMALL);
                 g.drawString(String.valueOf(character.value), 15, 11);
                 g.setFont(Fonts.NORMAL);
-            }));
+            }, this::dropTile));
         }
 
         return list;
+    }
+
+    private Pair<Integer, Integer> dropTile(int x, int y) {
+        for (var tile : this.controller.getTiles()) {
+            var targetX = 52 + tile.x * 24;
+            var targetY = 52 + tile.y * 24;
+
+            if (x > targetX && x < targetX + 24 && y > targetX && y < targetY + 24) {
+                return new Pair<>(targetX, targetY);
+            }
+        }
+
+        return null;
     }
 }

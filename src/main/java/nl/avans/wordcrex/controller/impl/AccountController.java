@@ -25,7 +25,15 @@ public class AccountController extends Controller<User> {
 
     @Override
     public void poll() {
-        this.user = this.user.poll();
+        if (!this.user.username.equals(this.getModel().username)) {
+            this.user = this.user.poll();
+
+            return;
+        }
+
+        super.poll();
+
+        this.user = this.getModel();
     }
 
     public void changePassword(String password) {

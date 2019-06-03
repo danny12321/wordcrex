@@ -86,8 +86,6 @@ public class User implements Pollable<User> {
     public User poll() {
         if (this.username.isEmpty()) {
             return this;
-        } else if (this.dictionaries.isEmpty()) {
-            return this.initialize();
         }
 
         var roles = new ArrayList<UserRole>();
@@ -293,7 +291,7 @@ public class User implements Pollable<User> {
             return false;
         }
 
-        this.database.insert(
+        var updated = this.database.insert(
             "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
             (statement) -> {
                 statement.setString(1, word);
@@ -303,7 +301,7 @@ public class User implements Pollable<User> {
             }
         );
 
-        return true;
+        return updated != -1;
     }
 
     public List<Word> getSuggested(int page) {
