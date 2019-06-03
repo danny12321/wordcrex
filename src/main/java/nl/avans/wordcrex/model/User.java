@@ -5,7 +5,10 @@ import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 import nl.avans.wordcrex.util.StringUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 
 public class User implements Pollable<User> {
     private final Database database;
@@ -13,7 +16,6 @@ public class User implements Pollable<User> {
     public final List<UserRole> roles;
     public final List<Game> games;
     public final List<Dictionary> dictionaries;
-
 
     public User(Database database) {
         this(database, "");
@@ -147,7 +149,7 @@ public class User implements Pollable<User> {
     }
 
     public User register(String username, String password) {
-        if (!StringUtil.isAuthInput(username) || !StringUtil.isAuthInput(password)){
+        if (!StringUtil.isAuthInput(username) || !StringUtil.isAuthInput(password)) {
             return this;
         }
 
@@ -274,7 +276,7 @@ public class User implements Pollable<User> {
         var words = new ArrayList<Word>();
 
         this.database.select(
-              "SELECT w.word, w.state, w.username, w.letterset_code code FROM dictionary w WHERE w.state = ? ",
+            "SELECT w.word, w.state, w.username, w.letterset_code code FROM dictionary w WHERE w.state = ? ",
             (statement) -> statement.setString(1, WordState.PENDING.state),
             (result) -> {
                 var code = result.getString("code");
@@ -339,11 +341,11 @@ public class User implements Pollable<User> {
         }
 
         this.database.update(
-                "UPDATE account SET password = ? WHERE username = ?",
-                (statement) -> {
-                    statement.setString(1, password);
-                    statement.setString(2, this.username);
-                }
+            "UPDATE account SET password = ? WHERE username = ?",
+            (statement) -> {
+                statement.setString(1, password);
+                statement.setString(2, this.username);
+            }
         );
     }
 

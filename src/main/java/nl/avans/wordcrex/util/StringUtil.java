@@ -30,6 +30,6 @@ public class StringUtil {
     }
 
     public static boolean isAuthInput(String input) {
-        return input.matches(REGEX);
+        return input.matches(StringUtil.REGEX);
     }
 }
