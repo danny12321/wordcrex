@@ -54,7 +54,7 @@ public class Game implements Pollable<Game> {
         var tiles = new ArrayList<Tile>();
 
         this.database.select(
-            "SELECT t.x, t.y, t.tile_type FROM tile t",
+            "SELECT t.x, t.y, t.tile_type FROM tile t ORDER BY t.x, t.y",
             (statement) -> {
             },
             (result) -> tiles.add(new Tile(result.getInt("x"), result.getInt("y"), result.getString("tile_type")))

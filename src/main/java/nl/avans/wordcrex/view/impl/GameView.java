@@ -2,6 +2,7 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.GameController;
+import nl.avans.wordcrex.model.Tile;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
@@ -44,6 +45,8 @@ public class GameView extends View<GameController> {
         g.drawString(this.controller.getPoolSize() + " characters left", 32, 512);
 
         for (var tile : this.controller.getTiles()) {
+            var position = this.getTilePosition(tile);
+
             switch (tile.type) {
                 case "--":
                     g.setColor(Colors.DARKERER_BLUE);
@@ -68,7 +71,7 @@ public class GameView extends View<GameController> {
                     break;
             }
 
-            g.fillRect(52 + tile.x * 24 + 1, 52 + tile.y * 24 + 1, 24 - 2, 24 - 2);
+            g.fillRect(position.a + 1, position.b + 1, 22, 22);
 
             if (!tile.type.equals("--") && !tile.type.equals("*")) {
                 g.setColor(Color.WHITE);
@@ -121,14 +124,17 @@ public class GameView extends View<GameController> {
 
     private Pair<Integer, Integer> dropTile(int x, int y) {
         for (var tile : this.controller.getTiles()) {
-            var targetX = 52 + tile.x * 24;
-            var targetY = 52 + tile.y * 24;
+            var position = this.getTilePosition(tile);
 
-            if (x > targetX && x < targetX + 24 && y > targetX && y < targetY + 24) {
-                return new Pair<>(targetX, targetY);
+            if (x > position.a && x < position.a + 24 && y > position.b && y < position.b + 24) {
+                return new Pair<>(position.a, position.b);
             }
         }
 
         return null;
+    }
+
+    private Pair<Integer, Integer> getTilePosition(Tile tile) {
+        return new Pair<>(52 + tile.x * 24, 52 + tile.y * 24);
     }
 }
