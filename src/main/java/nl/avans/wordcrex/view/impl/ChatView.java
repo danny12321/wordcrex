@@ -81,7 +81,6 @@ public class ChatView extends View<ChatController> {
 
             y += this.gap;
         }
-        
         this.scrollbar.setHeight(y + this.gap);
     }
 
