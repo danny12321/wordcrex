@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.function.Function;
 
 public class AccountController extends Controller<User> {
-    private String newPassword;
+    private String password;
+    private User user;
 
     public AccountController(Main main, Function<User, User> fn) {
-        super(main, fn);
+        super(main, Function.identity());
+        this.user = fn.apply(this.getRoot()).initialize();
     }
 
     @Override
@@ -24,35 +26,39 @@ public class AccountController extends Controller<User> {
     }
 
     @Override
-    public boolean replaceable() {
-        return false;
+    public void poll() {
+        this.user = this.user.poll();
     }
 
     public void setPassword(String password) {
-        this.newPassword = password;
+        this.password = password;
     }
 
     public void changePassword() {
-        this.getModel().changePassword(this.newPassword);
+        this.getModel().changePassword(this.password);
     }
 
     public boolean isValid(){
-        return StringUtil.isAuthInput(this.newPassword);
+        return StringUtil.isAuthInput(this.password);
     }
 
     public String getUsername() {
-        return this.getModel().username;
+        return this.user.username;
     }
 
     public List<UserRole> getRoles() {
-        return this.getModel().roles;
+        return this.user.roles;
+    }
+
+    public boolean canChangeRole(UserRole role) {
+        return !(this.user.roles.size() == 1 && this.user.hasRole(role));
     }
 
     public void toggleRole(UserRole role) {
-        this.getRoot().toggleRole(this.getModel(), role);
+        this.getModel().toggleRole(this.user, role);
     }
 
     public boolean canChangeRoles() {
-        return this.getRoot().hasRole(UserRole.ADMINISTRATOR);
+        return this.getModel().hasRole(UserRole.ADMINISTRATOR);
     }
 }

@@ -22,7 +22,14 @@ public class AccountView extends View<AccountController> {
     private final int section = 96;
     private final int circle = 30;
 
-    private InputWidget input = new InputWidget("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, Main.FRAME_SIZE - 64 - this.gap * 3, 32, this.controller::setPassword);
+    private final List<ButtonWidget> buttons = List.of(
+        new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.PLAYER)),
+        new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + this.circle + 2 * this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.OBSERVER)),
+        new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + (this.circle * 2) + 3 * this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.MODERATOR)),
+        new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + (this.circle * 3) + 4 * this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.ADMINISTRATOR))
+    );
+
+    private final InputWidget input = new InputWidget("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, Main.FRAME_SIZE - 64 - this.gap * 3, 32, this.controller::setPassword);
     private final ButtonWidget changeButton = new ButtonWidget("+", Main.FRAME_SIZE - 64 - this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, 64, 32, this::changePassword);
 
     public AccountView(AccountController controller) {
@@ -32,8 +39,6 @@ public class AccountView extends View<AccountController> {
     @Override
     public void draw(Graphics2D g) {
         var textHeight = g.getFontMetrics().getHeight();
-
-        this.changeButton.setEnabled(this.controller.isValid());
 
         g.setColor(Colors.DARK_BLUE);
         g.fillRect(0, Main.TASKBAR_SIZE, Main.FRAME_SIZE, this.header);
@@ -66,6 +71,11 @@ public class AccountView extends View<AccountController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        this.buttons.get(0).setEnabled(this.controller.canChangeRole(UserRole.PLAYER));
+        this.buttons.get(1).setEnabled(this.controller.canChangeRole(UserRole.OBSERVER));
+        this.buttons.get(2).setEnabled(this.controller.canChangeRole(UserRole.MODERATOR));
+        this.buttons.get(3).setEnabled(this.controller.canChangeRole(UserRole.ADMINISTRATOR));
+        this.changeButton.setEnabled(this.controller.isValid());
     }
 
     @Override
@@ -73,13 +83,10 @@ public class AccountView extends View<AccountController> {
         var list = new ArrayList<Widget>();
 
         list.add(this.input);
-        list.add(changeButton);
+        list.add(this.changeButton);
 
         if (this.controller.canChangeRoles()) {
-            list.add(new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.PLAYER)));
-            list.add(new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + this.circle + 2 * this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.OBSERVER)));
-            list.add(new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + (this.circle * 2) + 3 * this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.MODERATOR)));
-            list.add(new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + (this.circle * 3) + 4 * this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.ADMINISTRATOR)));
+            list.addAll(this.buttons);
         }
 
         return list;
