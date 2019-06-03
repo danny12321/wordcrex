@@ -132,6 +132,7 @@ public class User implements Pollable<User> {
 
                 if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host)) {
                     game.startGame();
+                    game.startNewRound();
                 }
 
                 games.add(game);
@@ -297,7 +298,7 @@ public class User implements Pollable<User> {
             return false;
         }
 
-        this.database.insert(
+        var updated = this.database.insert(
             "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
             (statement) -> {
                 statement.setString(1, word);
@@ -307,7 +308,7 @@ public class User implements Pollable<User> {
             }
         );
 
-        return true;
+        return updated != -1;
     }
 
     public List<Word> getSuggested(int page) {
@@ -378,13 +379,13 @@ public class User implements Pollable<User> {
         }
     }
 
-    public List<User> findChangeable(String name) {
+    public List<User> findChangeable(String username) {
         var users = new ArrayList<User>();
 
         this.database.select(
             "SELECT r.username, group_concat(r.role SEPARATOR ',') roles FROM accountrole r WHERE r.username LIKE ? AND r.username != ? GROUP BY r.username;\n",
             (statement) -> {
-                statement.setString(1, "%" + name + "%");
+                statement.setString(1, "%" + username + "%");
                 statement.setString(2, this.username);
             },
             (result) -> {

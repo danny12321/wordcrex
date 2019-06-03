@@ -42,6 +42,6 @@ public class TileParticle extends Particle {
 
     @Override
     public boolean persist(View<?> view) {
-        return true;
+        return view.getClass() == LoginView.class || view.getClass() == RegisterView.class;
     }
 }

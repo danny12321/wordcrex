@@ -22,8 +22,6 @@ public class Database {
     }
 
     public int select(String sql, SqlConsumer<PreparedStatement> prepare, SqlConsumer<ResultSet> consumer) {
-        System.out.println(sql);
-
         var selected = 0;
 
         try (var connection = this.getConnection();
@@ -44,8 +42,6 @@ public class Database {
     }
 
     public int update(String sql, SqlConsumer<PreparedStatement> prepare) {
-        System.out.println(sql);
-
         var updated = 0;
 
         try (var connection = this.getConnection();
@@ -61,8 +57,6 @@ public class Database {
     }
 
     public int insert(String sql, SqlConsumer<PreparedStatement> prepare) {
-        System.out.println(sql);
-
         try (var connection = this.getConnection();
              var statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             prepare.accept(statement);
