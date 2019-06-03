@@ -23,6 +23,7 @@ public class InputWidget extends Widget {
     private final int width;
     private final int height;
     private final Consumer<String> consumer;
+    private final int tabIndex;
 
     private boolean hover;
     private boolean active;
@@ -31,11 +32,13 @@ public class InputWidget extends Widget {
     private int offset;
     private int character;
 
-    public InputWidget(String label, int x, int y, int width, int height, Consumer<String> consumer) {
-        this(label, null, x, y, width, height, consumer);
+
+
+    public InputWidget(String label, int x, int y, int width, int height, int tabIndex, Consumer<String> consumer) {
+        this(label, null, x, y, width, height, tabIndex, consumer);
     }
 
-    public InputWidget(String label, Character placeholder, int x, int y, int width, int height, Consumer<String> consumer) {
+    public InputWidget(String label, Character placeholder, int x, int y, int width, int height, int tabIndex, Consumer<String> consumer) {
         this.label = label;
         this.placeholder = placeholder;
         this.x = x;
@@ -43,6 +46,7 @@ public class InputWidget extends Widget {
         this.width = width;
         this.height = height;
         this.consumer = consumer;
+        this.tabIndex = tabIndex;
 
         this.consumer.accept("");
     }

@@ -49,8 +49,8 @@ public class LoginView extends View<LoginController> {
     @Override
     public List<Widget> getChildren() {
         return List.of(
-            new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, this.controller::setUsername),
-            new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, this.controller::setPassword),
+            new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, 0, this.controller::setUsername),
+            new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, 1, this.controller::setPassword),
             this.submitButton,
             new ButtonWidget("REGISTREER", 264, 312, 184, 48, this.controller::navigateRegister)
         );

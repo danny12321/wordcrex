@@ -67,7 +67,7 @@ public class SuggestView extends View<SuggestController> {
         
         return List.of(
             this.list,
-            new InputWidget("WOORD", 0, 30, 400, 48, (value) -> this.word = value),
+            new InputWidget("WOORD", 0, 30, 400, 48, 0, (value) -> this.word = value),
             this.submitButton,
             new DropdownWidget<>(dictionaries, "Taal", 400, 30, 80, 48, 10, this.controller::setDictionary)
         );
