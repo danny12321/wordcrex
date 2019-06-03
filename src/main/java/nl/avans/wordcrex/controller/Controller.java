@@ -31,10 +31,6 @@ public abstract class Controller<T extends Pollable<T>> {
     }
 
     protected void replace(Function<T, T> mutate) {
-        if (!this.replaceable()) {
-            return;
-        }
-
         var model = this.getModel();
         var next = mutate.apply(model);
 
@@ -46,8 +42,4 @@ public abstract class Controller<T extends Pollable<T>> {
     }
 
     public abstract View<? extends Controller<T>> createView();
-
-    public boolean replaceable() {
-        return true;
-    }
 }
