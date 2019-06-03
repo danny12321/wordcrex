@@ -27,15 +27,14 @@ public class SuggestView extends View<SuggestController> {
     public SuggestView(SuggestController controller) {
         super(controller);
         this.list = new ListWidget<>(
-                96,
+                90,
                 64,
                 (g, word) -> {
-
                     g.setColor(Color.WHITE);
                     g.drawString(word.word, Main.TASKBAR_SIZE, 30);
                     g.setColor(Color.LIGHT_GRAY);
                     g.setFont(Fonts.SMALL);
-                    g.drawString(word.state.toString(), Main.TASKBAR_SIZE, 50);
+                    g.drawString(this.controller.getLabel(word), Main.TASKBAR_SIZE, 50);
                     g.setFont(Fonts.NORMAL);
                 },
                 (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.description : null,
