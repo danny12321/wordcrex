@@ -67,7 +67,7 @@ public class GameView extends View<GameController> {
                     break;
             }
 
-            g.fillRect(52 + tile.x * 24, 52 + tile.y * 24, 24, 24);
+            g.fillRect(52 + tile.x * 24 + 1, 52 + tile.y * 24 + 1, 24 - 2, 24 - 2);
 
             if (!tile.type.equals("--") && !tile.type.equals("*")) {
                 g.setColor(Color.WHITE);

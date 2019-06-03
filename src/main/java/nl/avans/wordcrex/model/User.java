@@ -364,13 +364,13 @@ public class User implements Pollable<User> {
         }
     }
 
-    public List<User> findChangeable(String name) {
+    public List<User> findChangeable(String username) {
         var users = new ArrayList<User>();
 
         this.database.select(
             "SELECT r.username, group_concat(r.role SEPARATOR ',') roles FROM accountrole r WHERE r.username LIKE ? AND r.username != ? GROUP BY r.username;\n",
             (statement) -> {
-                statement.setString(1, "%" + name + "%");
+                statement.setString(1, "%" + username + "%");
                 statement.setString(2, this.username);
             },
             (result) -> {

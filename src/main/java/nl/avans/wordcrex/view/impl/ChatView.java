@@ -41,17 +41,17 @@ public class ChatView extends View<ChatController> {
             var userMessage = false;
             var x = this.gap;
 
-            if (messages.get(i).user.equals(this.controller.getUsername())) {
+            if (messages.get(i).username.equals(this.controller.getUsername())) {
                 userMessage = true;
                 x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.size - this.gap;
             }
 
-            if (!(i != 0 && messages.get(i - 1).user.equals(messages.get(i).user))) {
+            if (!(i != 0 && messages.get(i - 1).username.equals(messages.get(i).username))) {
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(x, y - this.scroll, this.size, this.size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, y - this.scroll, this.size, this.size, messages.get(i).user.substring(0, 1).toUpperCase());
+                StringUtil.drawCenteredString(g, x, y - this.scroll, this.size, this.size, messages.get(i).username.substring(0, 1).toUpperCase());
             }
 
             var message = messages.get(i).message;
