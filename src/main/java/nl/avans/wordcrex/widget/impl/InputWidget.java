@@ -145,6 +145,8 @@ public class InputWidget extends Widget {
             this.input.insert(this.cursor, clipboard);
             this.cursor += clipboard.length();
             this.update = 0;
+        } else if (code == KeyEvent.VK_TAB) {
+            
         }
 
         this.consumer.accept(this.input.toString());
