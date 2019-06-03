@@ -84,10 +84,13 @@ public class ScrollbarWidget extends Widget {
 
         this.offset = (int) Math.min(height - scroller, Math.max(0, y - this.from));
 
-        int scroll;
+        var scroll = 0;
 
-        if (this.reverse) scroll = (this.height - height) - (int) (this.offset / (height - scroller) * extra);
-        else scroll = (int) (this.offset / (height - scroller) * extra);
+        if (this.reverse) {
+            scroll = (this.height - height) - (int) (this.offset / (height - scroller) * extra);
+        } else {
+            scroll = (int) (this.offset / (height - scroller) * extra);
+        }
 
         this.scroll.accept(scroll);
     }
@@ -100,11 +103,11 @@ public class ScrollbarWidget extends Widget {
     public void setHeight(int height) {
         this.height = height;
 
-        if(this.offset == -1 && this.reverse) {
+        if (this.offset == -1 && this.reverse) {
             var e = Main.FRAME_SIZE - Main.TASKBAR_SIZE;
             var scroller = (int) ((float) e / height * (float) e);
 
-            this.offset =  e - scroller;
+            this.offset = e - scroller;
         }
     }
 }
