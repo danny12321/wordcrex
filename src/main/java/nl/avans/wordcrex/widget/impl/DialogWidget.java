@@ -32,8 +32,6 @@ public class DialogWidget extends Widget {
         this.positiveButton.setText(this.positive);
         this.negativeButton.setText(this.negative);
 
-        g.setColor(Colors.OVERLAY);
-        g.fillRect(0, 0, Main.FRAME_SIZE, Main.FRAME_SIZE);
         g.setColor(Colors.DARKER_BLUE);
         g.fillRect(128, 128, Main.FRAME_SIZE - 256, Main.FRAME_SIZE - 256);
         g.setColor(Color.WHITE);

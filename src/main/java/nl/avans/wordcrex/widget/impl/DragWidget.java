@@ -1,5 +1,6 @@
 package nl.avans.wordcrex.widget.impl;
 
+import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Pair;
@@ -73,8 +74,8 @@ public class DragWidget extends Widget {
     @Override
     public void mouseDrag(int x, int y) {
         if (this.dragging) {
-            this.x = x - this.offsetX;
-            this.y = y - this.offsetY;
+            this.x = Math.max(0, Math.min(Main.FRAME_SIZE - this.width, x - this.offsetX));
+            this.y = Math.max(Main.TASKBAR_SIZE, Math.min(Main.FRAME_SIZE - this.height, y - this.offsetY));
         }
     }
 
