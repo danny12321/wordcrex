@@ -347,6 +347,7 @@ public class User implements Pollable<User> {
             if (user.roles.size() <= 1) {
                 return;
             }
+
             this.database.update(
                 "DELETE FROM accountrole WHERE role = ? AND username = ?",
                 (statement) -> {
