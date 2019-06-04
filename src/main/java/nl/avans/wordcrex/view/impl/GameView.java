@@ -1,7 +1,7 @@
 package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.controller.impl.GameController;
+import nl.avans.wordcrex.controller.impl.AbstractGameController;
 import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.particle.Particle;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class GameView extends View<GameController> {
+public class GameView extends View<AbstractGameController> {
     private boolean hover;
     private int offset;
     private int hostWidth;
@@ -29,7 +29,7 @@ public class GameView extends View<GameController> {
     private List<Played> played = new ArrayList<>();
     private int score = 0;
 
-    public GameView(GameController controller) {
+    public GameView(AbstractGameController controller) {
         super(controller);
     }
 

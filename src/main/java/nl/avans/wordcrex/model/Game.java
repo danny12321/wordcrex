@@ -133,9 +133,15 @@ public class Game implements Pollable<Game> {
                 var opponentTurn = this.parseTurn(result, "opponent");
 
                 var deck = new ArrayList<Character>();
-                var deckRaw = result.getString("deck").split(",");
+                var deckRaw = result.getString("deck");
 
-                for (String character : deckRaw) {
+                if (deckRaw == null) {
+                    return;
+                }
+
+                var deckSplitted = deckRaw.split(",");
+
+                for (String character : deckSplitted) {
                     deck.add(this.dictionary.characters.stream()
                         .filter((c) -> c.character.equals(character))
                         .findFirst()

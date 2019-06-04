@@ -46,7 +46,7 @@ public class ObserveView extends View<ObserveController> {
             (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (game) -> String.valueOf(game.id),
             this.controller::isSelectable,
-            (game) -> this.controller.navigateGame(game.id)
+            this.controller::navigateGame
         );
     }
 

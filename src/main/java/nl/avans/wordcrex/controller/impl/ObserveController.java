@@ -5,7 +5,6 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.GameState;
 import nl.avans.wordcrex.model.User;
-import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.ObserveView;
 
@@ -53,7 +52,7 @@ public class ObserveController extends Controller<User> {
         this.search = search;
     }
 
-    public void navigateGame(int id) {
-        this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
+    public void navigateGame(Game game) {
+        this.main.openController(ObserveGameController.class, (model) -> game);
     }
 }
