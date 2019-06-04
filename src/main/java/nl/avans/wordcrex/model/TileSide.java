@@ -13,4 +13,10 @@ public enum TileSide {
         this.x = x;
         this.y = y;
     }
+
+    public TileSide invert() {
+        var values = TileSide.values();
+
+        return values[this.ordinal() + 2 % values.length];
+    }
 }

@@ -42,13 +42,19 @@ public class Round {
             check.add(play);
 
             for (var s : TileSide.values()) {
-                var current = this.go(play.x + s.x, play.y + s.y, s, new ArrayList<>());
-
-                for (var c : current) {
-                    score += c.character.value;
+                if (side != null && s == side.invert()) {
+                    continue;
                 }
 
-                check.addAll(current);
+                if (s != side) {
+                    var current = this.go(play.x + s.x, play.y + s.y, s, new ArrayList<>());
+
+                    for (var c : current) {
+                        score += c.character.value;
+                    }
+
+                    check.addAll(current);
+                }
 
                 var other = this.find(sorted, play.x + s.x, play.y + s.y, (o, p) -> o.x == p.a && o.y == p.b);
 
@@ -97,9 +103,9 @@ public class Round {
             }
         }
 
-        if (!this.checkDirection(tiles, check, dictionary, Pair::new) || !this.checkDirection(tiles, check, dictionary, (x, y) -> new Pair<>(y, x))) {
+        /*if (!this.checkDirection(tiles, check, dictionary, Pair::new) || !this.checkDirection(tiles, check, dictionary, (x, y) -> new Pair<>(y, x))) {
             return -1;
-        }
+        }*/
 
         if (multiplier > 0) {
             score *= multiplier;
@@ -141,7 +147,7 @@ public class Round {
                 var play = this.find(check, pair.a, pair.b, (t, p) -> t.x == p.a && t.y == p.b);
 
                 if (play == null) {
-                    break;
+                    continue;
                 }
 
                 word.append(play.character.character);

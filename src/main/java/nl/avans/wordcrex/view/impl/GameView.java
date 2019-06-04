@@ -16,6 +16,7 @@ import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -103,6 +104,24 @@ public class GameView extends View<GameController> {
             this.drawTile(g, played.character, true);
             g.translate(-position.a, -position.b);
         }
+
+        var last = this.played.stream()
+            .sorted(Comparator.comparingInt((a) -> a.x + a.y))
+            .reduce((a, b) -> b)
+            .orElse(null);
+
+        if (last == null) {
+            return;
+        }
+
+        var position = this.getTilePosition(last.x, last.y);
+
+        g.setColor(Colors.DARK_YELLOW);
+        g.fillRect(position.a + 24, position.b + 10, 14, 14);
+        g.setFont(Fonts.SMALL);
+        g.setColor(Colors.DARK_BLUE);
+        StringUtil.drawCenteredString(g, position.a + 24, position.b + 10, 14, 14, String.valueOf(this.score));
+        g.setFont(Fonts.NORMAL);
     }
 
     @Override
