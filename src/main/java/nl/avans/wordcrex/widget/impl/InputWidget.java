@@ -164,6 +164,13 @@ public class InputWidget extends Widget {
         return true;
     }
 
+    @Override
+    public void setFocus(boolean focus) {
+        this.update = 0;
+
+        super.setFocus(focus);
+    }
+
     private boolean isPrintableChar(char c) {
         var block = Character.UnicodeBlock.of(c);
 

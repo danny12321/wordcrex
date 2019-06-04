@@ -69,19 +69,11 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getExtendedKeyCode() == KeyEvent.VK_TAB && !e.isShiftDown()) {
+        if (e.getExtendedKeyCode() == KeyEvent.VK_TAB) {
             var view = this.main.getView();
 
             if (view != null) {
-                view.tabFocus();
-            }
-
-            return;
-        } else if (e.getExtendedKeyCode() == KeyEvent.VK_TAB && e.isShiftDown()) {
-            var view = this.main.getView();
-
-            if (view != null) {
-                view.tabReverseFocus();
+                view.tabFocus(e.isShiftDown());
             }
 
             return;
