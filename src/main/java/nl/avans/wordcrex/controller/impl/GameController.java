@@ -57,6 +57,10 @@ public class GameController extends Controller<Game> {
         this.getModel().startNewRound();
     }
 
+    public int getNewScore(List<Played> played) {
+        return this.getModel().getLastRound().getScore(this.getTiles(), played, this.getModel().dictionary);
+    }
+
     public Character getPlaceholder() {
         return this.getModel().dictionary.characters.get(0);
     }

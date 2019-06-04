@@ -18,7 +18,8 @@ public class DragWidget extends Widget {
     public final int initialY;
 
     private final BiConsumer<Graphics2D, Boolean> draw;
-    private final BiFunction<Integer, Integer, Pair<Integer, Integer>> drop;
+    private final BiFunction<Integer, Integer, Pair<Integer, Integer>> check;
+    private final BiConsumer<Pair<Integer, Integer>, Boolean> state;
 
     private int x;
     private int y;
@@ -27,19 +28,20 @@ public class DragWidget extends Widget {
     private boolean hover;
     private boolean dragging;
 
-    public DragWidget(int x, int y, int width, int height, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> drop) {
+    public DragWidget(int x, int y, int width, int height, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> check, BiConsumer<Pair<Integer, Integer>, Boolean> state) {
         this.x = this.initialX = x;
         this.y = this.initialY = y;
         this.width = width;
         this.height = height;
         this.draw = draw;
-        this.drop = drop;
+        this.check = check;
+        this.state = state;
     }
 
     @Override
     public void draw(Graphics2D g) {
         if (this.dragging) {
-            var target = this.drop.apply(this.x + this.offsetX, this.y + this.offsetY);
+            var target = this.check.apply(this.x + this.offsetX, this.y + this.offsetY);
 
             if (target != null) {
                 g.setColor(Colors.OVERLAY);
@@ -68,6 +70,10 @@ public class DragWidget extends Widget {
         if (this.dragging) {
             this.offsetX = x - this.x;
             this.offsetY = y - this.y;
+
+            if (this.x != this.initialX && this.y != this.initialY) {
+                this.state.accept(new Pair<>(this.x, this.y), false);
+            }
         }
     }
 
@@ -82,7 +88,7 @@ public class DragWidget extends Widget {
     @Override
     public void mouseRelease(int x, int y) {
         if (this.dragging) {
-            var target = this.drop.apply(x, y);
+            var target = this.check.apply(x, y);
 
             if (target == null) {
                 this.x = this.initialX;
@@ -90,6 +96,7 @@ public class DragWidget extends Widget {
             } else {
                 this.x = target.a;
                 this.y = target.b;
+                this.state.accept(new Pair<>(this.x, this.y), true);
             }
         }
 

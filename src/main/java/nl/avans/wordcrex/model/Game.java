@@ -228,10 +228,6 @@ public class Game implements Pollable<Game> {
             .sum();
     }
 
-    public int getScore(List<Played> played) {
-        return 0;
-    }
-
     public void startGame() {
         this.database.update(
             "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",

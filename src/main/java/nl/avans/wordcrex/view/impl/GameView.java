@@ -3,7 +3,7 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.GameController;
 import nl.avans.wordcrex.model.Character;
-import nl.avans.wordcrex.model.Tile;
+import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
@@ -18,12 +18,15 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class GameView extends View<GameController> {
     private boolean hover;
     private int offset;
     private int hostWidth;
     private int scoreWidth;
+    private List<Played> played = new ArrayList<>();
+    private int score = 0;
 
     public GameView(GameController controller) {
         super(controller);
@@ -130,7 +133,7 @@ public class GameView extends View<GameController> {
         for (var i = 0; i < deck.size(); i++) {
             var character = deck.get(i);
 
-            list.add(new DragWidget(142 + i * 34, 462, 24, 24, (g, hover) -> this.drawTile(g, character, hover), this::dropTile));
+            list.add(new DragWidget(142 + i * 34, 462, 24, 24, (g, hover) -> this.drawTile(g, character, hover), this::dropTile, (pair, active) -> this.changeState(character, pair.a, pair.b, active)));
         }
 
         return list;
@@ -163,7 +166,25 @@ public class GameView extends View<GameController> {
         g.setFont(Fonts.NORMAL);
     }
 
+    private void changeState(Character character, int x, int y, boolean active) {
+        var coord = this.getTileCoord(x, y);
+
+        if (active) {
+            this.played.add(new Played(character, coord.a, coord.b));
+        } else {
+            this.played = this.played.stream()
+                .filter((p) -> p.x != coord.a && p.y != coord.b)
+                .collect(Collectors.toList());
+        }
+
+        this.score = this.controller.getNewScore(this.played);
+    }
+
     private Pair<Integer, Integer> getTilePosition(int x, int y) {
         return new Pair<>(52 + x * 24, 52 + y * 24);
+    }
+
+    private Pair<Integer, Integer> getTileCoord(int x, int y) {
+        return new Pair<>((x - 52) / 24, (y - 52) / 24);
     }
 }
