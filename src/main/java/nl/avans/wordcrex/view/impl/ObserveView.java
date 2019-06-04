@@ -26,7 +26,7 @@ public class ObserveView extends View<ObserveController> {
             96,
             (g, game) -> {
                 var metrics = g.getFontMetrics();
-                var score = " " + game.getHostScore() + " - " + game.getOpponentScore() + " ";
+                var score = " " + game.getLastRound().hostScore + " - " + game.getLastRound().opponentScore + " ";
                 var width = metrics.stringWidth(score);
 
                 g.setFont(Fonts.NORMAL);
@@ -45,7 +45,7 @@ public class ObserveView extends View<ObserveController> {
             },
             (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (game) -> String.valueOf(game.id),
-            this.controller::isSelectable,
+            (game) -> true,
             this.controller::navigateGame
         );
     }

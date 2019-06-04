@@ -32,10 +32,6 @@ public class ObserveController extends Controller<User> {
         this.games = this.getModel().findObservableGames(this.search);
     }
 
-    public boolean isSelectable(Game game) {
-        return game.state == GameState.PLAYING || game.state == GameState.FINISHED;
-    }
-
     public String getLabel(Game game) {
         if (game.state == GameState.PLAYING) {
             return "BEZIG";

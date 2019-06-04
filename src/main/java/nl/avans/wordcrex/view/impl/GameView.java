@@ -1,7 +1,7 @@
 package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.controller.impl.AbstractGameController;
+import nl.avans.wordcrex.controller.impl.GameController;
 import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.particle.Particle;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class GameView extends View<AbstractGameController> {
+public class GameView extends View<GameController> {
     private boolean hover;
     private int offset;
     private int hostWidth;
@@ -29,7 +29,7 @@ public class GameView extends View<AbstractGameController> {
     private List<Played> played = new ArrayList<>();
     private int score = 0;
 
-    public GameView(AbstractGameController controller) {
+    public GameView(GameController controller) {
         super(controller);
     }
 
@@ -49,14 +49,16 @@ public class GameView extends View<AbstractGameController> {
         g.setColor(Color.WHITE);
         g.drawString(full, this.offset, 60);
 
-        var x = Main.FRAME_SIZE - 50;
-        var y = 76;
+        if (this.controller.canPlay()) {
+            var x = Main.FRAME_SIZE - 50;
+            var y = 76;
 
-        g.translate(x, y);
-        this.drawTile(g, this.controller.getPlaceholder(), false);
-        g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, -24, 44, 72, String.valueOf(this.controller.getPoolSize()));
-        g.translate(-x, -y);
+            g.translate(x, y);
+            this.drawTile(g, this.controller.getPlaceholder(), false);
+            g.setColor(Color.WHITE);
+            StringUtil.drawCenteredString(g, -24, 44, 72, String.valueOf(this.controller.getPoolSize()));
+            g.translate(-x, -y);
+        }
 
         for (var tile : this.controller.getTiles()) {
             var position = this.getTilePosition(tile.x, tile.y);
@@ -97,7 +99,7 @@ public class GameView extends View<AbstractGameController> {
             return;
         }
 
-        for (var played : this.controller.getBoard()) {
+        for (var played : this.controller.getRound().board) {
             var position = this.getTilePosition(played.x, played.y);
 
             g.translate(position.a, position.b);
@@ -145,9 +147,14 @@ public class GameView extends View<AbstractGameController> {
     @Override
     public List<Widget> getChildren() {
         var list = new ArrayList<Widget>();
-        var deck = this.controller.getDeck();
+        var deck = this.controller.getRound().characters;
 
-        list.add(new ButtonWidget("CHAT", 6, 76, 64, 32, this.controller::navigateChat));
+        if (this.controller.canPlay()) {
+            list.add(new ButtonWidget("CHAT", 6, 76, 64, 32, this.controller::navigateChat));
+        } else {
+            list.add(new ButtonWidget("<", 22, 200, 32, 32, this.controller::previousRound));
+            list.add(new ButtonWidget(">", 22, 248, 32, 32, this.controller::nextRound));
+        }
 
         for (var i = 0; i < deck.size(); i++) {
             var character = deck.get(i);

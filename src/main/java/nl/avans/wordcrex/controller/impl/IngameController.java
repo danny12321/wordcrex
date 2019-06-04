@@ -1,29 +1,21 @@
 package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.model.Character;
+import nl.avans.wordcrex.model.*;
+import nl.avans.wordcrex.util.StreamUtil;
 
 import java.util.List;
 import java.util.function.Function;
 
-public class ObserveGameController extends GameController {
-    private Game game;
-    private int round;
-
-    public ObserveGameController(Main main, Function<User, Game> fn) {
+public class IngameController extends GameController {
+    public IngameController(Main main, Function<User, Game> fn) {
         super(main, fn);
-        this.game = this.getModel().initialize();
     }
 
     @Override
     public boolean canPlay() {
-        return false;
-    }
-
-    @Override
-    public void poll() {
-        this.game = this.game.poll();
+        return true;
     }
 
     @Override
@@ -33,71 +25,61 @@ public class ObserveGameController extends GameController {
 
     @Override
     public String getHostName() {
-        return this.game.host;
+        return this.getModel().host;
     }
 
     @Override
     public String getOpponentName() {
-        return this.game.opponent;
+        return this.getModel().opponent;
     }
 
     @Override
     public Round getRound() {
-        return this.game.rounds.get(this.round);
+        return this.getModel().getLastRound();
     }
 
     @Override
     public List<Tile> getTiles() {
-        return this.game.tiles;
+        return this.getModel().tiles;
     }
 
     @Override
     public boolean previousRound() {
-        if (this.round > 0) {
-            this.round--;
-        }
-
-        return this.round != 0;
+        throw new RuntimeException();
     }
 
     @Override
     public boolean nextRound() {
-        var total = this.game.rounds.size();
-
-        if (this.round < total - 1) {
-            this.round++;
-        }
-
-        return this.round != total - 1;
+        throw new RuntimeException();
     }
 
     @Override
     public int getPoolSize() {
-        throw new RuntimeException();
+        return this.getModel().pool.size();
     }
 
     @Override
     public void startNewRound() {
-        throw new RuntimeException();
+        this.getModel().startNewRound();
     }
 
     @Override
     public int getNewScore(List<Played> played) {
-        throw new RuntimeException();
+        return this.getRound().getScore(this.getModel().tiles, played, this.getModel().dictionary);
     }
 
     @Override
     public Character getPlaceholder() {
-        return this.game.dictionary.characters.get(0);
+        return this.getModel().dictionary.characters.get(0);
     }
 
     @Override
     public void navigateChat() {
-        throw new RuntimeException();
+        this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
     }
 
     @Override
     public void navigateHistory() {
-        throw new RuntimeException();
+        this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
     }
 }

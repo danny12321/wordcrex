@@ -70,7 +70,7 @@ public class DashboardController extends Controller<User> {
     }
 
     public void navigateGame(int id) {
-        this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
+        this.main.openController(IngameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
     }
 
     public void navigateInvite() {

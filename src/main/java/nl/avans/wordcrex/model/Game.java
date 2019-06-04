@@ -152,7 +152,27 @@ public class Game implements Pollable<Game> {
                     played.addAll(hostTurn.score + hostTurn.bonus > opponentTurn.score + opponentTurn.bonus ? hostTurn.played : opponentTurn.played);
                 }
 
-                rounds.add(new Round(result.getInt("turn"), List.copyOf(deck), hostTurn, opponentTurn, List.copyOf(played)));
+                var hostScore = rounds.stream()
+                    .mapToInt((round) -> {
+                        if (round.hostTurn == null) {
+                            return 0;
+                        }
+
+                        return round.hostTurn.score + round.hostTurn.bonus;
+                    })
+                    .sum();
+
+                var opponentScore = rounds.stream()
+                    .mapToInt((round) -> {
+                        if (round.opponentTurn == null) {
+                            return 0;
+                        }
+
+                        return round.opponentTurn.score + round.opponentTurn.bonus;
+                    })
+                    .sum();
+
+                rounds.add(new Round(result.getInt("turn"), List.copyOf(deck), hostTurn, opponentTurn, hostScore, opponentScore, List.copyOf(played)));
             }
         );
 
@@ -208,30 +228,6 @@ public class Game implements Pollable<Game> {
         }
 
         return this.rounds.get(this.rounds.size() - 1);
-    }
-
-    public int getHostScore() {
-        return this.rounds.stream()
-            .mapToInt((round) -> {
-                if (round.hostTurn == null) {
-                    return 0;
-                }
-
-                return round.hostTurn.score + round.hostTurn.bonus;
-            })
-            .sum();
-    }
-
-    public int getOpponentScore() {
-        return this.rounds.stream()
-            .mapToInt((round) -> {
-                if (round.opponentTurn == null) {
-                    return 0;
-                }
-
-                return round.opponentTurn.score + round.opponentTurn.bonus;
-            })
-            .sum();
     }
 
     public void startGame() {
