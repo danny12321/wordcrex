@@ -6,6 +6,7 @@ import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ScrollbarWidget extends Widget {
@@ -60,6 +61,11 @@ public class ScrollbarWidget extends Widget {
         var position = Main.TASKBAR_SIZE + this.offset;
 
         this.hover = x > Main.FRAME_SIZE - Main.TASKBAR_SIZE && y > position && y < position + scroller;
+    }
+
+    @Override
+    public List<Widget> children() {
+        return List.of();
     }
 
     @Override

@@ -68,7 +68,7 @@ public class ApproveView extends View<ApproveController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             this.list,
             this.dialog

@@ -79,7 +79,7 @@ public class AccountView extends View<AccountController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         var list = new ArrayList<Widget>();
 
         list.add(this.input);

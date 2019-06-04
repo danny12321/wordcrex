@@ -147,12 +147,18 @@ public class Main extends JPanel {
                 .collect(Collectors.toList());
         this.particles.removeAll(dead);
 
-        this.widgets.stream()
-            .filter(View.class::isInstance)
-            .map(View.class::cast)
-            .filter(View::shouldReinitialize)
-            .findAny()
-            .ifPresent(this::openView);
+        var view = this.getView();
+        var requester = view.getChildren().stream()
+            .filter(Widget::requestingFocus)
+            .findFirst()
+            .orElse(null);
+
+        if (requester == null) {
+            return;
+        }
+
+        view.getChildren().forEach((widget) -> widget.setFocus(false));
+        requester.setFocus(true);
     }
 
     @Override
@@ -189,6 +195,14 @@ public class Main extends JPanel {
         return this.widgets.stream()
             .filter((widget) -> widget == blocker || widget.isChild(blocker))
             .collect(Collectors.toList());
+    }
+
+    public View<?> getView() {
+        return this.widgets.stream()
+            .filter(View.class::isInstance)
+            .map(View.class::cast)
+            .findFirst()
+            .orElse(null);
     }
 
     public static void main(String[] args) {

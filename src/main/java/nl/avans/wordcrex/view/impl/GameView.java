@@ -69,7 +69,7 @@ public class GameView extends View<GameController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             new ButtonWidget("CHAT", 6, 52 + 24, 64, 32, this.controller::navigateChat)
         );

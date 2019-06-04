@@ -11,6 +11,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class InputWidget extends Widget {
@@ -23,16 +24,12 @@ public class InputWidget extends Widget {
     private final int width;
     private final int height;
     private final Consumer<String> consumer;
-    //private final int tabIndex;
 
     private boolean hover;
-   // private boolean active;
     private int cursor;
     private int update;
     private int offset;
     private int character;
-
-
 
     public InputWidget(String label, int x, int y, int width, int height, int tabIndex, Consumer<String> consumer) {
         this(label, null, x, y, width, height, tabIndex, consumer);
@@ -46,7 +43,6 @@ public class InputWidget extends Widget {
         this.width = width;
         this.height = height;
         this.consumer = consumer;
-        //this.tabIndex = tabIndex;
 
         this.consumer.accept("");
     }
@@ -79,7 +75,7 @@ public class InputWidget extends Widget {
         g.setColor(Color.WHITE);
         g.drawString(text, this.x - this.offset, this.y + line);
 
-        if (this.getActive() && this.update % 30 <= 15) {
+        if (this.hasFocus() && this.update % 30 <= 15) {
             g.fillRect(this.x + position - this.offset, this.y + this.height / 2 - 12, 2, 24);
         }
 
@@ -98,20 +94,24 @@ public class InputWidget extends Widget {
 
     @Override
     public void mousePress(int x, int y) {
-        if (!this.getActive() && this.hover) {
+        if (!this.hasFocus() && this.hover) {
             this.update = 0;
         }
 
-        this.setActive(this.hover);
+        if (!this.hover) {
+            this.setFocus(false);
+        } else {
+            this.requestFocus();
 
-        if (this.getActive() && this.character != 0) {
-            this.cursor = Math.max(0, Math.min(this.input.length(), Math.round((x - this.x + this.offset) / (float) this.character)));
+            if (this.character != 0) {
+                this.cursor = Math.max(0, Math.min(this.input.length(), Math.round((x - this.x + this.offset) / (float) this.character)));
+            }
         }
     }
 
     @Override
     public void keyType(char character) {
-        if (!this.getActive()) {
+        if (!this.hasFocus()) {
             return;
         }
 
@@ -126,7 +126,7 @@ public class InputWidget extends Widget {
 
     @Override
     public void keyPress(int code, int modifiers) {
-        if (!this.getActive()) {
+        if (!this.hasFocus()) {
             return;
         }
 
@@ -149,11 +149,19 @@ public class InputWidget extends Widget {
             this.input.insert(this.cursor, clipboard);
             this.cursor += clipboard.length();
             this.update = 0;
-        } else if (code == KeyEvent.VK_TAB) {
-            this.moveFocusDown();
         }
 
         this.consumer.accept(this.input.toString());
+    }
+
+    @Override
+    public List<Widget> children() {
+        return List.of();
+    }
+
+    @Override
+    public boolean canFocus() {
+        return true;
     }
 
     private boolean isPrintableChar(char c) {

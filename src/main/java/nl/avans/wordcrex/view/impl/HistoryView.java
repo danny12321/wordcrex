@@ -63,7 +63,7 @@ public class HistoryView extends View<HistoryController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             this.list,
             new ButtonWidget("<", 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame)

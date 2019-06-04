@@ -121,7 +121,7 @@ public class ListWidget<T> extends Widget {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             this.scrollbar
         );

@@ -55,7 +55,7 @@ public class DialogWidget extends Widget {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             this.positiveButton,
             this.negativeButton

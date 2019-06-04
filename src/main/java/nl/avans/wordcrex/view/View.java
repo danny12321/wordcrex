@@ -3,7 +3,7 @@ package nl.avans.wordcrex.view;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.widget.Widget;
 
-import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class View<T extends Controller> extends Widget {
     protected final T controller;
@@ -12,20 +12,31 @@ public abstract class View<T extends Controller> extends Widget {
         this.controller = controller;
     }
 
-    public boolean shouldReinitialize() {
-        return false;
-    }
+    public void tabFocus() {
+        var children = this.getChildren().stream()
+            .filter(Widget::canFocus)
+            .collect(Collectors.toList());
 
-    public void focus(){
-        for(int i = 0; i < this.getChildren().size(); i++){
-            if (this.getChildren().get(i).getWantFocus() && !(i + 1 >= this.getChildren().size()))
-            {
-                this.getChildren().get(i + 1).setActive(true);
-                this.getChildren().get(i).setWantFocus(false);
-            } else if(this.getChildren().get(i).getWantFocus() && i + 1 >= this.getChildren().size()) {
-                this.getChildren().get(0).setActive(true);
-                this.getChildren().get(i).setWantFocus(false);
+        var updated = false;
+
+        for (int i = 0; i < children.size(); i++) {
+            var child = children.get(i);
+
+            if (!child.hasFocus()) {
+                continue;
             }
+
+            if (i < children.size() - 1) {
+                children.get(i + 1).requestFocus();
+            } else {
+                children.get(0).requestFocus();
+            }
+
+            updated = true;
+        }
+
+        if (!updated && !children.isEmpty()) {
+            children.get(0).requestFocus();
         }
     }
 }

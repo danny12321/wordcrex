@@ -62,9 +62,9 @@ public class SuggestView extends View<SuggestController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         var dictionaries = this.controller.getDictionaries();
-        
+
         return List.of(
             this.list,
             new InputWidget("WOORD", 0, 30, 400, 48, 0, (value) -> this.word = value),

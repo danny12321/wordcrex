@@ -59,7 +59,7 @@ public class InviteView extends View<InviteController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         var dictionaries = this.controller.getDictionaries();
 
         return List.of(

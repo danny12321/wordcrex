@@ -90,7 +90,7 @@ public class ChatView extends View<ChatController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             new ButtonWidget("<", 0, Main.FRAME_SIZE - 48, 48, 48, this.controller::navigateGame),
             this.input,

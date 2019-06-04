@@ -10,8 +10,9 @@ import java.util.function.Predicate;
 
 public abstract class Widget {
     private final List<Widget> parents = new ArrayList<>();
-    private boolean active;
-    private boolean doesntWantFocus;
+    private List<Widget> children;
+    private boolean focus;
+    private boolean request;
 
     public abstract void draw(Graphics2D g);
 
@@ -39,8 +40,14 @@ public abstract class Widget {
     }
 
     public List<Widget> getChildren() {
-        return List.of();
+        if (this.children == null) {
+            this.children = this.children();
+        }
+
+        return this.children;
     }
+
+    public abstract List<Widget> children();
 
     public boolean blocking() {
         return false;
@@ -63,26 +70,27 @@ public abstract class Widget {
         this.parents.add(parent);
     }
 
-    public void setActive(boolean state){
-        this.active = state;
+    public boolean canFocus() {
+        return false;
     }
 
-    public boolean getActive(){
-        return this.active;
+    public boolean hasFocus() {
+        return this.focus;
     }
 
-    public void moveFocusDown()
-    {
-        this.doesntWantFocus = true;
-        this.setActive(false);
+    public void setFocus(boolean focus) {
+        this.focus = focus;
     }
 
-    public boolean getWantFocus(){
-        return this.doesntWantFocus;
+    public boolean requestingFocus() {
+        var r = this.request;
+
+        this.request = false;
+
+        return r;
     }
 
-    public void setWantFocus(boolean state){
-        this.doesntWantFocus = state;
+    public void requestFocus() {
+        this.request = true;
     }
-
 }
