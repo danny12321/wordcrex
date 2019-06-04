@@ -10,6 +10,8 @@ import java.util.function.Predicate;
 
 public abstract class Widget {
     private final List<Widget> parents = new ArrayList<>();
+    public boolean active;
+    public boolean doesntWantFocus;
 
     public abstract void draw(Graphics2D g);
 
@@ -60,4 +62,19 @@ public abstract class Widget {
     public void addParent(Widget parent) {
         this.parents.add(parent);
     }
+
+    public void setActive(boolean state){
+        this.active = state;
+    }
+
+    public boolean getActive(){
+        return this.active;
+    }
+
+    public void moveFocusDown()
+    {
+        this.doesntWantFocus = true;
+        this.setActive(false);
+    }
+
 }

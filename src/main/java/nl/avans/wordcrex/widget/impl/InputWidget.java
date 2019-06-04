@@ -16,17 +16,17 @@ import java.util.function.Consumer;
 public class InputWidget extends Widget {
     private final StringBuilder input = new StringBuilder();
 
-    private final String label;
+    public final String label;
     private final Character placeholder;
     private final int x;
     private final int y;
     private final int width;
     private final int height;
     private final Consumer<String> consumer;
-    private final int tabIndex;
+    //private final int tabIndex;
 
     private boolean hover;
-    private boolean active;
+   // private boolean active;
     private int cursor;
     private int update;
     private int offset;
@@ -79,7 +79,7 @@ public class InputWidget extends Widget {
         g.setColor(Color.WHITE);
         g.drawString(text, this.x - this.offset, this.y + line);
 
-        if (this.active && this.update % 30 <= 15) {
+        if (this.getActive() && this.update % 30 <= 15) {
             g.fillRect(this.x + position - this.offset, this.y + this.height / 2 - 12, 2, 24);
         }
 
@@ -98,20 +98,20 @@ public class InputWidget extends Widget {
 
     @Override
     public void mousePress(int x, int y) {
-        if (!this.active && this.hover) {
+        if (!this.getActive() && this.hover) {
             this.update = 0;
         }
 
-        this.active = this.hover;
+        this.setActive(this.hover);
 
-        if (this.active && this.character != 0) {
+        if (this.getActive() && this.character != 0) {
             this.cursor = Math.max(0, Math.min(this.input.length(), Math.round((x - this.x + this.offset) / (float) this.character)));
         }
     }
 
     @Override
     public void keyType(char character) {
-        if (!this.active) {
+        if (!this.getActive()) {
             return;
         }
 
@@ -126,7 +126,7 @@ public class InputWidget extends Widget {
 
     @Override
     public void keyPress(int code, int modifiers) {
-        if (!this.active) {
+        if (!this.getActive()) {
             return;
         }
 
@@ -150,7 +150,7 @@ public class InputWidget extends Widget {
             this.cursor += clipboard.length();
             this.update = 0;
         } else if (code == KeyEvent.VK_TAB) {
-            
+            this.moveFocusDown();
         }
 
         this.consumer.accept(this.input.toString());
