@@ -37,6 +37,10 @@ public class GameController extends Controller<Game> {
         return this.getModel().tiles;
     }
 
+    public List<Played> getBoard() {
+        return this.getModel().getLastRound().board;
+    }
+
     public List<Character> getDeck() {
         if (this.getModel().state != GameState.PLAYING) {
             return List.of();

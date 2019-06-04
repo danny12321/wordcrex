@@ -55,7 +55,7 @@ public class GameView extends View<GameController> {
         g.translate(-x, -y);
 
         for (var tile : this.controller.getTiles()) {
-            var position = this.getTilePosition(tile);
+            var position = this.getTilePosition(tile.x, tile.y);
 
             switch (tile.type) {
                 case "--":
@@ -87,6 +87,18 @@ public class GameView extends View<GameController> {
                 g.setColor(Color.WHITE);
                 StringUtil.drawCenteredString(g, 52 + tile.x * 24, 52 + tile.y * 24, 24, 24, tile.type);
             }
+        }
+
+        if (this.controller.getTiles().isEmpty()) {
+            return;
+        }
+
+        for (var played : this.controller.getBoard()) {
+            var position = this.getTilePosition(played.x, played.y);
+
+            g.translate(position.a, position.b);
+            this.drawTile(g, played.character, true);
+            g.translate(-position.a, -position.b);
         }
     }
 
@@ -131,7 +143,7 @@ public class GameView extends View<GameController> {
 
     private Pair<Integer, Integer> dropTile(int x, int y) {
         for (var tile : this.controller.getTiles()) {
-            var position = this.getTilePosition(tile);
+            var position = this.getTilePosition(tile.x, tile.y);
 
             if (x > position.a && x < position.a + 24 && y > position.b && y < position.b + 24) {
                 return new Pair<>(position.a, position.b);
@@ -151,7 +163,7 @@ public class GameView extends View<GameController> {
         g.setFont(Fonts.NORMAL);
     }
 
-    private Pair<Integer, Integer> getTilePosition(Tile tile) {
-        return new Pair<>(52 + tile.x * 24, 52 + tile.y * 24);
+    private Pair<Integer, Integer> getTilePosition(int x, int y) {
+        return new Pair<>(52 + x * 24, 52 + y * 24);
     }
 }

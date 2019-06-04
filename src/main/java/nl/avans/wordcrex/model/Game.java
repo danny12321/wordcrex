@@ -116,6 +116,7 @@ public class Game implements Pollable<Game> {
 
     private List<Round> getRounds() {
         var rounds = new ArrayList<Round>();
+        var played = new ArrayList<Played>();
 
         this.database.select(
             "SELECT t.turn_id turn, d.inhoud deck, h.turnaction_type host_action, h.score host_score, h.bonus host_bonus, hp.woorddeel host_played, hp.`x-waarden` host_x, hp.`y-waarden` host_y, o.turnaction_type opponent_action, o.score opponent_score, o.bonus opponent_bonus, op.woorddeel opponent_played, op.`x-waarden` opponent_x, op.`y-waarden` opponent_y " +
@@ -141,7 +142,11 @@ public class Game implements Pollable<Game> {
                         .orElseThrow());
                 }
 
-                rounds.add(new Round(result.getInt("turn"), List.copyOf(deck), hostTurn, opponentTurn));
+                if (hostTurn != null && opponentTurn != null) {
+                    played.addAll(hostTurn.score + hostTurn.bonus > opponentTurn.score + opponentTurn.bonus ? hostTurn.played : opponentTurn.played);
+                }
+
+                rounds.add(new Round(result.getInt("turn"), List.copyOf(deck), hostTurn, opponentTurn, List.copyOf(played)));
             }
         );
 
