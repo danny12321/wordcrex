@@ -3,7 +3,6 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.ObserveController;
 import nl.avans.wordcrex.model.Game;
-import nl.avans.wordcrex.model.GameState;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
@@ -26,27 +25,23 @@ public class ObserveView extends View<ObserveController> {
             47,
             96,
             (g, game) -> {
-                var host = game.host;
-                var opponent = game.opponent;
+                var metrics = g.getFontMetrics();
+                var score = " " + game.getHostScore() + " - " + game.getOpponentScore() + " ";
+                var width = metrics.stringWidth(score);
 
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Color.WHITE);
-                g.drawString(host + " - " + opponent, Main.TASKBAR_SIZE, 44);
+                g.drawString(game.host, Main.TASKBAR_SIZE, 36);
                 g.setFont(Fonts.SMALL);
                 g.setColor(Color.LIGHT_GRAY);
-                g.drawString(game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);
+                g.drawString("tegen", Main.TASKBAR_SIZE, 52);
                 g.setFont(Fonts.NORMAL);
-
-                if (game.state == GameState.PLAYING) {
-                    var metrics = g.getFontMetrics();
-                    var score = " " + game.getHostScore() + " - " + game.getOpponentScore() + " ";
-                    var width = metrics.stringWidth(score);
-
-                    g.setColor(Colors.DARK_BLUE);
-                    g.fillRect(450 - width, 34, width, 28);
-                    g.setColor(Color.WHITE);
-                    g.drawString(score, 450 - width, 54);
-                }
+                g.setColor(Color.WHITE);
+                g.drawString(game.opponent, Main.TASKBAR_SIZE, 70);
+                g.setColor(Colors.DARK_BLUE);
+                g.fillRect(450 - width, 34, width, 28);
+                g.setColor(Color.WHITE);
+                g.drawString(score, 450 - width, 54);
             },
             (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (game) -> String.valueOf(game.id),

@@ -18,16 +18,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class ChatView extends View<ChatController> {
-    private String message;
-
-    private final int buttonHeight = 48;
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll, true);
-    private final InputWidget input = new InputWidget("BERICHT", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, this.buttonHeight, (value) -> this.message = value);
-    private final ButtonWidget sendMessage = new ButtonWidget("+", Main.FRAME_SIZE - Main.TASKBAR_SIZE - 48, Main.FRAME_SIZE - 48, 48, this.buttonHeight, this::chat);
+    private final InputWidget input = new InputWidget("BERICHT", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
+    private final ButtonWidget sendMessage = new ButtonWidget("+", Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, Main.FRAME_SIZE - 40, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this::chat);
     private final int size = 32;
     private final int gap = 16;
     private final int maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (this.gap * 4 + this.size * 2);
 
+    private String message;
     private int scroll = 0;
 
     public ChatView(ChatController controller) {
@@ -38,7 +36,7 @@ public class ChatView extends View<ChatController> {
     public void draw(Graphics2D g) {
         var messages = this.controller.getMessages();
         var y = Main.TASKBAR_SIZE + this.gap;
-        int contentHeight = messages.stream().mapToInt(m -> this.splitMessage(g, m.message.split("\\s+")).size() * this.size + this.gap).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + this.buttonHeight + this.gap;
+        int contentHeight = messages.stream().mapToInt(m -> this.splitMessage(g, m.message.split("\\s+")).size() * this.size + this.gap).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 48 + this.gap;
 
         for (var i = 0; i < messages.size(); i++) {
             var userMessage = false;
@@ -81,18 +79,22 @@ public class ChatView extends View<ChatController> {
 
             y += this.gap;
         }
+
+        g.setColor(Colors.DARK_BLUE);
+        g.fillRect(0, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48);
+
         this.scrollbar.setHeight(y + this.gap);
     }
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        sendMessage.setEnabled(this.message.trim().length() > 0);
+        this.sendMessage.setEnabled(this.message.trim().length() > 0);
     }
 
     @Override
     public List<Widget> getChildren() {
         return List.of(
-            new ButtonWidget("<", 0, Main.FRAME_SIZE - 48, 48, 48, this.controller::navigateGame),
+            new ButtonWidget("<", 8, Main.FRAME_SIZE - 40, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame),
             this.input,
             this.sendMessage,
             this.scrollbar

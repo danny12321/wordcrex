@@ -101,7 +101,7 @@ public class User implements Pollable<User> {
         var games = new ArrayList<Game>();
 
         this.database.select(
-            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code " +
+            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code, g.username_winner winner " +
                 "FROM game g " +
                 "WHERE (g.username_player1 = ? OR g.username_player2 = ?) " +
                 "AND g.answer_player2 != ?",
@@ -121,6 +121,7 @@ public class User implements Pollable<User> {
                     .filter((d) -> d.code.equals(code))
                     .findAny()
                     .orElse(null);
+                var winner = result.getString("winner");
 
                 if (dictionary == null) {
                     System.out.println("Dictionary not found: " + code);
@@ -128,7 +129,7 @@ public class User implements Pollable<User> {
                     return;
                 }
 
-                var game = new Game(this.database, id, host, opponent, state, inviteState, dictionary);
+                var game = new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary);
 
                 if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host)) {
                     game.startGame();
@@ -218,7 +219,7 @@ public class User implements Pollable<User> {
                 "        FROM game g" +
                 "        WHERE ((g.username_player1 = ? AND g.username_player2 = a.username)" +
                 "            OR (g.username_player1 = a.username AND g.username_player2 = ?))" +
-                "          AND g.game_state IN (?, ?)) enabled " +
+                "          AND g.game_state IN ('pending', 'playing') AND g.answer_player2 != 'rejected') enabled " +
                 "FROM account a" +
                 "         JOIN accountrole r ON a.username = r.username AND r.role = ?" +
                 "WHERE a.username != ?" +
@@ -226,11 +227,9 @@ public class User implements Pollable<User> {
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setString(2, this.username);
-                statement.setString(3, GameState.PENDING.state);
-                statement.setString(4, GameState.PLAYING.state);
-                statement.setString(5, UserRole.PLAYER.role);
-                statement.setString(6, this.username);
-                statement.setString(7, "%" + username + "%");
+                statement.setString(3, UserRole.PLAYER.role);
+                statement.setString(4, this.username);
+                statement.setString(5, "%" + username + "%");
             },
             (result) -> users.add(new Pair<>(result.getString("username"), result.getBoolean("enabled")))
         );
@@ -425,7 +424,7 @@ public class User implements Pollable<User> {
         var games = new ArrayList<Game>();
 
         this.database.select(
-            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code " +
+            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code, g.username_winner winner " +
                 "FROM game g " +
                 "WHERE (g.game_state = ? OR g.game_state = ? OR g.game_state = ?) " +
                 "AND (g.username_player1 LIKE ? OR g.username_player2 LIKE ?)",
@@ -447,16 +446,13 @@ public class User implements Pollable<User> {
                     .filter((d) -> d.code.equals(code))
                     .findAny()
                     .orElse(null);
+                var winner = result.getString("winner");
 
                 if (dictionary == null) {
-                    System.out.println("Dictionary not found: " + code);
-
                     return;
                 }
 
-                var game = new Game(this.database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), List.of(), List.of());
-
-                games.add(game);
+                games.add(new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), List.of(), null, List.of()));
             }
         );
 

@@ -29,10 +29,7 @@ public class DashboardView extends View<DashboardController> {
             72,
             96,
             (g, game) -> {
-                var host = this.controller.isCurrentUser(game.host);
-                var other = host ? game.opponent : game.host;
-                var bigExtra = game.state == GameState.PENDING ? host ? "Naar " : "Van " : "";
-                var smallExtra = game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED ? "Wachten op bevestiging - " : game.state == GameState.PLAYING ? host == (game.getLastRound().hostTurn == null) ? "Jouw beurt - " : "Hun beurt - " : "";
+                var other = this.controller.isCurrentUser(game.host) ? game.opponent : game.host;
 
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
@@ -41,13 +38,13 @@ public class DashboardView extends View<DashboardController> {
                 StringUtil.drawCenteredString(g, Main.TASKBAR_SIZE, 27, 42, 42, other.substring(0, 1).toUpperCase());
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Color.WHITE);
-                g.drawString(bigExtra + other, Main.TASKBAR_SIZE * 2 + 42, 44);
+                g.drawString(this.controller.getBigExtra(game) + other, Main.TASKBAR_SIZE * 2 + 42, 44);
                 g.setFont(Fonts.SMALL);
                 g.setColor(Color.LIGHT_GRAY);
-                g.drawString(smallExtra + game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);
+                g.drawString(this.controller.getSmallExtra(game) + game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);
                 g.setFont(Fonts.NORMAL);
 
-                if (game.state == GameState.PLAYING) {
+                if (game.state != GameState.PENDING) {
                     var metrics = g.getFontMetrics();
                     var score = " " + game.getHostScore() + " - " + game.getOpponentScore() + " ";
                     var width = metrics.stringWidth(score);

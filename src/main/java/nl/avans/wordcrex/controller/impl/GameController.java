@@ -2,10 +2,8 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
+import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.model.Character;
-import nl.avans.wordcrex.model.Game;
-import nl.avans.wordcrex.model.Tile;
-import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;
@@ -40,6 +38,10 @@ public class GameController extends Controller<Game> {
     }
 
     public List<Character> getDeck() {
+        if (this.getModel().state != GameState.PLAYING) {
+            return List.of();
+        }
+
         return this.getModel().getLastRound().characters;
     }
 
@@ -49,6 +51,10 @@ public class GameController extends Controller<Game> {
 
     public void startNewRound() {
         this.getModel().startNewRound();
+    }
+
+    public Character getPlaceholder() {
+        return this.getModel().dictionary.characters.get(0);
     }
 
     public void navigateChat() {
