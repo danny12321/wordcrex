@@ -15,13 +15,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class SuggestController extends Controller<User> {
-    private int page;
     private List<Word> words;
     private Dictionary dictionary;
 
     public SuggestController(Main main, Function<User, User> fn) {
         super(main, fn);
-        this.setPage(0);
+        this.words = this.getModel().getSuggested(0);
     }
 
     @Override
@@ -41,7 +40,7 @@ public class SuggestController extends Controller<User> {
 
     public boolean addWord(String word) {
         var result = this.getModel().suggestWord(word, this.dictionary);
-        this.setPage(this.page);
+        this.words = this.getModel().getSuggested(0);
 
         return result;
     }
@@ -63,17 +62,8 @@ public class SuggestController extends Controller<User> {
         this.dictionary = dictionary;
     }
 
-    public void setPage(int page) {
-        this.page = page;
-        this.words = this.getModel().getSuggested(this.page);
-    }
-
     public boolean hasDictionary() {
         return this.dictionary != null;
-    }
-
-    public int getPage() {
-        return this.page;
     }
 
     public List<Word> getWords() {

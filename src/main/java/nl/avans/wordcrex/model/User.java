@@ -132,6 +132,7 @@ public class User implements Pollable<User> {
 
                 if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host)) {
                     game.startGame();
+                    game.startNewRound();
                 }
 
                 games.add(game);
@@ -297,7 +298,7 @@ public class User implements Pollable<User> {
             return false;
         }
 
-        this.database.insert(
+        var updated = this.database.insert(
             "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
             (statement) -> {
                 statement.setString(1, word);
@@ -307,7 +308,7 @@ public class User implements Pollable<User> {
             }
         );
 
-        return true;
+        return updated != -1;
     }
 
     public List<Word> getSuggested(int page) {
@@ -378,13 +379,13 @@ public class User implements Pollable<User> {
         }
     }
 
-    public List<User> findChangeable(String name) {
+    public List<User> findChangeable(String username) {
         var users = new ArrayList<User>();
 
         this.database.select(
             "SELECT r.username, group_concat(r.role SEPARATOR ',') roles FROM accountrole r WHERE r.username LIKE ? AND r.username != ? GROUP BY r.username;\n",
             (statement) -> {
-                statement.setString(1, "%" + name + "%");
+                statement.setString(1, "%" + username + "%");
                 statement.setString(2, this.username);
             },
             (result) -> {
@@ -414,5 +415,51 @@ public class User implements Pollable<User> {
                 statement.setString(2, word.word);
             }
         );
+    }
+
+    public List<Game> findObservableGames(String search) {
+        if (!this.hasRole(UserRole.OBSERVER)) {
+            return List.of();
+        }
+
+        var games = new ArrayList<Game>();
+
+        this.database.select(
+            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code " +
+                "FROM game g " +
+                "WHERE (g.game_state = ? OR g.game_state = ? OR g.game_state = ?) " +
+                "AND (g.username_player1 LIKE ? OR g.username_player2 LIKE ?)",
+            (statement) -> {
+                statement.setString(1, GameState.PLAYING.state);
+                statement.setString(2, GameState.FINISHED.state);
+                statement.setString(3, GameState.RESIGNED.state);
+                statement.setString(4, "%" + search + "%");
+                statement.setString(5, "%" + search + "%");
+            },
+            (result) -> {
+                var id = result.getInt("id");
+                var state = GameState.byState(result.getString("state"));
+                var inviteState = InviteState.byState(result.getString("invite_state"));
+                var host = result.getString("host");
+                var opponent = result.getString("opponent");
+                var code = result.getString("code");
+                var dictionary = this.dictionaries.stream()
+                    .filter((d) -> d.code.equals(code))
+                    .findAny()
+                    .orElse(null);
+
+                if (dictionary == null) {
+                    System.out.println("Dictionary not found: " + code);
+
+                    return;
+                }
+
+                var game = new Game(this.database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), List.of(), List.of());
+
+                games.add(game);
+            }
+        );
+
+        return List.copyOf(games);
     }
 }

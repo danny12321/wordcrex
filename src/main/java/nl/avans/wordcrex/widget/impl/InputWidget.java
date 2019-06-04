@@ -31,11 +31,11 @@ public class InputWidget extends Widget {
     private int offset;
     private int character;
 
-    public InputWidget(String label, int x, int y, int width, int height, int tabIndex, Consumer<String> consumer) {
-        this(label, null, x, y, width, height, tabIndex, consumer);
+    public InputWidget(String label, int x, int y, int width, int height, Consumer<String> consumer) {
+        this(label, null, x, y, width, height, consumer);
     }
 
-    public InputWidget(String label, Character placeholder, int x, int y, int width, int height, int tabIndex, Consumer<String> consumer) {
+    public InputWidget(String label, Character placeholder, int x, int y, int width, int height, Consumer<String> consumer) {
         this.label = label;
         this.placeholder = placeholder;
         this.x = x;

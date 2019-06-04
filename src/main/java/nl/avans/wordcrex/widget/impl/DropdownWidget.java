@@ -15,7 +15,6 @@ public class DropdownWidget<T> extends Widget {
     private final Map<T, String> options;
     private final int x;
     private final int y;
-    private final int textOffsetX;
     private final int width;
     private final int height;
     private final Consumer<T> consumer;
@@ -26,13 +25,12 @@ public class DropdownWidget<T> extends Widget {
     private boolean open;
     private int focusIndex = 0;
 
-    public DropdownWidget(Map<T, String> options, String placeholder, int x, int y, int width, int height, int textOffsetX, Consumer<T> consumer) {
+    public DropdownWidget(Map<T, String> options, String placeholder, int x, int y, int width, int height, Consumer<T> consumer) {
         this.options = options;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.textOffsetX = textOffsetX;
         this.consumer = consumer;
         this.placeholder = placeholder;
     }
@@ -42,7 +40,7 @@ public class DropdownWidget<T> extends Widget {
         g.setColor(this.hover == 0 || this.hasFocus() ? Colors.DARKER_YELLOW : Colors.DARK_YELLOW);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(Colors.DARKER_BLUE);
-        g.drawString(this.selected != null ? this.options.get(this.selected) : this.placeholder, this.x + this.textOffsetX, this.y + this.height / 2 + 5);
+        g.drawString(this.selected != null ? this.options.get(this.selected) : this.placeholder, this.x + 16, this.y + this.height / 2 + 5);
 
         if (this.open) {
             var index = new AtomicInteger(1);
@@ -53,7 +51,7 @@ public class DropdownWidget<T> extends Widget {
                 g.setColor(this.hover == index.get() || focusIndex == index.get() ? Color.LIGHT_GRAY : Color.WHITE);
                 g.fillRect(this.x, offset, this.width, this.height);
                 g.setColor(Colors.DARKER_BLUE);
-                g.drawString(value, this.x + this.textOffsetX, offset + this.height / 2 + 5);
+                g.drawString(value, this.x + 16, offset + this.height / 2 + 5);
 
                 index.getAndIncrement();
             });

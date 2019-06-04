@@ -64,8 +64,8 @@ public class InviteView extends View<InviteController> {
 
         return List.of(
             this.list,
-            new InputWidget("GEBRUIKERSNAAM", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, 0, this.controller::findOpponents),
-            new DropdownWidget<>(dictionaries, "Selecteer taal", 0, Main.TASKBAR_SIZE + 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, 16, this.controller::setDictionary)
+            new InputWidget("GEBRUIKERSNAAM", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::findOpponents),
+            new DropdownWidget<>(dictionaries, "Selecteer taal", 0, Main.TASKBAR_SIZE + 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::setDictionary)
         );
     }
 }

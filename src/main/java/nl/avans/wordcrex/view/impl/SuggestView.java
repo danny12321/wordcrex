@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 public class SuggestView extends View<SuggestController> {
     private final ListWidget<Word> list;
-    private final ButtonWidget submitButton = new ButtonWidget("SUGGEREER", 0, 78, 480, 48, this::suggest);
+    private final ButtonWidget submitButton = new ButtonWidget("SUGGEREER", 0, 80, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this::suggest);
 
     private String word = "";
     private boolean invalid;
@@ -28,17 +28,17 @@ public class SuggestView extends View<SuggestController> {
     public SuggestView(SuggestController controller) {
         super(controller);
         this.list = new ListWidget<>(
-            90,
-            64,
+            96,
+            96,
             (g, word) -> {
                 g.setColor(Color.WHITE);
-                g.drawString(word.word, Main.TASKBAR_SIZE, 30);
+                g.drawString(word.word, Main.TASKBAR_SIZE, 44);
                 g.setColor(Color.LIGHT_GRAY);
                 g.setFont(Fonts.SMALL);
-                g.drawString(this.controller.getLabel(word), Main.TASKBAR_SIZE, 50);
+                g.drawString(this.controller.getLabel(word), Main.TASKBAR_SIZE, 60);
                 g.setFont(Fonts.NORMAL);
             },
-            (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.description : null,
+            (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.description.toUpperCase() : null,
             (word) -> word.word,
             (word) -> false,
             null
@@ -63,13 +63,11 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public List<Widget> children() {
-        var dictionaries = this.controller.getDictionaries();
-
         return List.of(
             this.list,
-            new InputWidget("WOORD", 0, 30, 400, 48, 0, (value) -> this.word = value),
+            new InputWidget("WOORD", 0, Main.TASKBAR_SIZE, 384, 48, this::type),
             this.submitButton,
-            new DropdownWidget<>(dictionaries, "Taal", 400, 30, 80, 48, 10, this.controller::setDictionary)
+            new DropdownWidget<>(this.controller.getDictionaries(), "Taal", 384, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 384, 48, this.controller::setDictionary)
         );
     }
 

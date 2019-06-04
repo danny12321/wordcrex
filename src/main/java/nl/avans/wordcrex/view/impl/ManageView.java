@@ -62,7 +62,7 @@ public class ManageView extends View<ManageController> {
     public List<Widget> children() {
         return List.of(
             this.list,
-            new InputWidget("GEBRUIKERSNAAM", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, 0,this.controller::searchUsers)
+            new InputWidget("GEBRUIKERSNAAM", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::searchUsers)
         );
     }
 }
