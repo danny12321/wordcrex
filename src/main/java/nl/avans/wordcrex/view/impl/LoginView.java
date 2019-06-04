@@ -43,7 +43,7 @@ public class LoginView extends View<LoginController> {
     @Override
     public void update(Consumer<Particle> addParticle) {
         this.focus();
-        
+
         if (this.update++ % 5 != 0) {
             return;
         }

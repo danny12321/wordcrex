@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 public abstract class Widget {
     private final List<Widget> parents = new ArrayList<>();
     private boolean active;
-    public boolean doesntWantFocus;
+    private boolean doesntWantFocus;
 
     public abstract void draw(Graphics2D g);
 
@@ -75,6 +75,14 @@ public abstract class Widget {
     {
         this.doesntWantFocus = true;
         this.setActive(false);
+    }
+
+    public boolean getWantFocus(){
+        return this.doesntWantFocus;
+    }
+
+    public void setWantFocus(boolean state){
+        this.doesntWantFocus = state;
     }
 
 }
