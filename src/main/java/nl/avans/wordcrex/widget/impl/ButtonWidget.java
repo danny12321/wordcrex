@@ -6,6 +6,7 @@ import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.function.Consumer;
 
 public class ButtonWidget extends Widget {
@@ -45,6 +46,11 @@ public class ButtonWidget extends Widget {
             return;
         }
 
+        if(this.getActive()){
+            g.setColor(Color.white);
+            g.fillRect(this.x - 2, this.y - 2, this.width + 4, this.height + 4);
+        }
+
         g.setColor(this.hover || !this.enabled ? this.backgroundHover : this.background);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(this.foreground);
@@ -65,6 +71,20 @@ public class ButtonWidget extends Widget {
         if (this.hover && this.enabled && this.visible) {
             this.runnable.run();
         }
+
+        if(!this.hover){
+            this.setActive(false);
+        }
+    }
+
+    @Override
+    public void keyPress(int code, int modifiers) {
+        if (code == KeyEvent.VK_TAB && this.getActive()) {
+            this.moveFocusDown();
+        } else if (code == KeyEvent.VK_ENTER && this.getActive() && this.enabled && this.visible){
+            this.runnable.run();
+        }
+
     }
 
     public void setText(String text) {

@@ -46,7 +46,7 @@ public class InputWidget extends Widget {
         this.width = width;
         this.height = height;
         this.consumer = consumer;
-        this.tabIndex = tabIndex;
+        //this.tabIndex = tabIndex;
 
         this.consumer.accept("");
     }

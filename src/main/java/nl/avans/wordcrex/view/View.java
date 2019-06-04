@@ -18,9 +18,12 @@ public abstract class View<T extends Controller> extends Widget {
 
     public void focus(){
         for(int i = 0; i < this.getChildren().size(); i++){
-            if (this.getChildren().get(i).doesntWantFocus)
+            if (this.getChildren().get(i).doesntWantFocus && !(i + 1 >= this.getChildren().size()))
             {
                 this.getChildren().get(i + 1).setActive(true);
+                this.getChildren().get(i).doesntWantFocus = false;
+            } else if(this.getChildren().get(i).doesntWantFocus && i + 1 >= this.getChildren().size()) {
+                this.getChildren().get(0).setActive(true);
                 this.getChildren().get(i).doesntWantFocus = false;
             }
         }

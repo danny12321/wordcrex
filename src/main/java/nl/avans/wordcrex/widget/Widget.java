@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 
 public abstract class Widget {
     private final List<Widget> parents = new ArrayList<>();
-    public boolean active;
+    private boolean active;
     public boolean doesntWantFocus;
 
     public abstract void draw(Graphics2D g);

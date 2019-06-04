@@ -17,8 +17,9 @@ import java.util.function.Consumer;
 
 public class LoginView extends View<LoginController> {
     private final ButtonWidget submitButton = new ButtonWidget("LOG IN", 64, 312, 184, 48, this.controller::login);
-    private final InputWidget userNameInput = new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, 0, this.controller::setUsername);
+    private final InputWidget usernameInput = new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, 0, this.controller::setUsername);
     private final InputWidget passwordInput = new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, 1, this.controller::setPassword);
+    private final ButtonWidget registerButton = new ButtonWidget("REGISTREER", 264, 312, 184, 48, this.controller::navigateRegister);
     private int update;
 
 
@@ -42,6 +43,7 @@ public class LoginView extends View<LoginController> {
     @Override
     public void update(Consumer<Particle> addParticle) {
         this.focus();
+        
         if (this.update++ % 5 != 0) {
             return;
         }
@@ -52,10 +54,10 @@ public class LoginView extends View<LoginController> {
     @Override
     public List<Widget> getChildren() {
         return List.of(
-            this.userNameInput,
+            this.usernameInput,
             this.passwordInput,
             this.submitButton,
-            new ButtonWidget("REGISTREER", 264, 312, 184, 48, this.controller::navigateRegister)
+            this.registerButton
         );
     }
 }
