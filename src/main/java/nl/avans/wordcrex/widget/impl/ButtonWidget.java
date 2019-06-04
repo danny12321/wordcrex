@@ -6,9 +6,11 @@ import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
 public class ButtonWidget extends Widget {
+    private final BufferedImage image;
     private final int width;
     private final int height;
     private final Color background;
@@ -24,11 +26,16 @@ public class ButtonWidget extends Widget {
     private boolean visible = true;
 
     public ButtonWidget(String text, int x, int y, int width, int height, Runnable runnable) {
-        this(text, x, y, width, height, Colors.DARK_YELLOW, Colors.DARKER_YELLOW, Colors.DARKER_BLUE, runnable);
+        this(text, null, x, y, width, height, Colors.DARK_YELLOW, Colors.DARKER_YELLOW, Colors.DARKER_BLUE, runnable);
     }
 
-    public ButtonWidget(String text, int x, int y, int width, int height, Color background, Color hover, Color foreground, Runnable runnable) {
+    public ButtonWidget(BufferedImage image, int x, int y, int width, int height, Runnable runnable) {
+        this(null, image, x, y, width, height, Colors.DARK_YELLOW, Colors.DARKER_YELLOW, Colors.DARKER_BLUE, runnable);
+    }
+
+    public ButtonWidget(String text, BufferedImage image, int x, int y, int width, int height, Color background, Color hover, Color foreground, Runnable runnable) {
         this.text = text;
+        this.image = image;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -48,7 +55,12 @@ public class ButtonWidget extends Widget {
         g.setColor(this.hover || !this.enabled ? this.backgroundHover : this.background);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(this.foreground);
-        StringUtil.drawCenteredString(g, this.x, this.y, this.width, this.height, this.text);
+
+        if (this.image != null) {
+            g.drawImage(this.image, this.x, this.y, this.width, this.height, null);
+        } else {
+            StringUtil.drawCenteredString(g, this.x, this.y, this.width, this.height, this.text);
+        }
     }
 
     @Override
