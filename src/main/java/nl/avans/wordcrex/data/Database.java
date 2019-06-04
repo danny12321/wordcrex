@@ -10,7 +10,10 @@ public class Database {
     private final DataSource source;
 
     public Database(String config) {
-        this.source = new HikariDataSource(new HikariConfig("/db/" + config + ".properties"));
+        var hikari = new HikariConfig("/db/" + config + ".properties");
+        hikari.setMaximumPoolSize(2);
+
+        this.source = new HikariDataSource(hikari);
     }
 
     private Connection getConnection() throws SQLException {

@@ -2,8 +2,8 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.model.Character;
+import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;

@@ -45,6 +45,19 @@ public class HistoryView extends View<HistoryController> {
         this.drawPlayer(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 * 3 - 21, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, this.controller.getOpponent(), String.valueOf(this.controller.getOpponentScore()));
     }
 
+    @Override
+    public void update(Consumer<Particle> addParticle) {
+        this.list.setItems(this.controller.getRounds());
+    }
+
+    @Override
+    public List<Widget> getChildren() {
+        return List.of(
+            this.list,
+            new ButtonWidget("<", 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame)
+        );
+    }
+
     private void drawPlayer(Graphics2D g, int ovalX, int stringX, String user, String score) {
         g.setColor(Colors.DARK_YELLOW);
         g.fillOval(ovalX, 48, 42, 42);
@@ -90,18 +103,5 @@ public class HistoryView extends View<HistoryController> {
 
         g.drawString(wordStatus, Main.TASKBAR_SIZE, yPos + 16);
         g.setFont(Fonts.NORMAL);
-    }
-
-    @Override
-    public void update(Consumer<Particle> addParticle) {
-        this.list.setItems(this.controller.getRounds());
-    }
-
-    @Override
-    public List<Widget> getChildren() {
-        return List.of(
-            this.list,
-            new ButtonWidget("<", 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame)
-        );
     }
 }
