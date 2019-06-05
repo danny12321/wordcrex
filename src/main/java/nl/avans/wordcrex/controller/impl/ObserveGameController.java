@@ -112,4 +112,13 @@ public class ObserveGameController extends GameController {
     public void navigateHistory() {
         throw new RuntimeException();
     }
+
+    @Override
+    public void play(List<Played> played){
+        throw new RuntimeException();
+    }
+
+    public void resign(List<Played> played){
+        throw new RuntimeException();
+    }
 }

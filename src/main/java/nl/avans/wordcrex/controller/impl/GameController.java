@@ -49,4 +49,8 @@ public abstract class GameController extends Controller<Game> {
     public abstract void navigateChat();
 
     public abstract void navigateHistory();
+
+    public abstract void play(List<Played> played);
+
+    public abstract void resign(List<Played> played);
 }

@@ -9,6 +9,7 @@ import nl.avans.wordcrex.util.*;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
+import nl.avans.wordcrex.widget.impl.DialogWidget;
 import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
@@ -18,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class GameView extends View<GameController> {
+    private final DialogWidget dialog = new DialogWidget();
     private final ButtonWidget previousButton = new ButtonWidget("<", 22, 403, 32, 32, () -> {
         this.controller.previousRound();
         this.repaint = true;
@@ -34,6 +36,7 @@ public class GameView extends View<GameController> {
     private List<Played> played = new ArrayList<>();
     private int score = 0;
     private boolean repaint = false;
+
 
     public GameView(GameController controller) {
         super(controller);
@@ -116,7 +119,7 @@ public class GameView extends View<GameController> {
             var position = this.getAbsolutePos(played.x, played.y);
 
             g.translate(position.a, position.b);
-            this.drawTile(g, played.character, true);
+            this.drawTile(g, played.letter.character, true);
             g.translate(-position.a, -position.b);
         }
     }
@@ -151,9 +154,9 @@ public class GameView extends View<GameController> {
         var deck = this.controller.getRound().characters;
 
         if (this.controller.canPlay()) {
-            list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, Console.log("play")));
+            list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, this::playTurn));
             list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
-            list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, Console.log("resign")));
+            list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
         } else {
             list.add(this.previousButton);
             list.add(this.nextButton);
@@ -164,6 +167,8 @@ public class GameView extends View<GameController> {
 
             list.add(new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, character, hover), this::getAbsolutePos, this::getRelativePos, (pair, active) -> this.changeState(character, pair.a, pair.b, active)));
         }
+
+        list.add(this.dialog);
 
         return list;
     }
@@ -216,5 +221,31 @@ public class GameView extends View<GameController> {
         }
 
         return new Pair<>((x - 52) / 24, (y - 52) / 24);
+    }
+
+    private void playTurn() {
+        if (!this.played.isEmpty()) {
+            this.controller.play(this.played);
+
+            return;
+        }
+
+        this.dialog.show("Overslaan?", "JA", "NEE", (positive) -> {
+            if (!positive) {
+                return;
+            }
+            this.controller.play(this.played);
+        });
+
+    }
+
+    private void resign(){
+        this.dialog.show("Opgeven?", "JA", "NEE", (positive) -> {
+            if (!positive) {
+                return;
+            }
+            this.controller.resign(this.played);
+        });
+
     }
 }

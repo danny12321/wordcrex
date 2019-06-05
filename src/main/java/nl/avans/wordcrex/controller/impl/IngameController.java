@@ -87,4 +87,18 @@ public class IngameController extends GameController {
     public void navigateHistory() {
         this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
     }
+
+    @Override
+    public void play(List<Played> played){
+        if(played.isEmpty()){
+            this.getModel().playTurn(TurnAction.PASSED, played);
+            return;
+        }
+            this.getModel().playTurn(TurnAction.PLAYED, played);
+    }
+
+    @Override
+    public void resign(List<Played> played){
+        this.getModel().playTurn(TurnAction.RESIGNED, played);
+    }
 }

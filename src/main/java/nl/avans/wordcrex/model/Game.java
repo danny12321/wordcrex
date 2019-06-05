@@ -115,6 +115,23 @@ public class Game implements Pollable<Game> {
     }
 
     private List<Round> getRounds() {
+        var letters = new ArrayList<Letter>();
+
+        this.database.select(
+            "SELECT l.letter_id id, l.symbol character FROM played l WHERE l.game_id = ?",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> {
+                var id = result.getInt("id");
+                var characterRaw = result.getString("character");
+                var character = this.dictionary.characters.stream()
+                        .filter((c) -> c.character.equals(characterRaw))
+                        .findFirst()
+                        .orElseThrow();
+
+                letters.add(new Letter(id, character));
+            }
+        );
+
         var rounds = new ArrayList<Round>();
         var played = new ArrayList<Played>();
 
@@ -333,5 +350,23 @@ public class Game implements Pollable<Game> {
         }
 
         return score;
+    }
+
+    public void playTurn(TurnAction turnAction, List<Played> played){
+        //SELECT username_player1, username_player2 from game WHERE game_id = huidigegameId
+
+        if(turnAction == TurnAction.PLAYED){
+            /*if(SELECT username_player1 from game WHERE game_id = huidigegameId){
+            this.database.insert("INSERT INTO boardplayer1 () VALUES " + String.join(", ", played);
+            } else if (SELECT username_player2 from game WHERE game_id = huidigegameId){
+            INSERT INTO boardplayer2
+            }
+             */
+        } else if (turnAction == TurnAction.PASSED) {
+
+        } else {
+
+        }
+
     }
 }
