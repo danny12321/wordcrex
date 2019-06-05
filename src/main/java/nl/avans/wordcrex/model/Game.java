@@ -431,11 +431,6 @@ public class Game implements Pollable<Game> {
                         break;
                 }
 
-                if (x == center && y == center) {
-                    flag2 = true;
-                    temp2.add(2);
-                }
-
                 if (current != null) {
                     flag2 = true;
                     builder.append(current.letter.character.character);
@@ -445,6 +440,11 @@ public class Game implements Pollable<Game> {
                     builder.append(play.letter.character.character);
                     temp += (play.letter.character.value * letterMultiplier);
                     count++;
+
+                    if (x == center && y == center) {
+                        flag2 = true;
+                        temp2.add(2);
+                    }
 
                     if (!flag2) {
                         for (var side : TileSide.values()) {
