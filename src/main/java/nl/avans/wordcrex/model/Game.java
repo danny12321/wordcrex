@@ -317,4 +317,21 @@ public class Game implements Pollable<Game> {
             }
         );
     }
+
+    public int getScore(List<Played> played) {
+        if (played.isEmpty()) {
+            return -1;
+        }
+
+        var multiplier = 0;
+        var score = 0;
+
+        // do stuff
+
+        if (multiplier > 0) {
+            score *= multiplier;
+        }
+
+        return score;
+    }
 }

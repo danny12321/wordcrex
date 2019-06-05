@@ -17,6 +17,6 @@ public enum TileSide {
     public TileSide invert() {
         var values = TileSide.values();
 
-        return values[this.ordinal() + 2 % values.length];
+        return values[this.ordinal() + 2 % (values.length - 1)];
     }
 }

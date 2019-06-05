@@ -28,7 +28,20 @@ public class ObserveGameController extends GameController {
 
     @Override
     public String getScore() {
-        return this.getRound().hostScore + " - " + this.getRound().opponentScore;
+        var hostTurn = this.getRound().hostTurn;
+        var hostAdditional = 0;
+
+        if (hostTurn != null) {
+            hostAdditional = hostTurn.score + hostTurn.bonus;
+        }
+        var opponentTurn = this.getRound().opponentTurn;
+        var opponentAdditional = 0;
+
+        if (opponentTurn != null) {
+            opponentAdditional = opponentTurn.score + opponentTurn.bonus;
+        }
+
+        return (hostAdditional + this.getRound().hostScore) + " - " + (opponentAdditional + this.getRound().opponentScore);
     }
 
     @Override

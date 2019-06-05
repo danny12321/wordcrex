@@ -70,7 +70,7 @@ public class IngameController extends GameController {
 
     @Override
     public int getNewScore(List<Played> played) {
-        return this.getRound().getScore(this.getModel().tiles, played, this.getModel().dictionary);
+        return this.getModel().getScore(played);
     }
 
     @Override

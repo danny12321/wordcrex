@@ -13,7 +13,6 @@ import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -71,7 +70,11 @@ public class GameView extends View<GameController> {
         }
 
         for (var tile : this.controller.getTiles()) {
-            var position = this.getTilePosition(tile.x, tile.y);
+            var position = this.getAbsolutePos(tile.x, tile.y);
+
+            if (position == null) {
+                continue;
+            }
 
             switch (tile.type) {
                 case "--":
@@ -110,30 +113,12 @@ public class GameView extends View<GameController> {
         }
 
         for (var played : this.controller.getRound().board) {
-            var position = this.getTilePosition(played.x, played.y);
+            var position = this.getAbsolutePos(played.x, played.y);
 
             g.translate(position.a, position.b);
             this.drawTile(g, played.character, true);
             g.translate(-position.a, -position.b);
         }
-
-        var last = this.played.stream()
-            .sorted(Comparator.comparingInt((a) -> a.x + a.y))
-            .reduce((a, b) -> b)
-            .orElse(null);
-
-        if (last == null) {
-            return;
-        }
-
-        var position = this.getTilePosition(last.x, last.y);
-
-        g.setColor(Colors.DARK_YELLOW);
-        g.fillRect(position.a + 24, position.b + 10, 14, 14);
-        g.setFont(Fonts.SMALL);
-        g.setColor(Colors.DARK_BLUE);
-        StringUtil.drawCenteredString(g, position.a + 24, position.b + 10, 14, 14, String.valueOf(this.score));
-        g.setFont(Fonts.NORMAL);
     }
 
     @Override
@@ -144,6 +129,10 @@ public class GameView extends View<GameController> {
 
     @Override
     public void mouseMove(int x, int y) {
+        if (!this.controller.canPlay()) {
+            return;
+        }
+
         var i = this.offset + this.hostWidth;
 
         this.hover = x > i && x < i + this.scoreWidth && y > 40 && y < 68;
@@ -173,7 +162,7 @@ public class GameView extends View<GameController> {
         for (var i = 0; i < deck.size(); i++) {
             var character = deck.get(i);
 
-            list.add(new DragWidget(142 + i * 34, 462, 24, 24, (g, hover) -> this.drawTile(g, character, hover), this::dropTile, (pair, active) -> this.changeState(character, pair.a, pair.b, active)));
+            list.add(new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, character, hover), this::getAbsolutePos, this::getRelativePos, (pair, active) -> this.changeState(character, pair.a, pair.b, active)));
         }
 
         return list;
@@ -187,18 +176,6 @@ public class GameView extends View<GameController> {
         return p;
     }
 
-    private Pair<Integer, Integer> dropTile(int x, int y) {
-        for (var tile : this.controller.getTiles()) {
-            var position = this.getTilePosition(tile.x, tile.y);
-
-            if (x > position.a && x < position.a + 24 && y > position.b && y < position.b + 24) {
-                return new Pair<>(position.a, position.b);
-            }
-        }
-
-        return null;
-    }
-
     private void drawTile(Graphics2D g, Character character, boolean hover) {
         g.setColor(hover ? Color.LIGHT_GRAY : Color.WHITE);
         g.fillRect(0, 0, 24, 24);
@@ -210,24 +187,34 @@ public class GameView extends View<GameController> {
     }
 
     private void changeState(Character character, int x, int y, boolean active) {
-        var coord = this.getTileCoord(x, y);
-
         if (active) {
-            this.played.add(new Played(character, coord.a, coord.b));
+            this.played.add(new Played(character, x, y));
         } else {
             this.played = this.played.stream()
-                .filter((p) -> p.x != coord.a && p.y != coord.b)
+                .filter((p) -> p.x != x && p.y != y)
                 .collect(Collectors.toList());
         }
 
         this.score = this.controller.getNewScore(this.played);
     }
 
-    private Pair<Integer, Integer> getTilePosition(int x, int y) {
+    private Pair<Integer, Integer> getAbsolutePos(int x, int y) {
+        var size = Math.sqrt(this.controller.getTiles().size());
+
+        if (x <= 0 || x > size || y <= 0 || y > size) {
+            return null;
+        }
+
         return new Pair<>(52 + x * 24, 52 + y * 24);
     }
 
-    private Pair<Integer, Integer> getTileCoord(int x, int y) {
+    private Pair<Integer, Integer> getRelativePos(int x, int y) {
+        var size = Math.sqrt(this.controller.getTiles().size()) + 1;
+
+        if (x < 52 + 24 || x >= 52 + size * 24 || y < 52 + 24 || y >= 52 + size * 24) {
+            return null;
+        }
+
         return new Pair<>((x - 52) / 24, (y - 52) / 24);
     }
 }

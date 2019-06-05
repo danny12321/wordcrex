@@ -12,13 +12,15 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class DragWidget extends Widget {
-    public final int width;
-    public final int height;
     public final int initialX;
     public final int initialY;
+    public final int width;
+    public final int height;
+    public final boolean enabled;
 
     private final BiConsumer<Graphics2D, Boolean> draw;
-    private final BiFunction<Integer, Integer, Pair<Integer, Integer>> check;
+    private final BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute;
+    private final BiFunction<Integer, Integer, Pair<Integer, Integer>> relative;
     private final BiConsumer<Pair<Integer, Integer>, Boolean> state;
 
     private int x;
@@ -28,24 +30,28 @@ public class DragWidget extends Widget {
     private boolean hover;
     private boolean dragging;
 
-    public DragWidget(int x, int y, int width, int height, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> check, BiConsumer<Pair<Integer, Integer>, Boolean> state) {
+    public DragWidget(int x, int y, int width, int height, boolean enabled, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute, BiFunction<Integer, Integer, Pair<Integer, Integer>> relative, BiConsumer<Pair<Integer, Integer>, Boolean> state) {
         this.x = this.initialX = x;
         this.y = this.initialY = y;
         this.width = width;
         this.height = height;
+        this.enabled = enabled;
         this.draw = draw;
-        this.check = check;
+        this.absolute = absolute;
+        this.relative = relative;
         this.state = state;
     }
 
     @Override
     public void draw(Graphics2D g) {
         if (this.dragging) {
-            var target = this.check.apply(this.x + this.offsetX, this.y + this.offsetY);
+            var r = this.relative.apply(this.x + this.offsetX, this.y + this.offsetY);
 
-            if (target != null) {
+            if (r != null) {
+                var a = this.absolute.apply(r.a, r.b);
+
                 g.setColor(Colors.OVERLAY);
-                g.fillRect(target.a, target.b, this.width, this.height);
+                g.fillRect(a.a, a.b, this.width, this.height);
             }
         }
 
@@ -60,7 +66,7 @@ public class DragWidget extends Widget {
 
     @Override
     public void mouseMove(int x, int y) {
-        this.hover = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+        this.hover = this.enabled && x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
     }
 
     @Override
@@ -72,7 +78,7 @@ public class DragWidget extends Widget {
             this.offsetY = y - this.y;
 
             if (this.x != this.initialX && this.y != this.initialY) {
-                this.state.accept(new Pair<>(this.x, this.y), false);
+                this.state.accept(this.relative.apply(this.x, this.y), false);
             }
         }
     }
@@ -88,15 +94,17 @@ public class DragWidget extends Widget {
     @Override
     public void mouseRelease(int x, int y) {
         if (this.dragging) {
-            var target = this.check.apply(x, y);
+            var r = this.relative.apply(x, y);
 
-            if (target == null) {
+            if (r == null) {
                 this.x = this.initialX;
                 this.y = this.initialY;
             } else {
-                this.x = target.a;
-                this.y = target.b;
-                this.state.accept(new Pair<>(this.x, this.y), true);
+                var a = this.absolute.apply(r.a, r.b);
+
+                this.x = a.a;
+                this.y = a.b;
+                this.state.accept(r, true);
             }
         }
 
