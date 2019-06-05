@@ -452,7 +452,7 @@ public class User implements Pollable<User> {
                     return;
                 }
 
-                games.add(new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), Map.of(), null, List.of()));
+                games.add(new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), null, null, List.of()));
             }
         );
 

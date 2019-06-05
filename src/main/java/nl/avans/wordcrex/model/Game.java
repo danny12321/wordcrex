@@ -97,7 +97,7 @@ public class Game implements Pollable<Game> {
         var pool = new HashMap<Letter, Boolean>();
 
         this.database.select(
-            "SELECT l.letter_id id, l.symbol `character`, (SELECT count(*) = 1 FROM pot p WHERE l.letter_id = p.letter_id) available FROM letter l WHERE l.game_id = ?",
+            "SELECT l.letter_id id, l.symbol `character`, !isnull(p.symbol) available FROM letter l LEFT JOIN pot p ON l.game_id = p.game_id AND l.letter_id = p.letter_id WHERE l.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
                 var id = result.getInt("id");
