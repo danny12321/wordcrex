@@ -100,7 +100,7 @@ public class Game implements Pollable<Game> {
         var pool = new HashMap<Letter, Boolean>();
 
         this.database.select(
-            "SELECT l.letter_id id, l.symbol `character`, (SELECT count(*) = 1 FROM pot p WHERE l.letter_id = p.letter_id) available FROM letter l WHERE l.game_id = ?",
+            "SELECT l.letter_id id, l.symbol `character`, !isnull(p.symbol) available FROM letter l LEFT JOIN pot p ON l.game_id = p.game_id AND l.letter_id = p.letter_id WHERE l.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
                 var id = result.getInt("id");
@@ -485,19 +485,110 @@ public class Game implements Pollable<Game> {
         return null;
     }
 
-    public void playTurn(TurnAction turnAction, List<Played> played) {
-        //SELECT username_player1, username_player2 from game WHERE game_id = huidigegameId
+    public void playTurn(String username, TurnAction action, List<Played> played){
+        System.out.println("test");
+        var ref = new Object() {
+            String username1;
+            String username2;
+        };
+        this.database.select(
+                "SELECT username_player1, username_player2 from game WHERE game_id = ?",
+                (statement) -> statement.setInt(1, this.id),
+                (result) -> {
+                    ref.username1 = result.getString("username_player1");
+                    ref.username2 = result.getString("username_player2");
+                }
+        );
 
-        if (turnAction == TurnAction.PLAYED) {
-            /*if(SELECT username_player1 from game WHERE game_id = huidigegameId){
-            this.database.insert("INSERT INTO boardplayer1 () VALUES " + String.join(", ", played);
-            } else if (SELECT username_player2 from game WHERE game_id = huidigegameId){
-            INSERT INTO boardplayer2
+        if(action == TurnAction.PLAYED){
+            if(username.equals(ref.username1)){
+                this.database.insert(
+                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'play')",
+                        (statement) -> {
+                            statement.setInt(1, this.id);
+                            statement.setInt(2, this.rounds.size());
+                            statement.setString(3, username);
+                        }
+                );
+                var values = new ArrayList<String>();
+                for (int i = 0; i < played.size(); i++) {
+                    values.add("(?, ?, ?, ?, ?, ?)");
+                }
+
+                this.database.insert(
+                        "INSERT INTO boardplayer1 (game_id, username, turn_id, letter_id, tile_x, tile_y) VALUES " +  String.join(", ", values) ,
+                        (statement) -> {
+                            var offset = 0;
+                            for(int i =0; i < played.size(); i++) {
+                                statement.setInt(++offset, this.id);
+                                statement.setString(++offset, username);
+                                statement.setInt(++offset, this.rounds.size());
+                                statement.setInt(++offset, played.get(i).letter.id);
+                                statement.setInt(++offset, played.get(i).x);
+                                statement.setInt(++offset, played.get(i).y);
+                            }
+                        }
+                );
+            } else if (username.equals(ref.username2)){
+                this.database.insert(
+                        "INSERT INTO turnplayer2 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'play')",
+                        (statement) -> {
+                            statement.setInt(1, this.id);
+                            statement.setInt(2, this.rounds.size());
+                            statement.setString(3, username);
+                        }
+                );
+                var values = new ArrayList<String>();
+                for (int i = 0; i < played.size(); i++) {
+                    values.add("(?, ?, ?, ?, ?, ?)");
+                }
+                System.out.println("test");
+                this.database.insert(
+                        "INSERT INTO boardplayer2 (game_id, username, turn_id, letter_id, tile_x, tile_y) VALUES " + String.join(", ", values) ,
+                (statement) -> {
+                    var offset = 0;
+                    for(int i =0; i < played.size(); i++) {
+                        statement.setInt(++offset, this.id);
+                        statement.setString(++offset, username);
+                        statement.setInt(++offset, this.rounds.size());
+                        statement.setInt(++offset, played.get(i).letter.id);
+                        statement.setInt(++offset, played.get(i).x);
+                        statement.setInt(++offset, played.get(i).y);
+                    }
+                }
+                );
             }
-             */
-        } else if (turnAction == TurnAction.PASSED) {
+        } else if (action == TurnAction.PASSED) {
+            if(username.equals(ref.username1)){
+                this.database.insert(
+                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'pass')",
+                        (statement) -> {
+                            statement.setInt(1, this.id);
+                            statement.setInt(2, this.rounds.size());
+                            statement.setString(3, username);
+                        }
+                );
+            } else if (username.equals(ref.username2)){
+                this.database.insert(
+                        "INSERT INTO turnplayer2 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'pass')",
+                        (statement) -> {
+                            statement.setInt(1, this.id);
+                            statement.setInt(2, this.rounds.size());
+                            statement.setString(3, username);
+                        }
+                );
+            }
+        }
+    }
 
-        } else {
+    public void resign(String username){
+        var ref = new Object() {
+            String username1;
+            String username2;
+        };
+        if(username.equals(ref.username1)){
+
+        } else if (username.equals(ref.username2)){
 
         }
 
