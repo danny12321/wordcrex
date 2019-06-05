@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class SidebarWidget extends Widget {
-    private final List<Item> items = List.of(
+    public static final List<Item> ITEMS = List.of(
         new Item<>("SPELLEN", DashboardController.class, DashboardView.class, UserRole.PLAYER),
         new Item<>("BEKIJKEN", ObserveController.class, ObserveView.class, UserRole.OBSERVER),
         new Item<>("SUGGEREREN", SuggestController.class, SuggestView.class, UserRole.PLAYER),
@@ -64,7 +64,7 @@ public class SidebarWidget extends Widget {
 
     @Override
     public List<Widget> getChildren() {
-        this.items.forEach((item) -> this.children.put(new ButtonWidget(item.title, 32, 64, 192, 32, () -> this.main.openController(item.controller)), item));
+        this.ITEMS.forEach((item) -> this.children.put(new ButtonWidget(item.title, 32, 64, 192, 32, () -> this.main.openController(item.controller)), item));
         this.children.put(new ButtonWidget("LOG UIT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class)), null);
 
         return List.copyOf(this.children.keySet());
@@ -78,7 +78,7 @@ public class SidebarWidget extends Widget {
         return this.open;
     }
 
-    private class Item<T extends Controller<?>> {
+    public static class Item<T extends Controller<?>> {
         public final String title;
         public final Class<T> controller;
         public final Class<? extends View<T>> view;
