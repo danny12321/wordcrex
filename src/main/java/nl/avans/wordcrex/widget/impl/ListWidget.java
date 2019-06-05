@@ -6,6 +6,7 @@ import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -26,7 +27,8 @@ public class ListWidget<T> extends Widget {
     private List<T> items = new ArrayList<>();
     private int scroll;
     private String hover;
-
+    private String selected;
+    private int selectedId;
     public ListWidget(int y, int height, BiConsumer<Graphics2D, T> draw, BiFunction<T, T, String> header, Function<T, String> getId, Function<T, Boolean> canClick, Consumer<T> click) {
         this.y = y;
         this.height = height;
@@ -125,6 +127,47 @@ public class ListWidget<T> extends Widget {
         return List.of(
             this.scrollbar
         );
+    }
+
+    @Override
+    public void keyPress(int code, int modifiers) {
+        if(code == KeyEvent.VK_UP){
+
+           if(selected == null){
+               selected = this.getId.apply(items.get(0));
+           }else{
+               if((selectedId-1) >= 0){
+                   selectedId--;
+               }
+               selected = this.getId.apply(items.get(selectedId));
+           }
+            System.out.println(selected);
+        }
+
+        if(code == KeyEvent.VK_DOWN){
+            if(selected == null){
+                System.out.println("selected is empty");
+                selected = this.getId.apply(items.get(0));
+            }else{
+                if((selectedId+1) < items.size()){
+                    selectedId++;
+                }
+                selected = this.getId.apply(items.get(selectedId));
+            }
+            System.out.println(selected);
+        }
+
+        if(code == KeyEvent.VK_ENTER){
+            this.click.accept(this.items.stream()
+                    .filter((item) -> this.getId.apply(item).equals(this.selected))
+                    .findFirst()
+                    .orElse(null));
+        }
+    }
+
+    @Override
+    public boolean canFocus() {
+        return true;
     }
 
     private String getHeader(int i) {
