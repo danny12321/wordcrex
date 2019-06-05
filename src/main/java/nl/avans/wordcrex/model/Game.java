@@ -351,22 +351,12 @@ public class Game implements Pollable<Game> {
         }
 
         var board = this.getLastRound().board;
-        var x = played.get(0).x;
-        var y = played.get(0).y;
-        var diffX = false;
-        var diffY = false;
-
-        for (var p : played) {
-            diffX |= p.x != x;
-            diffY |= p.y != y;
-        }
-
-        if (diffX && diffY) {
-            return -1;
-        }
-
         var horizontal = this.checkDirection(played, board, Pair::new);
         var vertical = this.checkDirection(played, board, (x1, y1) -> new Pair<>(y1, x1));
+
+        if (horizontal == null || vertical == null) {
+            return -1;
+        }
 
         var score = horizontal.b + vertical.b;
         var words = new ArrayList<String>();
@@ -466,6 +456,8 @@ public class Game implements Pollable<Game> {
                         if (count == 7) {
                             extra = 100;
                         }
+                    } else if (flag && !flag2) {
+                        return null;
                     }
 
                     flag = false;
