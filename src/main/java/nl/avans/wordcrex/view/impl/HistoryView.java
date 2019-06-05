@@ -31,7 +31,7 @@ public class HistoryView extends View<HistoryController> {
                 this.drawScore(g, round.hostTurn, 30, this.controller.getHost());
                 this.drawScore(g, round.opponentTurn, 82, this.controller.getOpponent());
             },
-            (previous, next) -> "Ronde " + next.round + " - " + next.characters.stream().map((c) -> c.character).collect(Collectors.joining()),
+            (previous, next) -> "Ronde " + next.round + " - " + next.deck.stream().map((c) -> c.character.character).collect(Collectors.joining()),
             (round) -> String.valueOf(round.round),
             (round) -> false,
             (round) -> {
@@ -89,7 +89,7 @@ public class HistoryView extends View<HistoryController> {
             var score = " +" + (turn.score + turn.bonus) + " ";
             var width = metrics.stringWidth(score);
 
-            wordStatus = turn.played.stream().map((c) -> c.character.character).collect(Collectors.joining());
+            wordStatus = turn.played.stream().map((c) -> c.letter.character.character).collect(Collectors.joining());
 
             g.setFont(Fonts.NORMAL);
             g.setColor(Colors.DARK_BLUE);
