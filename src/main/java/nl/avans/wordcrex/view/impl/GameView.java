@@ -191,7 +191,7 @@ public class GameView extends View<GameController> {
             this.played.add(new Played(character, x, y));
         } else {
             this.played = this.played.stream()
-                .filter((p) -> p.x != x && p.y != y)
+                .filter((p) -> p.x != x || p.y != y)
                 .collect(Collectors.toList());
         }
 

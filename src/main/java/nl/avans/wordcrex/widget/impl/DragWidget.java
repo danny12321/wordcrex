@@ -77,8 +77,10 @@ public class DragWidget extends Widget {
             this.offsetX = x - this.x;
             this.offsetY = y - this.y;
 
-            if (this.x != this.initialX && this.y != this.initialY) {
-                this.state.accept(this.relative.apply(this.x, this.y), false);
+            var r = this.relative.apply(this.x, this.y);
+
+            if (r != null) {
+                this.state.accept(r, false);
             }
         }
     }
