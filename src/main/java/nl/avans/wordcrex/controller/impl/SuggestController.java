@@ -5,7 +5,6 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Dictionary;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.Word;
-import nl.avans.wordcrex.model.WordState;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.SuggestView;
 

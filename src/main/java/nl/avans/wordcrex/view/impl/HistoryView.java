@@ -31,7 +31,7 @@ public class HistoryView extends View<HistoryController> {
                 this.drawScore(g, round.hostTurn, 30, this.controller.getHost());
                 this.drawScore(g, round.opponentTurn, 82, this.controller.getOpponent());
             },
-            (previous, next) -> "Ronde " + next.round + " - " + next.characters.stream().map((c) -> c.character).collect(Collectors.joining()),
+            (previous, next) -> "Ronde " + next.round + " - " + next.deck.stream().map((c) -> c.character.character).collect(Collectors.joining()),
             (round) -> String.valueOf(round.round),
             (round) -> false,
             (round) -> {
@@ -43,6 +43,19 @@ public class HistoryView extends View<HistoryController> {
     public void draw(Graphics2D g) {
         this.drawPlayer(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 - 21, 0, this.controller.getHost(), String.valueOf(this.controller.getHostScore()));
         this.drawPlayer(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 * 3 - 21, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, this.controller.getOpponent(), String.valueOf(this.controller.getOpponentScore()));
+    }
+
+    @Override
+    public void update(Consumer<Particle> addParticle) {
+        this.list.setItems(this.controller.getRounds());
+    }
+
+    @Override
+    public List<Widget> getChildren() {
+        return List.of(
+            this.list,
+            new ButtonWidget("<", 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame)
+        );
     }
 
     private void drawPlayer(Graphics2D g, int ovalX, int stringX, String user, String score) {
@@ -75,7 +88,7 @@ public class HistoryView extends View<HistoryController> {
             var score = " +" + (turn.score + turn.bonus) + " ";
             var width = metrics.stringWidth(score);
 
-            wordStatus = turn.played.stream().map((c) -> c.character.character).collect(Collectors.joining());
+            wordStatus = turn.played.stream().map((c) -> c.letter.character.character).collect(Collectors.joining());
 
             g.setFont(Fonts.NORMAL);
             g.setColor(Colors.DARK_BLUE);
@@ -90,18 +103,5 @@ public class HistoryView extends View<HistoryController> {
 
         g.drawString(wordStatus, Main.TASKBAR_SIZE, yPos + 16);
         g.setFont(Fonts.NORMAL);
-    }
-
-    @Override
-    public void update(Consumer<Particle> addParticle) {
-        this.list.setItems(this.controller.getRounds());
-    }
-
-    @Override
-    public List<Widget> getChildren() {
-        return List.of(
-            this.list,
-            new ButtonWidget("<", 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame)
-        );
     }
 }

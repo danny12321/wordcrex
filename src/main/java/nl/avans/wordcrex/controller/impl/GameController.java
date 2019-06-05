@@ -3,17 +3,14 @@ package nl.avans.wordcrex.controller.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Character;
-import nl.avans.wordcrex.model.Game;
-import nl.avans.wordcrex.model.Tile;
-import nl.avans.wordcrex.model.User;
-import nl.avans.wordcrex.util.StreamUtil;
+import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;
 
 import java.util.List;
 import java.util.function.Function;
 
-public class GameController extends Controller<Game> {
+public abstract class GameController extends Controller<Game> {
     public GameController(Main main, Function<User, Game> fn) {
         super(main, fn);
     }
@@ -23,39 +20,37 @@ public class GameController extends Controller<Game> {
         return new GameView(this);
     }
 
-    public String getScore() {
-        return this.getModel().getHostScore() + " - " + this.getModel().getOpponentScore();
-    }
+    public abstract boolean canPlay();
 
-    public String getHostName() {
-        return this.getModel().host;
-    }
+    public abstract String getScore();
 
-    public String getOpponentName() {
-        return this.getModel().opponent;
-    }
+    public abstract String getHostName();
 
-    public List<Tile> getTiles() {
-        return this.getModel().tiles;
-    }
+    public abstract String getOpponentName();
 
-    public List<Character> getDeck() {
-        return this.getModel().getLastRound().characters;
-    }
+    public abstract Round getRound();
 
-    public int getPoolSize() {
-        return this.getModel().pool.size();
-    }
+    public abstract int getTotalRounds();
 
-    public void startNewRound() {
-        this.getModel().startNewRound();
-    }
+    public abstract List<Tile> getTiles();
 
-    public void navigateChat() {
-        this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
-    }
+    public abstract void previousRound();
 
-    public void navigateHistory() {
-        this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.games, (game) -> game.id == this.getModel().id));
-    }
+    public abstract void nextRound();
+
+    public abstract int getPoolSize();
+
+    public abstract void startNewRound();
+
+    public abstract int getNewScore(List<Played> played);
+
+    public abstract Character getPlaceholder();
+
+    public abstract void navigateChat();
+
+    public abstract void navigateHistory();
+
+    public abstract void play(List<Played> played);
+
+    public abstract void resign();
 }
