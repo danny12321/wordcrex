@@ -103,7 +103,7 @@ public class ListWidget<T> extends Widget {
 
             if (y > position && y < position + this.height && this.canClick.apply(item)) {
                 this.selected = this.getId.apply(item);
-
+                this.selectedId = this.items.indexOf(item);
                 break;
             }
         }
@@ -130,31 +130,28 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void keyPress(int code, int modifiers) {
-        if(code == KeyEvent.VK_UP){
 
-           if(selected == null){
-               System.out.println("selected is empty");
-               selected = this.getId.apply(items.get(0));
-           }else{
-               if((selectedId-1) >= 0){
-                   selectedId--;
-               }
-               selected = this.getId.apply(items.get(selectedId));
-           }
-            System.out.println(selected);
-        }
-
-        if(code == KeyEvent.VK_DOWN){
-            if(selected == null){
+        if (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN) {
+            if (selected == null) {
                 System.out.println("selected is empty");
                 selected = this.getId.apply(items.get(0));
-            }else{
-                if((selectedId+1) < items.size()){
-                    selectedId++;
+            } else {
+                int way = code == KeyEvent.VK_UP ? -1 : 1;
+
+                if ((this.selectedId + way) >= 0 && (this.selectedId + way) < items.size()) {
+                    this.selectedId += way;
+                    int height = this.height * this.selectedId;
+
+                    selected = this.getId.apply(items.get(this.selectedId));
+
+                    if (way == 1 && height - this.scroll > Main.FRAME_SIZE - this.height - this.y) {
+                        this.scrollbar.setOffset(height  - (Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.height - this.y));
+                    } else if (way == -1 && height < this.y + this.scroll) {
+                        this.scrollbar.setOffset(height);
+                    }
+
                 }
-                selected = this.getId.apply(items.get(selectedId));
             }
-            System.out.println(selected);
         }
 
         if(code == KeyEvent.VK_ENTER){
