@@ -351,8 +351,8 @@ public class Game implements Pollable<Game> {
         }
 
         var board = this.getLastRound().board;
-        var x = played.get(1).x;
-        var y = played.get(1).y;
+        var x = played.get(0).x;
+        var y = played.get(0).y;
         var diffX = false;
         var diffY = false;
 

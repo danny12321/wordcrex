@@ -84,7 +84,7 @@ public class User implements Pollable<User> {
 
     @Override
     public User poll() {
-        if (this.username.isEmpty()) {
+        if (this.username.isEmpty() || this.dictionaries.isEmpty()) {
             return this;
         }
 
