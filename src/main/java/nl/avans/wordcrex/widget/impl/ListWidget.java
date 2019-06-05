@@ -28,6 +28,7 @@ public class ListWidget<T> extends Widget {
     private int scroll;
     private String selected;
     private int selectedId;
+
     public ListWidget(int y, int height, BiConsumer<Graphics2D, T> draw, BiFunction<T, T, String> header, Function<T, String> getId, Function<T, Boolean> canClick, Consumer<T> click) {
         this.y = y;
         this.height = height;
@@ -140,9 +141,15 @@ public class ListWidget<T> extends Widget {
 
                 if ((this.selectedId + way) >= 0 && (this.selectedId + way) < items.size()) {
                     this.selectedId += way;
+                    selected = this.getId.apply(items.get(this.selectedId));
+
                     int height = this.height * this.selectedId;
 
-                    selected = this.getId.apply(items.get(this.selectedId));
+                    for(int i = 0; i <= this.selectedId; i++) {
+                        if (this.getHeader(i) != null && (i != this.selectedId || this.selectedId == this.items.size() - 1)) {
+                            height += 64;
+                        }
+                    }
 
                     if (way == 1 && height - this.scroll > Main.FRAME_SIZE - this.height - this.y) {
                         this.scrollbar.setOffset(height  - (Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.height - this.y));
