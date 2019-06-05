@@ -32,13 +32,15 @@ public class LoginController extends Controller<User> {
             return;
         }
 
-        for (var item : SidebarWidget.ITEMS) {
-            if (item.role == null || this.getModel().hasRole(item.role)) {
-                this.main.openController(item.controller);
+        this.afterPoll(() -> {
+            for (var item : SidebarWidget.ITEMS) {
+                if (item.role == null || this.getModel().hasRole(item.role)) {
+                    this.main.openController(item.controller);
 
-                return;
+                    return;
+                }
             }
-        }
+        });
     }
 
     public void setUsername(String username) {
