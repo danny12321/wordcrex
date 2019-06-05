@@ -166,7 +166,7 @@ public class GameView extends View<GameController> {
         for (var i = 0; i < deck.size(); i++) {
             var letter = deck.get(i);
 
-            list.add(new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, letter.character, hover), this::getAbsolutePos, this::getRelativePos, (pair, active) -> this.changeState(letter, pair.a, pair.b, active)));
+            list.add(new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, letter.character, hover), this::getAbsolutePos, this::getRelativePos, this::canDrop, (pair, active) -> this.changeState(letter, pair.a, pair.b, active)));
         }
 
         list.add(this.dialog);
@@ -221,7 +221,24 @@ public class GameView extends View<GameController> {
             return null;
         }
 
-        return new Pair<>((x - 52) / 24, (y - 52) / 24);
+        var relativeX = (x - 52) / 24;
+        var relativeY = (y - 52) / 24;
+
+        return new Pair<>(relativeX, relativeY);
+    }
+
+    private boolean canDrop(int x, int y) {
+        return this.isFree(x, y, this.played) && this.isFree(x, y, this.controller.getRound().board);
+    }
+
+    private boolean isFree(int x, int y, List<Played> played) {
+        for (var p : played) {
+            if (p.x == x && p.y == y) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void playTurn() {

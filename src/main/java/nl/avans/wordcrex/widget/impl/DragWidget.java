@@ -21,6 +21,7 @@ public class DragWidget extends Widget {
     private final BiConsumer<Graphics2D, Boolean> draw;
     private final BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute;
     private final BiFunction<Integer, Integer, Pair<Integer, Integer>> relative;
+    private final BiFunction<Integer, Integer, Boolean> check;
     private final BiConsumer<Pair<Integer, Integer>, Boolean> state;
 
     private int x;
@@ -30,7 +31,7 @@ public class DragWidget extends Widget {
     private boolean hover;
     private boolean dragging;
 
-    public DragWidget(int x, int y, int width, int height, boolean enabled, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute, BiFunction<Integer, Integer, Pair<Integer, Integer>> relative, BiConsumer<Pair<Integer, Integer>, Boolean> state) {
+    public DragWidget(int x, int y, int width, int height, boolean enabled, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute, BiFunction<Integer, Integer, Pair<Integer, Integer>> relative, BiFunction<Integer, Integer, Boolean> check, BiConsumer<Pair<Integer, Integer>, Boolean> state) {
         this.x = this.initialX = x;
         this.y = this.initialY = y;
         this.width = width;
@@ -39,6 +40,7 @@ public class DragWidget extends Widget {
         this.draw = draw;
         this.absolute = absolute;
         this.relative = relative;
+        this.check = check;
         this.state = state;
     }
 
@@ -47,7 +49,7 @@ public class DragWidget extends Widget {
         if (this.dragging) {
             var r = this.relative.apply(this.x + this.offsetX, this.y + this.offsetY);
 
-            if (r != null) {
+            if (r != null && this.check.apply(r.a, r.b)) {
                 var a = this.absolute.apply(r.a, r.b);
 
                 g.setColor(Colors.OVERLAY);
@@ -98,7 +100,7 @@ public class DragWidget extends Widget {
         if (this.dragging) {
             var r = this.relative.apply(x, y);
 
-            if (r == null) {
+            if (r == null || !this.check.apply(r.a, r.b)) {
                 this.x = this.initialX;
                 this.y = this.initialY;
             } else {

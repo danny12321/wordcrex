@@ -1,12 +1,15 @@
 package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
+import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class Game implements Pollable<Game> {
@@ -348,22 +351,144 @@ public class Game implements Pollable<Game> {
             return -1;
         }
 
-        var multiplier = 0;
-        var score = 0;
+        var board = this.getLastRound().board;
 
-        // do stuff
+        var horizontal = this.checkDirection(played, board, Pair::new);
+        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
 
-        if (multiplier > 0) {
-            score *= multiplier;
+        var score = horizontal.b + vertical.b;
+        var words = new ArrayList<String>();
+
+        words.addAll(horizontal.a);
+        words.addAll(vertical.a);
+
+        if (horizontal.a.size() > 1 && vertical.a.size() > 1) {
+            return -1;
+        }
+
+        System.out.println("Found words: " + String.join(", ", words) + " with score " + score);
+
+        for (var word : words) {
+            if (!this.dictionary.isWord(word)) {
+                return -1;
+            }
         }
 
         return score;
     }
 
-    public void playTurn(TurnAction turnAction, List<Played> played){
+    private Pair<List<String>, Integer> checkDirection(List<Played> played, List<Played> board, BiFunction<Integer, Integer, Pair<Integer, Integer>> coords) {
+        var extra = 0;
+        var size = Math.sqrt(this.tiles.size());
+        var center = (int) Math.ceil(size / 2);
+        var score = 0;
+        var words = new ArrayList<String>();
+
+        for (var y = 1; y <= size; y++) {
+            var flag = false;
+            var flag2 = false;
+            var temp = 0;
+            var temp2 = new ArrayList<Integer>();
+            var builder = new StringBuilder();
+            var count = 0;
+
+            for (var x = 1; x <= size; x++) {
+                var pair = coords.apply(x, y);
+
+                var tile = this.getTile(pair.a, pair.b);
+
+                if (tile == null) {
+                    throw new RuntimeException();
+                }
+
+                var current = this.getPlayed(pair.a, pair.b, board);
+                var play = this.getPlayed(pair.a, pair.b, played);
+                var letterMultiplier = 1;
+
+                switch (tile.type) {
+                    case "2L":
+                        letterMultiplier = 2;
+                        break;
+                    case "4L":
+                        letterMultiplier = 4;
+                        break;
+                    case "6L":
+                        letterMultiplier = 6;
+                        break;
+                    case "3W":
+                        temp2.add(3);
+                        break;
+                    case "4W":
+                        temp2.add(4);
+                        break;
+                }
+
+                if (x == center && y == center) {
+                    flag2 = true;
+                    temp2.add(2);
+                }
+
+                if (current != null) {
+                    flag2 = true;
+                    builder.append(current.letter.character.character);
+                    temp += (current.letter.character.value * letterMultiplier);
+                } else if (play != null) {
+                    flag = true;
+                    builder.append(play.letter.character.character);
+                    temp += (play.letter.character.value * letterMultiplier);
+                    count++;
+                } else {
+                    if (flag && flag2 && builder.length() > 1) {
+                        words.add(builder.toString());
+
+                        for (var multiplier : temp2) {
+                            temp *= multiplier;
+                        }
+
+                        score += temp;
+
+                        if (count == 7) {
+                            extra = 100;
+                        }
+                    }
+
+                    flag = false;
+                    flag2 = false;
+                    builder.setLength(0);
+                    temp = 0;
+                    temp2.clear();
+                    count = 0;
+                }
+            }
+        }
+
+        return new Pair<>(words, score + extra);
+    }
+
+    private Played getPlayed(int x, int y, List<Played> played) {
+        for (var p : played) {
+            if (p.x == x && p.y == y) {
+                return p;
+            }
+        }
+
+        return null;
+    }
+
+    private Tile getTile(int x, int y) {
+        for (var tile : this.tiles) {
+            if (tile.x == x && tile.y == y) {
+                return tile;
+            }
+        }
+
+        return null;
+    }
+
+    public void playTurn(TurnAction turnAction, List<Played> played) {
         //SELECT username_player1, username_player2 from game WHERE game_id = huidigegameId
 
-        if(turnAction == TurnAction.PLAYED){
+        if (turnAction == TurnAction.PLAYED) {
             /*if(SELECT username_player1 from game WHERE game_id = huidigegameId){
             this.database.insert("INSERT INTO boardplayer1 () VALUES " + String.join(", ", played);
             } else if (SELECT username_player2 from game WHERE game_id = huidigegameId){
