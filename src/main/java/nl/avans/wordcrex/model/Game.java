@@ -352,7 +352,7 @@ public class Game implements Pollable<Game> {
 
         var board = this.getLastRound().board;
         var horizontal = this.checkDirection(played, board, Pair::new);
-        var vertical = this.checkDirection(played, board, (x1, y1) -> new Pair<>(y1, x1));
+        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
 
         if (horizontal == null || vertical == null) {
             return -1;
