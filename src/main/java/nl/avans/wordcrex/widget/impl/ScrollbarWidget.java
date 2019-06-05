@@ -6,6 +6,7 @@ import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ScrollbarWidget extends Widget {
@@ -65,6 +66,11 @@ public class ScrollbarWidget extends Widget {
     }
 
     @Override
+    public List<Widget> children() {
+        return List.of();
+    }
+
+    @Override
     public void mousePress(int x, int y) {
         if (!this.hover) {
             return;
@@ -99,6 +105,7 @@ public class ScrollbarWidget extends Widget {
         this.scroll.accept(scroll);
     }
 
+
     @Override
     public void mouseRelease(int x, int y) {
         this.dragging = false;
@@ -114,5 +121,14 @@ public class ScrollbarWidget extends Widget {
 
             this.offset = e - scroller;
         }
+    }
+
+    public void setOffset(int offset) {
+        var height = Main.FRAME_SIZE - Main.TASKBAR_SIZE;
+        var scroller = (float) height / this.height * (float) height;
+        float y = (float) offset / (float) this.height * (float) height;
+
+        this.offset = (int) Math.min(height - scroller, Math.max(0, y));
+        this.scroll.accept(offset);
     }
 }

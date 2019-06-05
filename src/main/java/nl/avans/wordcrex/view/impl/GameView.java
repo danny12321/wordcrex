@@ -150,7 +150,7 @@ public class GameView extends View<GameController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         var list = new ArrayList<Widget>();
         var deck = this.controller.getRound().deck;
 

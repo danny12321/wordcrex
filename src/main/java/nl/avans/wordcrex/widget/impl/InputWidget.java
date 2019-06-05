@@ -11,12 +11,13 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class InputWidget extends Widget {
     private final StringBuilder input = new StringBuilder();
 
-    private final String label;
+    public final String label;
     private final Character placeholder;
     private final int x;
     private final int y;
@@ -25,7 +26,6 @@ public class InputWidget extends Widget {
     private final Consumer<String> consumer;
 
     private boolean hover;
-    private boolean active;
     private int cursor;
     private int update;
     private int offset;
@@ -75,7 +75,7 @@ public class InputWidget extends Widget {
         g.setColor(Color.WHITE);
         g.drawString(text, this.x - this.offset, this.y + line);
 
-        if (this.active && this.update % 30 <= 15) {
+        if (this.hasFocus() && this.update % 30 <= 15) {
             g.fillRect(this.x + position - this.offset, this.y + this.height / 2 - 12, 2, 24);
         }
 
@@ -94,20 +94,24 @@ public class InputWidget extends Widget {
 
     @Override
     public void mousePress(int x, int y) {
-        if (!this.active && this.hover) {
+        if (!this.hasFocus() && this.hover) {
             this.update = 0;
         }
 
-        this.active = this.hover;
+        if (!this.hover) {
+            this.setFocus(false);
+        } else {
+            this.requestFocus();
 
-        if (this.active && this.character != 0) {
-            this.cursor = Math.max(0, Math.min(this.input.length(), Math.round((x - this.x + this.offset) / (float) this.character)));
+            if (this.character != 0) {
+                this.cursor = Math.max(0, Math.min(this.input.length(), Math.round((x - this.x + this.offset) / (float) this.character)));
+            }
         }
     }
 
     @Override
     public void keyType(char character) {
-        if (!this.active) {
+        if (!this.hasFocus()) {
             return;
         }
 
@@ -122,7 +126,7 @@ public class InputWidget extends Widget {
 
     @Override
     public void keyPress(int code, int modifiers) {
-        if (!this.active) {
+        if (!this.hasFocus()) {
             return;
         }
 
@@ -148,6 +152,23 @@ public class InputWidget extends Widget {
         }
 
         this.consumer.accept(this.input.toString());
+    }
+
+    @Override
+    public List<Widget> children() {
+        return List.of();
+    }
+
+    @Override
+    public boolean canFocus() {
+        return true;
+    }
+
+    @Override
+    public void setFocus(boolean focus) {
+        this.update = 0;
+
+        super.setFocus(focus);
     }
 
     private boolean isPrintableChar(char c) {

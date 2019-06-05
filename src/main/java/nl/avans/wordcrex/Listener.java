@@ -69,6 +69,16 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (e.getExtendedKeyCode() == KeyEvent.VK_TAB) {
+            var view = this.main.getView();
+
+            if (view != null) {
+                view.tabFocus(e.isShiftDown());
+            }
+
+            return;
+        }
+
         this.main.getWidgets(false).forEach((widget) -> widget.keyPress(e.getExtendedKeyCode(), e.getModifiersEx()));
     }
 

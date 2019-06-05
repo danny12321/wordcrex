@@ -63,7 +63,7 @@ public class SidebarWidget extends Widget {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         this.ITEMS.forEach((item) -> this.children.put(new ButtonWidget(item.title, 32, 64, 192, 32, () -> this.main.openController(item.controller)), item));
         this.children.put(new ButtonWidget("LOG UIT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class)), null);
 

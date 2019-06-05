@@ -62,7 +62,7 @@ public class SuggestView extends View<SuggestController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             this.list,
             new InputWidget("WOORD", 0, Main.TASKBAR_SIZE, 384, 48, this::type),

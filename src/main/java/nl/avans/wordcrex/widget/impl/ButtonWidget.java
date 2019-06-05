@@ -6,7 +6,9 @@ import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ButtonWidget extends Widget {
@@ -52,6 +54,11 @@ public class ButtonWidget extends Widget {
             return;
         }
 
+        if (this.hasFocus()) {
+            g.setColor(Color.white);
+            g.fillRect(this.x - 2, this.y - 2, this.width + 4, this.height + 4);
+        }
+
         g.setColor(this.hover || !this.enabled ? this.backgroundHover : this.background);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(this.foreground);
@@ -77,6 +84,27 @@ public class ButtonWidget extends Widget {
         if (this.hover && this.enabled && this.visible) {
             this.runnable.run();
         }
+
+        if (!this.hover) {
+            this.setFocus(false);
+        }
+    }
+
+    @Override
+    public void keyPress(int code, int modifiers) {
+        if (code == KeyEvent.VK_ENTER && this.hasFocus() && this.enabled && this.visible) {
+            this.runnable.run();
+        }
+    }
+
+    @Override
+    public List<Widget> children() {
+        return List.of();
+    }
+
+    @Override
+    public boolean canFocus() {
+        return this.enabled && this.visible;
     }
 
     public void setPosition(int x, int y) {
