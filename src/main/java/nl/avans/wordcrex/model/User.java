@@ -5,10 +5,7 @@ import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 import nl.avans.wordcrex.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class User implements Pollable<User> {
@@ -455,7 +452,7 @@ public class User implements Pollable<User> {
                     return;
                 }
 
-                games.add(new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), List.of(), null, List.of()));
+                games.add(new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), Map.of(), null, List.of()));
             }
         );
 

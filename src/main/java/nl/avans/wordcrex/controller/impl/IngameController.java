@@ -60,7 +60,9 @@ public class IngameController extends GameController {
 
     @Override
     public int getPoolSize() {
-        return this.getModel().pool.size();
+        return (int) this.getModel().pool.values().stream()
+            .filter((c) -> c)
+            .count();
     }
 
     @Override
@@ -98,7 +100,7 @@ public class IngameController extends GameController {
     }
 
     @Override
-    public void resign(List<Played> played){
-        this.getModel().playTurn(TurnAction.RESIGNED, played);
+    public void resign(){
+        this.getModel().playTurn(TurnAction.RESIGNED, List.of());
     }
 }

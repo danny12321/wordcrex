@@ -118,7 +118,8 @@ public class ObserveGameController extends GameController {
         throw new RuntimeException();
     }
 
-    public void resign(List<Played> played){
+    @Override
+    public void resign(){
         throw new RuntimeException();
     }
 }

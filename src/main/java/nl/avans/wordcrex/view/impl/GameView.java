@@ -3,6 +3,7 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.GameController;
 import nl.avans.wordcrex.model.Character;
+import nl.avans.wordcrex.model.Letter;
 import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.*;
@@ -151,7 +152,7 @@ public class GameView extends View<GameController> {
     @Override
     public List<Widget> getChildren() {
         var list = new ArrayList<Widget>();
-        var deck = this.controller.getRound().characters;
+        var deck = this.controller.getRound().deck;
 
         if (this.controller.canPlay()) {
             list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, this::playTurn));
@@ -163,9 +164,9 @@ public class GameView extends View<GameController> {
         }
 
         for (var i = 0; i < deck.size(); i++) {
-            var character = deck.get(i);
+            var letter = deck.get(i);
 
-            list.add(new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, character, hover), this::getAbsolutePos, this::getRelativePos, (pair, active) -> this.changeState(character, pair.a, pair.b, active)));
+            list.add(new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, letter.character, hover), this::getAbsolutePos, this::getRelativePos, (pair, active) -> this.changeState(letter, pair.a, pair.b, active)));
         }
 
         list.add(this.dialog);
@@ -191,9 +192,9 @@ public class GameView extends View<GameController> {
         g.setFont(Fonts.NORMAL);
     }
 
-    private void changeState(Character character, int x, int y, boolean active) {
+    private void changeState(Letter letter, int x, int y, boolean active) {
         if (active) {
-            this.played.add(new Played(character, x, y));
+            this.played.add(new Played(letter, x, y));
         } else {
             this.played = this.played.stream()
                 .filter((p) -> p.x != x || p.y != y)
@@ -244,7 +245,7 @@ public class GameView extends View<GameController> {
             if (!positive) {
                 return;
             }
-            this.controller.resign(this.played);
+            this.controller.resign();
         });
 
     }
