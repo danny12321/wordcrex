@@ -1,7 +1,6 @@
 package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
-import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 
@@ -520,7 +519,7 @@ public class Game implements Pollable<Game> {
         if(action == TurnAction.PLAYED){
             if(username.equals(ref.username1)){
                 this.database.insert(
-                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'play')",
+                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'play')",
                         (statement) -> {
                             statement.setInt(1, this.id);
                             statement.setInt(2, this.rounds.size());

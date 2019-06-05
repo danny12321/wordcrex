@@ -122,8 +122,6 @@ public class User implements Pollable<User> {
                 var winner = result.getString("winner");
 
                 if (dictionary == null) {
-                    System.out.println("Dictionary not found: " + code);
-
                     return;
                 }
 
