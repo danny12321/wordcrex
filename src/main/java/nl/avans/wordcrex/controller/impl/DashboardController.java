@@ -46,7 +46,7 @@ public class DashboardController extends Controller<User> {
     }
 
     public String getSmallExtra(Game game) {
-        if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED) {
+        if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED || game.getLastRound() == null) {
             return "Wachten op bevestiging - ";
         } else if (game.state == GameState.PLAYING) {
             return this.isCurrentUser(game.host) == (game.getLastRound().hostTurn == null) ? "Jouw beurt - " : "Hun beurt - ";
