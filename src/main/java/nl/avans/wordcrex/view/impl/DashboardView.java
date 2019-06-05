@@ -46,7 +46,7 @@ public class DashboardView extends View<DashboardController> {
 
                 if (game.state != GameState.PENDING) {
                     var metrics = g.getFontMetrics();
-                    var score = " " + game.getHostScore() + " - " + game.getOpponentScore() + " ";
+                    var score = " " + game.getLastRound().hostScore + " - " + game.getLastRound().opponentScore + " ";
                     var width = metrics.stringWidth(score);
 
                     g.setColor(Colors.DARK_BLUE);

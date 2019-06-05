@@ -32,7 +32,7 @@ public class HistoryController extends Controller<Game> {
     }
 
     public int getHostScore() {
-        return this.getModel().getHostScore();
+        return this.getModel().getLastRound().hostScore;
     }
 
     public String getOpponent() {
@@ -40,10 +40,10 @@ public class HistoryController extends Controller<Game> {
     }
 
     public int getOpponentScore() {
-        return this.getModel().getOpponentScore();
+        return this.getModel().getLastRound().opponentScore;
     }
 
     public void navigateGame() {
-        this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == this.getModel().id));
+        this.main.openController(IngameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == this.getModel().id));
     }
 }

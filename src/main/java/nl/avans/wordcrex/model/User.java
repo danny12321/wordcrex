@@ -5,10 +5,8 @@ import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 import nl.avans.wordcrex.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class User implements Pollable<User> {
     private final Database database;
@@ -427,13 +425,15 @@ public class User implements Pollable<User> {
             "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code, g.username_winner winner " +
                 "FROM game g " +
                 "WHERE (g.game_state = ? OR g.game_state = ? OR g.game_state = ?) " +
+                "AND g.answer_player2 = ? " +
                 "AND (g.username_player1 LIKE ? OR g.username_player2 LIKE ?)",
             (statement) -> {
                 statement.setString(1, GameState.PLAYING.state);
                 statement.setString(2, GameState.FINISHED.state);
                 statement.setString(3, GameState.RESIGNED.state);
-                statement.setString(4, "%" + search + "%");
+                statement.setString(4, InviteState.ACCEPTED.state);
                 statement.setString(5, "%" + search + "%");
+                statement.setString(6, "%" + search + "%");
             },
             (result) -> {
                 var id = result.getInt("id");
@@ -452,10 +452,12 @@ public class User implements Pollable<User> {
                     return;
                 }
 
-                games.add(new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), List.of(), null, List.of()));
+                games.add(new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), null, null, List.of()));
             }
         );
 
-        return List.copyOf(games);
+        return List.copyOf(games.stream()
+            .filter((g) -> g.rounds.size() > 0)
+            .collect(Collectors.toList()));
     }
 }
