@@ -101,6 +101,7 @@ public class ScrollbarWidget extends Widget {
         this.scroll.accept(scroll);
     }
 
+
     @Override
     public void mouseRelease(int x, int y) {
         this.dragging = false;

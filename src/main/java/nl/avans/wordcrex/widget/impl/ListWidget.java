@@ -26,7 +26,6 @@ public class ListWidget<T> extends Widget {
 
     private List<T> items = new ArrayList<>();
     private int scroll;
-    private String hover;
     private String selected;
     private int selectedId;
     public ListWidget(int y, int height, BiConsumer<Graphics2D, T> draw, BiFunction<T, T, String> header, Function<T, String> getId, Function<T, Boolean> canClick, Consumer<T> click) {
@@ -59,7 +58,7 @@ public class ListWidget<T> extends Widget {
                 position += 64;
             }
 
-            if (this.getId.apply(item).equals(this.hover)) {
+            if (this.getId.apply(item).equals(this.selected)) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE, this.height);
             }
@@ -85,7 +84,7 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void mouseMove(int x, int y) {
-        this.hover = null;
+        this.selected = null;
 
         if (x > Main.FRAME_SIZE - Main.TASKBAR_SIZE || y < Main.TASKBAR_SIZE) {
             return;
@@ -103,7 +102,7 @@ public class ListWidget<T> extends Widget {
             }
 
             if (y > position && y < position + this.height && this.canClick.apply(item)) {
-                this.hover = this.getId.apply(item);
+                this.selected = this.getId.apply(item);
 
                 break;
             }
@@ -112,12 +111,12 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void mouseClick(int x, int y) {
-        if (this.hover == null) {
+        if (this.selected == null) {
             return;
         }
 
         this.click.accept(this.items.stream()
-            .filter((item) -> this.getId.apply(item).equals(this.hover))
+            .filter((item) -> this.getId.apply(item).equals(this.selected))
             .findFirst()
             .orElse(null));
     }
@@ -134,6 +133,7 @@ public class ListWidget<T> extends Widget {
         if(code == KeyEvent.VK_UP){
 
            if(selected == null){
+               System.out.println("selected is empty");
                selected = this.getId.apply(items.get(0));
            }else{
                if((selectedId-1) >= 0){
