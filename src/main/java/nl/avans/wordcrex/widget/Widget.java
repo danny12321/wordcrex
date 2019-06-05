@@ -10,6 +10,9 @@ import java.util.function.Predicate;
 
 public abstract class Widget {
     private final List<Widget> parents = new ArrayList<>();
+    private List<Widget> children;
+    private boolean focus;
+    private boolean request;
 
     public abstract void draw(Graphics2D g);
 
@@ -37,8 +40,14 @@ public abstract class Widget {
     }
 
     public List<Widget> getChildren() {
-        return List.of();
+        if (this.children == null) {
+            this.children = this.children();
+        }
+
+        return this.children;
     }
+
+    public abstract List<Widget> children();
 
     public boolean blocking() {
         return false;
@@ -59,5 +68,29 @@ public abstract class Widget {
 
     public void addParent(Widget parent) {
         this.parents.add(parent);
+    }
+
+    public boolean canFocus() {
+        return false;
+    }
+
+    public boolean hasFocus() {
+        return this.focus;
+    }
+
+    public void setFocus(boolean focus) {
+        this.focus = focus;
+    }
+
+    public boolean requestingFocus() {
+        var r = this.request;
+
+        this.request = false;
+
+        return r;
+    }
+
+    public void requestFocus() {
+        this.request = true;
     }
 }

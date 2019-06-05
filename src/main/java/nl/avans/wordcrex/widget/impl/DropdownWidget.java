@@ -5,6 +5,7 @@ import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,6 +23,7 @@ public class DropdownWidget<T> extends Widget {
     private int hover = -1;
     private T selected;
     private boolean open;
+    private int focusIndex = 0;
 
     public DropdownWidget(Map<T, String> options, String placeholder, int x, int y, int width, int height, Consumer<T> consumer) {
         this.options = options;
@@ -35,7 +37,7 @@ public class DropdownWidget<T> extends Widget {
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(this.hover == 0 ? Colors.DARKER_YELLOW : Colors.DARK_YELLOW);
+        g.setColor(this.hover == 0 || this.hasFocus() ? Colors.DARKER_YELLOW : Colors.DARK_YELLOW);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(Colors.DARKER_BLUE);
         g.drawString(this.selected != null ? this.options.get(this.selected) : this.placeholder, this.x + 16, this.y + this.height / 2 + 5);
@@ -46,7 +48,7 @@ public class DropdownWidget<T> extends Widget {
             this.options.forEach((key, value) -> {
                 var offset = this.y + index.get() * this.height;
 
-                g.setColor(this.hover == index.get() ? Color.LIGHT_GRAY : Color.WHITE);
+                g.setColor(this.hover == index.get() || focusIndex == index.get() ? Color.LIGHT_GRAY : Color.WHITE);
                 g.fillRect(this.x, offset, this.width, this.height);
                 g.setColor(Colors.DARKER_BLUE);
                 g.drawString(value, this.x + 16, offset + this.height / 2 + 5);
@@ -88,7 +90,54 @@ public class DropdownWidget<T> extends Widget {
     }
 
     @Override
+    public void keyPress(int code, int modifiers) {
+        if(!this.hasFocus()){
+            return;
+        }
+
+        if(code == KeyEvent.VK_ENTER){
+            if(!this.open){
+                this.open = true;
+            } else if (this.open && focusIndex != 0){
+                var keys = List.copyOf(this.options.keySet());
+
+                this.consumer.accept(keys.get(this.focusIndex - 1));
+                this.selected = keys.get(this.focusIndex - 1);
+                this.open = false;
+            } else {
+                this.open = false;
+            }
+        } else if (code == KeyEvent.VK_DOWN){
+            if(this.open){
+                if(focusIndex + 1 <= options.size()){
+                    focusIndex++;
+                } else {
+                    focusIndex = 0;
+                }
+            } else {
+                this.open = true;
+            }
+        } else if(code == KeyEvent.VK_UP){
+            if(this.open && focusIndex == 0){
+                this.open = false;
+            } else {
+                focusIndex--;
+            }
+        }
+    }
+
+    @Override
+    public List<Widget> children() {
+        return List.of();
+    }
+
+    @Override
     public boolean blocking() {
         return this.open;
+    }
+
+    @Override
+    public boolean canFocus() {
+        return true;
     }
 }

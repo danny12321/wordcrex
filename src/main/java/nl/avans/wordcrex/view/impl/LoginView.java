@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 
 public class LoginView extends View<LoginController> {
     private final ButtonWidget submitButton = new ButtonWidget("LOG IN", 64, 312, 184, 48, this.controller::login);
-
     private int update;
 
     public LoginView(LoginController controller) {
@@ -47,7 +46,7 @@ public class LoginView extends View<LoginController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, this.controller::setUsername),
             new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, this.controller::setPassword),

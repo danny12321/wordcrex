@@ -7,6 +7,7 @@ import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -69,6 +70,11 @@ public class DragWidget extends Widget {
     @Override
     public void mouseMove(int x, int y) {
         this.hover = this.enabled && x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+    }
+
+    @Override
+    public List<Widget> children() {
+        return List.of();
     }
 
     @Override

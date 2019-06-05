@@ -64,7 +64,7 @@ public class ObserveView extends View<ObserveController> {
     }
 
     @Override
-    public List<Widget> getChildren() {
+    public List<Widget> children() {
         return List.of(
             this.list,
             new InputWidget("ZOEKEN", 0, 30, 480, 48, this.controller::setSearch)
