@@ -101,6 +101,7 @@ public class ScrollbarWidget extends Widget {
         this.scroll.accept(scroll);
     }
 
+
     @Override
     public void mouseRelease(int x, int y) {
         this.dragging = false;
@@ -115,5 +116,14 @@ public class ScrollbarWidget extends Widget {
 
             this.offset = e - scroller;
         }
+    }
+
+    public void setOffset(int offset) {
+        var height = Main.FRAME_SIZE - Main.TASKBAR_SIZE;
+        var scroller = (float) height / this.height * (float) height;
+        float y = (float) offset / (float) this.height * (float) height;
+
+        this.offset = (int) Math.min(height - scroller, Math.max(0, y));
+        this.scroll.accept(offset);
     }
 }
