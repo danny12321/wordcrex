@@ -93,14 +93,14 @@ public class IngameController extends GameController {
     @Override
     public void play(List<Played> played){
         if(played.isEmpty()){
-            this.getModel().playTurn(TurnAction.PASSED, played);
+            this.getModel().playTurn(this.getRoot().username, TurnAction.PASSED, played);
             return;
         }
-            this.getModel().playTurn(TurnAction.PLAYED, played);
+            this.getModel().playTurn(this.getRoot().username,TurnAction.PLAYED, played);
     }
 
     @Override
     public void resign(){
-        this.getModel().playTurn(TurnAction.RESIGNED, List.of());
+        this.getModel().resign(this.getRoot().username);
     }
 }
