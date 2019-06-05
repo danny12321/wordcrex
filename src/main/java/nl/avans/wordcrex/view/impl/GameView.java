@@ -5,10 +5,7 @@ import nl.avans.wordcrex.controller.impl.GameController;
 import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.particle.Particle;
-import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Fonts;
-import nl.avans.wordcrex.util.Pair;
-import nl.avans.wordcrex.util.StringUtil;
+import nl.avans.wordcrex.util.*;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
@@ -150,7 +147,9 @@ public class GameView extends View<GameController> {
         var deck = this.controller.getRound().characters;
 
         if (this.controller.canPlay()) {
-            list.add(new ButtonWidget("CHAT", 6, 76, 64, 32, this.controller::navigateChat));
+            list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, Console.log("play")));
+            list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
+            list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, Console.log("resign")));
         } else {
             list.add(new ButtonWidget("<", 22, 200, 32, 32, this.controller::previousRound));
             list.add(new ButtonWidget(">", 22, 248, 32, 32, this.controller::nextRound));
