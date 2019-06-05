@@ -352,6 +352,19 @@ public class Game implements Pollable<Game> {
         }
 
         var board = this.getLastRound().board;
+        var x = played.get(1).x;
+        var y = played.get(1).y;
+        var diffX = false;
+        var diffY = false;
+
+        for (var p : played) {
+            diffX |= p.x != x;
+            diffY |= p.y != y;
+        }
+
+        if (diffX && diffY) {
+            return -1;
+        }
 
         var horizontal = this.checkDirection(played, board, Pair::new);
         var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
@@ -361,10 +374,6 @@ public class Game implements Pollable<Game> {
 
         words.addAll(horizontal.a);
         words.addAll(vertical.a);
-
-        if (horizontal.a.size() > 1 && vertical.a.size() > 1) {
-            return -1;
-        }
 
         System.out.println("Found words: " + String.join(", ", words) + " with score " + score);
 
@@ -437,6 +446,14 @@ public class Game implements Pollable<Game> {
                     builder.append(play.letter.character.character);
                     temp += (play.letter.character.value * letterMultiplier);
                     count++;
+
+                    if (!flag2) {
+                        for (var side : TileSide.values()) {
+                            if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
+                                flag2 = true;
+                            }
+                        }
+                    }
                 } else {
                     if (flag && flag2 && builder.length() > 1) {
                         words.add(builder.toString());
