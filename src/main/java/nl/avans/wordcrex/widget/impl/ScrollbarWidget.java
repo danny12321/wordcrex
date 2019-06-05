@@ -26,9 +26,7 @@ public class ScrollbarWidget extends Widget {
     public ScrollbarWidget(Consumer<Integer> scroll, boolean reverse) {
         this.scroll = scroll;
         this.reverse = reverse;
-        if(reverse) {
-            this.lock = true;
-        }
+        this.lock = reverse;
     }
 
     @Override
