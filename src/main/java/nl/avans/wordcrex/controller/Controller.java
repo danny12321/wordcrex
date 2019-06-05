@@ -11,7 +11,6 @@ import java.util.function.Function;
 
 public abstract class Controller<T extends Pollable<T>> {
     protected final Main main;
-    private final List<Runnable> next = new CopyOnWriteArrayList<>();
 
     private Function<User, T> fn;
     private boolean initial = true;
@@ -39,12 +38,6 @@ public abstract class Controller<T extends Pollable<T>> {
 
             return model.poll();
         });
-        this.next.forEach(Runnable::run);
-        this.next.clear();
-    }
-
-    protected void afterPoll(Runnable runnable) {
-        this.next.add(runnable);
     }
 
     protected void replace(Function<T, T> mutate) {
