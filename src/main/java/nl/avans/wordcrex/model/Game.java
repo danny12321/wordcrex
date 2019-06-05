@@ -15,6 +15,7 @@ public class Game implements Pollable<Game> {
     public final int id;
     public final String host;
     public final String opponent;
+    public final String winner;
     public final GameState state;
     public final InviteState inviteState;
     public final Dictionary dictionary;
@@ -24,22 +25,23 @@ public class Game implements Pollable<Game> {
     public final List<Message> messages;
 
     public Game(Game game, List<Tile> tiles) {
-        this(game.database, game.id, game.host, game.opponent, game.state, game.inviteState, game.dictionary, tiles, game.pool, game.rounds, game.messages);
+        this(game.database, game.id, game.host, game.opponent, game.winner, game.state, game.inviteState, game.dictionary, tiles, game.pool, game.rounds, game.messages);
     }
 
-    public Game(Game game, GameState state, InviteState inviteState, List<Message> messages) {
-        this(game.database, game.id, game.host, game.opponent, state, inviteState, game.dictionary, game.tiles, null, null, messages);
+    public Game(Game game, String winner, GameState state, InviteState inviteState, List<Message> messages) {
+        this(game.database, game.id, game.host, game.opponent, winner, state, inviteState, game.dictionary, game.tiles, null, null, messages);
     }
 
-    public Game(Database database, int id, String host, String opponent, GameState state, InviteState inviteState, Dictionary dictionary) {
-        this(database, id, host, opponent, state, inviteState, dictionary, List.of(), List.of(), null, List.of());
+    public Game(Database database, int id, String host, String opponent, String winner, GameState state, InviteState inviteState, Dictionary dictionary) {
+        this(database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), List.of(), null, List.of());
     }
 
-    public Game(Database database, int id, String host, String opponent, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Letter> pool, List<Round> rounds, List<Message> messages) {
+    public Game(Database database, int id, String host, String opponent, String winner, GameState state, InviteState inviteState, Dictionary dictionary, List<Tile> tiles, List<Letter> pool, List<Round> rounds, List<Message> messages) {
         this.database = database;
         this.id = id;
         this.host = host;
         this.opponent = opponent;
+        this.winner = winner;
         this.state = state;
         this.inviteState = inviteState;
         this.dictionary = dictionary;
@@ -66,13 +68,15 @@ public class Game implements Pollable<Game> {
     @Override
     public Game poll() {
         var ref = new Object() {
+            String winner;
             GameState state;
             InviteState inviteState;
         };
         this.database.select(
-            "SELECT g.game_state state, g.answer_player2 invite_state FROM game g WHERE g.game_id = ?",
+            "SELECT g.game_state state, g.answer_player2 invite_state, g.username_winner winner FROM game g WHERE g.game_id = ?",
             (statement) -> statement.setInt(1, this.id),
             (result) -> {
+                ref.winner = result.getString("winner");
                 ref.state = GameState.byState(result.getString("state"));
                 ref.inviteState = InviteState.byState(result.getString("invite_state"));
             }
@@ -86,7 +90,7 @@ public class Game implements Pollable<Game> {
             (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
         );
 
-        return new Game(this, ref.state, ref.inviteState, List.copyOf(messages));
+        return new Game(this, ref.winner, ref.state, ref.inviteState, List.copyOf(messages));
     }
 
     private List<Letter> getPool() {

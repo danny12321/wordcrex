@@ -26,7 +26,7 @@ public class HistoryView extends View<HistoryController> {
         super(controller);
         this.list = new ListWidget<>(
             116,
-            128,
+            118,
             (g, round) -> {
                 this.drawScore(g, round.hostTurn, 30, this.controller.getHost());
                 this.drawScore(g, round.opponentTurn, 82, this.controller.getOpponent());
@@ -45,18 +45,33 @@ public class HistoryView extends View<HistoryController> {
         this.drawPlayer(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 * 3 - 21, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, this.controller.getOpponent(), String.valueOf(this.controller.getOpponentScore()));
     }
 
+    @Override
+    public void update(Consumer<Particle> addParticle) {
+        this.list.setItems(this.controller.getRounds());
+    }
+
+    @Override
+    public List<Widget> getChildren() {
+        return List.of(
+            this.list,
+            new ButtonWidget("<", 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame)
+        );
+    }
+
     private void drawPlayer(Graphics2D g, int ovalX, int stringX, String user, String score) {
+        var scroll = list.getScroll();
+
         g.setColor(Colors.DARK_YELLOW);
-        g.fillOval(ovalX, 48, 42, 42);
+        g.fillOval(ovalX, 48 - scroll, 42, 42);
         g.setFont(Fonts.BIG);
         g.setColor(Colors.DARKER_BLUE);
-        StringUtil.drawCenteredString(g, ovalX, 48, 42, 42, user.substring(0, 1).toUpperCase());
+        StringUtil.drawCenteredString(g, ovalX, 48 - scroll, 42, 42, user.substring(0, 1).toUpperCase());
         g.setFont(Fonts.NORMAL);
         g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, stringX, 112, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, user);
+        StringUtil.drawCenteredString(g, stringX, 112 - scroll, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, user);
         g.setFont(Fonts.SMALL);
         g.setColor(Color.LIGHT_GRAY);
-        StringUtil.drawCenteredString(g, stringX, 132, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, score);
+        StringUtil.drawCenteredString(g, stringX, 132 - scroll, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, score);
         g.setFont(Fonts.NORMAL);
     }
 
@@ -64,13 +79,12 @@ public class HistoryView extends View<HistoryController> {
         var metrics = g.getFontMetrics();
         var wordStatus = "?";
 
-        g.setColor(Color.WHITE);
-        g.drawString(playerName, Main.TASKBAR_SIZE, yPos);
         g.setFont(Fonts.SMALL);
         g.setColor(Color.LIGHT_GRAY);
+        g.drawString(playerName, Main.TASKBAR_SIZE, yPos + 16);
 
         if (turn == null) {
-            wordStatus = "Nog geen woord gespeeld";
+            wordStatus = "-";
         } else if (turn.action == TurnAction.PLAYED) {
             var score = " +" + (turn.score + turn.bonus) + " ";
             var width = metrics.stringWidth(score);
@@ -88,20 +102,8 @@ public class HistoryView extends View<HistoryController> {
             wordStatus = "Opgegeven";
         }
 
-        g.drawString(wordStatus, Main.TASKBAR_SIZE, yPos + 16);
+        g.setColor(Color.WHITE);
         g.setFont(Fonts.NORMAL);
-    }
-
-    @Override
-    public void update(Consumer<Particle> addParticle) {
-        this.list.setItems(this.controller.getRounds());
-    }
-
-    @Override
-    public List<Widget> getChildren() {
-        return List.of(
-            this.list,
-            new ButtonWidget("<", 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame)
-        );
+        g.drawString(wordStatus, Main.TASKBAR_SIZE, yPos);
     }
 }

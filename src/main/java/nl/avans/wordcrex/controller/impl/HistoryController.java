@@ -5,6 +5,7 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Round;
 import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.util.ListUtil;
 import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.HistoryView;
@@ -23,7 +24,7 @@ public class HistoryController extends Controller<Game> {
     }
 
     public List<Round> getRounds() {
-        return this.getModel().rounds;
+        return ListUtil.reverseList(this.getModel().rounds);
     }
 
     public String getHost() {

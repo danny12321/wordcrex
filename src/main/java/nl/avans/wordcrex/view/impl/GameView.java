@@ -2,6 +2,7 @@ package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.GameController;
+import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.Tile;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.*;
@@ -31,6 +32,7 @@ public class GameView extends View<GameController> {
         var score = " " + this.controller.getScore() + " ";
         var host = this.controller.getHostName() + " ";
         var full = host + score + " " + this.controller.getOpponentName();
+
         this.hostWidth = metrics.stringWidth(host);
         this.scoreWidth = metrics.stringWidth(score);
         this.offset = (Main.FRAME_SIZE - metrics.stringWidth(full)) / 2;
@@ -39,7 +41,15 @@ public class GameView extends View<GameController> {
         g.fillRect(this.offset + this.hostWidth, 40, this.scoreWidth, 28);
         g.setColor(Color.WHITE);
         g.drawString(full, this.offset, 60);
-        g.drawString(this.controller.getPoolSize() + " characters left", 32, 512);
+
+        var x = Main.FRAME_SIZE - 50;
+        var y = 76;
+
+        g.translate(x, y);
+        this.drawTile(g, this.controller.getPlaceholder(), false);
+        g.setColor(Color.WHITE);
+        StringUtil.drawCenteredString(g, -24, 44, 72, String.valueOf(this.controller.getPoolSize()));
+        g.translate(-x, -y);
 
         for (var tile : this.controller.getTiles()) {
             var position = this.getTilePosition(tile);
@@ -98,27 +108,24 @@ public class GameView extends View<GameController> {
     @Override
     public List<Widget> getChildren() {
         var list = new ArrayList<Widget>();
+        var deck = this.controller.getDeck();
 
         list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, Console.log("play")));
         list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
         list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, Console.log("resign")));
 
-        var deck = this.controller.getDeck();
         for (var i = 0; i < deck.size(); i++) {
             var character = deck.get(i);
 
-            list.add(new DragWidget(142 + i * 34, 462, 24, 24, (g, hover) -> {
-                g.setColor(hover ? Color.LIGHT_GRAY : Color.WHITE);
-                g.fillRect(0, 0, 24, 24);
-                g.setColor(Colors.DARK_BLUE);
-                g.drawString(character.character, 3, 21);
-                g.setFont(Fonts.SMALL);
-                g.drawString(String.valueOf(character.value), 15, 11);
-                g.setFont(Fonts.NORMAL);
-            }, this::dropTile));
+            list.add(new DragWidget(142 + i * 34, 462, 24, 24, (g, hover) -> this.drawTile(g, character, hover), this::dropTile));
         }
 
         return list;
+    }
+
+    @Override
+    public boolean shouldReinitialize() {
+        return false;
     }
 
     private Pair<Integer, Integer> dropTile(int x, int y) {
@@ -131,6 +138,16 @@ public class GameView extends View<GameController> {
         }
 
         return null;
+    }
+
+    private void drawTile(Graphics2D g, Character character, boolean hover) {
+        g.setColor(hover ? Color.LIGHT_GRAY : Color.WHITE);
+        g.fillRect(0, 0, 24, 24);
+        g.setColor(Colors.DARK_BLUE);
+        g.drawString(character.character, 3, 21);
+        g.setFont(Fonts.SMALL);
+        g.drawString(String.valueOf(character.value), 15, 11);
+        g.setFont(Fonts.NORMAL);
     }
 
     private Pair<Integer, Integer> getTilePosition(Tile tile) {
