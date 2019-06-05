@@ -133,6 +133,10 @@ public class ListWidget<T> extends Widget {
         return this.header.apply(previous, this.items.get(i));
     }
 
+    public int getScroll() {
+        return this.scroll;
+    }
+
     public void setItems(List<T> items) {
         this.items = items;
     }
