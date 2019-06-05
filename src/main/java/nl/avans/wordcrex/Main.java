@@ -148,6 +148,13 @@ public class Main extends JPanel {
         this.particles.removeAll(dead);
 
         var view = this.getView();
+
+        if (view.shouldReinitialize()) {
+            this.openView(view);
+
+            return;
+        }
+
         var requester = view.getChildren().stream()
             .filter(Widget::requestingFocus)
             .findFirst()

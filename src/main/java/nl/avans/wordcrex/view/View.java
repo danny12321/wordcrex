@@ -12,6 +12,10 @@ public abstract class View<T extends Controller> extends Widget {
         this.controller = controller;
     }
 
+    public boolean shouldReinitialize() {
+        return false;
+    }
+
     public void tabFocus(boolean reverse) {
         var children = this.getChildren().stream()
             .filter(Widget::canFocus)

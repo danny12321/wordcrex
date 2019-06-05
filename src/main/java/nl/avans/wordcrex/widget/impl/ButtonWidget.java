@@ -6,7 +6,9 @@ import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ButtonWidget extends Widget {
