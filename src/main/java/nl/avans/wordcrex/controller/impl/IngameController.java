@@ -39,17 +39,22 @@ public class IngameController extends GameController {
     }
 
     @Override
+    public int getTotalRounds() {
+        return this.getModel().rounds.size();
+    }
+
+    @Override
     public List<Tile> getTiles() {
         return this.getModel().tiles;
     }
 
     @Override
-    public boolean previousRound() {
+    public void previousRound() {
         throw new RuntimeException();
     }
 
     @Override
-    public boolean nextRound() {
+    public void nextRound() {
         throw new RuntimeException();
     }
 

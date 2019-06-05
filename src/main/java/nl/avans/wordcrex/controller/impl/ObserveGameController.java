@@ -47,28 +47,27 @@ public class ObserveGameController extends GameController {
     }
 
     @Override
+    public int getTotalRounds() {
+        return this.game.rounds.size();
+    }
+
+    @Override
     public List<Tile> getTiles() {
         return this.game.tiles;
     }
 
     @Override
-    public boolean previousRound() {
+    public void previousRound() {
         if (this.round > 0) {
             this.round--;
         }
-
-        return this.round != 0;
     }
 
     @Override
-    public boolean nextRound() {
-        var total = this.game.rounds.size();
-
-        if (this.round < total - 1) {
+    public void nextRound() {
+        if (this.round < this.getTotalRounds() - 1) {
             this.round++;
         }
-
-        return this.round != total - 1;
     }
 
     @Override

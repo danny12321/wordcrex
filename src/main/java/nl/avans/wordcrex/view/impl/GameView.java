@@ -19,12 +19,22 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class GameView extends View<GameController> {
+    private final ButtonWidget previousButton = new ButtonWidget("<", 22, 403, 32, 32, () -> {
+        this.controller.previousRound();
+        this.repaint = true;
+    });
+    private final ButtonWidget nextButton = new ButtonWidget(">", 456, 403, 32, 32, () -> {
+        this.controller.nextRound();
+        this.repaint = true;
+    });
+
     private boolean hover;
     private int offset;
     private int hostWidth;
     private int scoreWidth;
     private List<Played> played = new ArrayList<>();
     private int score = 0;
+    private boolean repaint = false;
 
     public GameView(GameController controller) {
         super(controller);
@@ -55,6 +65,9 @@ public class GameView extends View<GameController> {
             g.setColor(Color.WHITE);
             StringUtil.drawCenteredString(g, -24, 44, 72, String.valueOf(this.controller.getPoolSize()));
             g.translate(-x, -y);
+        } else {
+            StringUtil.drawCenteredString(g, 436, 140, 72, "RND");
+            StringUtil.drawCenteredString(g, 436, 160, 72, String.valueOf(this.controller.getRound().round));
         }
 
         for (var tile : this.controller.getTiles()) {
@@ -125,6 +138,8 @@ public class GameView extends View<GameController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        this.previousButton.setEnabled(this.controller.getRound().round > 1);
+        this.nextButton.setEnabled(this.controller.getRound().round < this.controller.getTotalRounds());
     }
 
     @Override
@@ -151,8 +166,8 @@ public class GameView extends View<GameController> {
             list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
             list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, Console.log("resign")));
         } else {
-            list.add(new ButtonWidget("<", 22, 200, 32, 32, this.controller::previousRound));
-            list.add(new ButtonWidget(">", 22, 248, 32, 32, this.controller::nextRound));
+            list.add(this.previousButton);
+            list.add(this.nextButton);
         }
 
         for (var i = 0; i < deck.size(); i++) {
@@ -166,7 +181,10 @@ public class GameView extends View<GameController> {
 
     @Override
     public boolean shouldReinitialize() {
-        return false;
+        var p = this.repaint;
+        this.repaint = false;
+
+        return p;
     }
 
     private Pair<Integer, Integer> dropTile(int x, int y) {

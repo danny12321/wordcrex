@@ -30,11 +30,13 @@ public abstract class GameController extends Controller<Game> {
 
     public abstract Round getRound();
 
+    public abstract int getTotalRounds();
+
     public abstract List<Tile> getTiles();
 
-    public abstract boolean previousRound();
+    public abstract void previousRound();
 
-    public abstract boolean nextRound();
+    public abstract void nextRound();
 
     public abstract int getPoolSize();
 
