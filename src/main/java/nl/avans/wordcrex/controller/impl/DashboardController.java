@@ -28,15 +28,33 @@ public class DashboardController extends Controller<User> {
     }
 
     public boolean isSelectable(Game game) {
-        return game.state == GameState.PLAYING || (game.state == GameState.PENDING && game.inviteState == InviteState.PENDING && this.isCurrentUser(game.opponent));
+        return game.state != GameState.PENDING || (game.inviteState == InviteState.PENDING && this.isCurrentUser(game.opponent));
     }
 
     public String getLabel(Game game) {
         if (game.state == GameState.PENDING) {
             return "UITDAGINGEN";
+        } else if (game.state == GameState.FINISHED) {
+            return "AFGELOPEN";
         } else {
             return "SPELLEN";
         }
+    }
+
+    public String getBigExtra(Game game) {
+        return game.state == GameState.PENDING ? this.isCurrentUser(game.host) ? "Naar " : "Van " : "";
+    }
+
+    public String getSmallExtra(Game game) {
+        if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED || (game.state == GameState.PLAYING && game.getLastRound() == null)) {
+            return "Wachten op bevestiging - ";
+        } else if (game.state == GameState.PLAYING) {
+            return (this.isCurrentUser(game.host) == (game.getLastRound().hostTurn == null)) || (this.isCurrentUser(game.opponent) == (game.getLastRound().opponentTurn == null)) ? "Jouw beurt - " : "Hun beurt - ";
+        } else if (game.state == GameState.FINISHED || game.state == GameState.RESIGNED) {
+            return game.winner.equals(this.getModel().username) ? "Je hebt gewonnen - " : "Je hebt verloren - ";
+        }
+
+        return "";
     }
 
     public List<Game> getGames() {
@@ -52,7 +70,7 @@ public class DashboardController extends Controller<User> {
     }
 
     public void navigateGame(int id) {
-        this.main.openController(GameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
+        this.main.openController(IngameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == id));
     }
 
     public void navigateInvite() {
