@@ -676,7 +676,6 @@ public class Game implements Pollable<Game> {
         }
         if(this.getLastRound().hostTurn != null){
             if(this.getLastRound().hostTurn.action == TurnAction.RESIGNED){
-                System.out.println("test2");
                 var resigned = TurnAction.RESIGNED.action;
                 this.database.update(
                     "UPDATE game g SET g.game_state = ?, g.username_winner = ? where game_id = ?",
@@ -691,7 +690,6 @@ public class Game implements Pollable<Game> {
 
         } else if(this.getLastRound().opponentTurn != null){
             if(this.getLastRound().opponentTurn.action == TurnAction.RESIGNED){
-                System.out.println("test2");
                 var resigned = TurnAction.RESIGNED.action;
                 this.database.update(
                         "UPDATE game g SET g.game_state = ?, g.username_winner = ? where game_id = ?",
@@ -704,6 +702,38 @@ public class Game implements Pollable<Game> {
                 return;
             }
         } if(this.getLastRound().opponentTurn!= null || this.getLastRound().hostTurn!= null){
+            if(this.getLastRound().opponentTurn!= null){
+                if(this.getScore(played) <= this.getLastRound().opponentTurn.score){
+                    var values = new ArrayList<Played>();
+
+                    this.database.select("select b.letter_id, b.tile_x, b.tile_y from boardplayer1 b where game_id = ? AND turn_id = ?",
+                            (statement) -> {
+                                statement.setInt(1, this.id);
+                                statement.setInt(2, this.rounds.size());
+                            },
+                            (result) -> {
+                                var id = result.getString("letter_id");
+                                var character = this.pool.keySet().stream()
+                                        .filter((c) -> String.valueOf(c.id).equals(id))
+                                        .findFirst()
+                                        .orElseThrow();
+                                var x = Integer.parseInt(result.getString("tile_x"));
+                                var y = Integer.parseInt(result.getString("tile_y"));
+
+                                values.add(new Played(character, x, y));
+                            }
+                    );
+
+                    
+                    /*this.database.insert(
+                            "INSERT INTO turnboardletter (letter_id, game_id, turn_id, tile_x, tile_y)"
+
+                    );*/
+                } else {
+
+                }
+            }
+
             startNewRound();
         }
     }
