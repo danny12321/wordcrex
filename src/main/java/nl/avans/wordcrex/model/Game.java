@@ -554,7 +554,6 @@ public class Game implements Pollable<Game> {
     }
 
     public void playTurn(String username, TurnAction action, List<Played> played){
-        System.out.println("test");
         var ref = new Object() {
             String username1;
             String username2;
@@ -571,11 +570,13 @@ public class Game implements Pollable<Game> {
         if(action == TurnAction.PLAYED){
             if(username.equals(ref.username1)){
                 this.database.insert(
-                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'play')",
+                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, ?, ?)",
                         (statement) -> {
                             statement.setInt(1, this.id);
                             statement.setInt(2, this.rounds.size());
                             statement.setString(3, username);
+                            statement.setInt(4, getScore(played));
+                            statement.setString(5, TurnAction.PLAYED.action);
                         }
                 );
                 var values = new ArrayList<String>();
@@ -597,20 +598,32 @@ public class Game implements Pollable<Game> {
                             }
                         }
                 );
+                if(this.getLastRound().opponentTurn!= null){
+                    if(this.getScore(played) == this.getLastRound().opponentScore){
+                        this.database.update("UPDATE turnplayer2 T SET T.bonus = 5 WHERE T.game_id = ? AND T.turn_id = ?",
+                                (statement) -> {
+                                    statement.setInt(1, this.id);
+                                    statement.setInt(2, this.rounds.size());
+                                }
+                        );
+                    }
+                }
+
             } else if (username.equals(ref.username2)){
                 this.database.insert(
-                        "INSERT INTO turnplayer2 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'play')",
+                        "INSERT INTO turnplayer2 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, ?, ?)",
                         (statement) -> {
                             statement.setInt(1, this.id);
                             statement.setInt(2, this.rounds.size());
                             statement.setString(3, username);
+                            statement.setInt(4, getScore(played));
+                            statement.setString(5, TurnAction.PLAYED.action);
                         }
                 );
                 var values = new ArrayList<String>();
                 for (int i = 0; i < played.size(); i++) {
                     values.add("(?, ?, ?, ?, ?, ?)");
                 }
-                System.out.println("test");
                 this.database.insert(
                         "INSERT INTO boardplayer2 (game_id, username, turn_id, letter_id, tile_x, tile_y) VALUES " + String.join(", ", values) ,
                 (statement) -> {
@@ -625,27 +638,43 @@ public class Game implements Pollable<Game> {
                     }
                 }
                 );
+                if(this.getLastRound().hostTurn != null){
+                    if(this.getScore(played) == this.getLastRound().hostTurn.score){
+                        this.database.update("UPDATE turnplayer1 T SET T.bonus = 5 WHERE T.game_id = ? AND T.turn_id = ?",
+                                (statement) -> {
+                                    statement.setInt(1, this.id);
+                                    statement.setInt(2, this.rounds.size());
+                                }
+                        );
+                    }
+                }
             }
         } else if (action == TurnAction.PASSED) {
             if(username.equals(ref.username1)){
                 this.database.insert(
-                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'pass')",
+                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, ?)",
                         (statement) -> {
                             statement.setInt(1, this.id);
                             statement.setInt(2, this.rounds.size());
                             statement.setString(3, username);
+                            statement.setString(4, TurnAction.PASSED.action);
                         }
                 );
+
             } else if (username.equals(ref.username2)){
                 this.database.insert(
-                        "INSERT INTO turnplayer2 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'pass')",
+                        "INSERT INTO turnplayer2 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, ?)",
                         (statement) -> {
                             statement.setInt(1, this.id);
                             statement.setInt(2, this.rounds.size());
                             statement.setString(3, username);
+                            statement.setString(4, TurnAction.PASSED.action);
                         }
                 );
             }
+        }
+        if(this.getLastRound().opponentTurn!= null || this.getLastRound().hostTurn!= null){
+            startNewRound();
         }
     }
 
