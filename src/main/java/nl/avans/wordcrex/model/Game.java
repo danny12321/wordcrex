@@ -426,7 +426,6 @@ public class Game implements Pollable<Game> {
             var builder = new StringBuilder();
             var playCount = 0;
             var surrounded = false;
-            var order = new ArrayList<Boolean>();
 
             for (var x = 1; x <= size; x++) {
                 var pair = coords.apply(x, y);
@@ -462,13 +461,11 @@ public class Game implements Pollable<Game> {
                     hasCurrent = true;
                     builder.append(current.letter.character.character);
                     tempScore += current.letter.character.value;
-                    order.add(false);
                 } else if (play != null) {
                     hasPlay = true;
                     builder.append(play.letter.character.character);
                     tempScore += (play.letter.character.value * letterMultiplier);
                     playCount++;
-                    order.add(true);
 
                     if (x == center && y == center) {
                         hasCurrent = true;
@@ -493,23 +490,6 @@ public class Game implements Pollable<Game> {
                     }
 
                     if (hasPlay && hasCurrent && builder.length() > 1) {
-                        Boolean last = null;
-                        var found = false;
-
-                        for (var b : order) {
-                            if (b != last) {
-                                if (b && found) {
-                                    return null;
-                                }
-
-                                last = b;
-
-                                if (b) {
-                                    found = true;
-                                }
-                            }
-                        }
-
                         words.add(builder.toString());
 
                         for (var multiplier : multipliers) {
@@ -530,7 +510,6 @@ public class Game implements Pollable<Game> {
                     multipliers.clear();
                     playCount = 0;
                     surrounded = false;
-                    order.clear();
                 }
             }
         }
