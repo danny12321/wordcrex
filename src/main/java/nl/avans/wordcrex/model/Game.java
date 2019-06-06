@@ -473,7 +473,6 @@ public class Game implements Pollable<Game> {
                     tempScore = 0;
                     multipliers.clear();
                     playCount = 0;
-                    surrounded = false;
                 }
             }
         }
