@@ -40,7 +40,11 @@ public abstract class Widget {
     }
 
     public List<Widget> getChildren() {
-        if (this.children == null) {
+        return this.getChildren(false);
+    }
+
+    public List<Widget> getChildren(boolean force) {
+        if (this.children == null || force) {
             this.children = this.children();
         }
 
