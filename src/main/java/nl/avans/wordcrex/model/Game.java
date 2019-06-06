@@ -381,18 +381,18 @@ public class Game implements Pollable<Game> {
         var center = (int) Math.ceil(size / 2);
         var score = 0;
         var words = new ArrayList<String>();
+        var playFound = false;
 
         for (var y = 1; y <= size; y++) {
-            var flag = false;
-            var flag2 = false;
-            var temp = 0;
-            var temp2 = new ArrayList<Integer>();
+            var hasPlay = false;
+            var hasCurrent = false;
+            var tempScore = 0;
+            var multipliers = new ArrayList<Integer>();
             var builder = new StringBuilder();
-            var count = 0;
+            var playCount = 0;
 
             for (var x = 1; x <= size; x++) {
                 var pair = coords.apply(x, y);
-
                 var tile = this.getTile(pair.a, pair.b);
 
                 if (tile == null) {
@@ -414,58 +414,61 @@ public class Game implements Pollable<Game> {
                         letterMultiplier = 6;
                         break;
                     case "3W":
-                        temp2.add(3);
+                        multipliers.add(3);
                         break;
                     case "4W":
-                        temp2.add(4);
+                        multipliers.add(4);
                         break;
                 }
 
                 if (current != null) {
-                    flag2 = true;
+                    hasCurrent = true;
                     builder.append(current.letter.character.character);
-                    temp += (current.letter.character.value * letterMultiplier);
+                    tempScore += (current.letter.character.value * letterMultiplier);
                 } else if (play != null) {
-                    flag = true;
+                    hasPlay = true;
                     builder.append(play.letter.character.character);
-                    temp += (play.letter.character.value * letterMultiplier);
-                    count++;
+                    tempScore += (play.letter.character.value * letterMultiplier);
+                    playCount++;
 
                     if (x == center && y == center) {
-                        flag2 = true;
-                        temp2.add(2);
+                        hasCurrent = true;
+                        multipliers.add(2);
                     }
 
-                    if (!flag2) {
+                    if (!hasCurrent) {
                         for (var side : TileSide.values()) {
                             if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
-                                flag2 = true;
+                                hasCurrent = true;
                             }
                         }
                     }
                 } else {
-                    if (flag && flag2 && builder.length() > 1) {
+                    if (hasPlay && hasCurrent && builder.length() > 1) {
                         words.add(builder.toString());
+                        playFound = true;
 
-                        for (var multiplier : temp2) {
-                            temp *= multiplier;
+                        for (var multiplier : multipliers) {
+                            tempScore *= multiplier;
                         }
 
-                        score += temp;
+                        score += tempScore;
 
-                        if (count == 7) {
+                        if (playCount == 7) {
                             extra = 100;
                         }
-                    } else if (flag && !flag2) {
+                    }
+
+                    if (hasPlay && playFound) {
                         return null;
                     }
 
-                    flag = false;
-                    flag2 = false;
+                    hasPlay = false;
+                    hasCurrent = false;
                     builder.setLength(0);
-                    temp = 0;
-                    temp2.clear();
-                    count = 0;
+                    tempScore = 0;
+                    multipliers.clear();
+                    playCount = 0;
                 }
             }
         }
