@@ -364,6 +364,10 @@ public class Game implements Pollable<Game> {
         words.addAll(horizontal.a);
         words.addAll(vertical.a);
 
+        if (this.dictionary == null) {
+            return score;
+        }
+
         for (var word : words) {
             if (!this.dictionary.isWord(word)) {
                 return -1;
