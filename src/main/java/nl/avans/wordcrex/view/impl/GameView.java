@@ -158,6 +158,9 @@ public class GameView extends View<GameController> {
             list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, this::playTurn));
             list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
             list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
+            list.add(new ButtonWidget("r", 22, 220, 32, 32, this::clear));
+            list.add(new ButtonWidget("s", 22, 462, 32, 32, this::shuffle));
+
         } else {
             list.add(this.previousButton);
             list.add(this.nextButton);
@@ -265,5 +268,14 @@ public class GameView extends View<GameController> {
             this.controller.resign();
         });
 
+    }
+
+    private void clear(){
+        this.played.clear();
+        this.repaint = true;
+    }
+
+    private void shuffle(){
+        this.repaint = true;
     }
 }
