@@ -722,13 +722,65 @@ public class Game implements Pollable<Game> {
                                 values.add(new Played(character, x, y));
                             }
                     );
+                    var plek = new ArrayList<String>();
+                    for (int i = 0; i < values.size(); i++) {
+                        plek.add("(?, ?, ?, ?, ?)");
+                    }
 
-/*
                     this.database.insert(
-                            "INSERT INTO turnboardletter (letter_id, game_id, turn_id, tile_x, tile_y)"
+                            "INSERT INTO turnboardletter (letter_id, game_id, turn_id, tile_x, tile_y) VALUES " + String.join(", ", plek) ,
+                            (statement) -> {
+                                var offset = 0;
+                                for(int i =0; i < values.size(); i++) {
+                                    statement.setInt(++offset, values.get(i).letter.id);
+                                    statement.setInt(++offset, this.id);
+                                    statement.setInt(++offset, this.rounds.size());
+                                    statement.setInt(++offset, values.get(i).x);
+                                    statement.setInt(++offset, values.get(i).y);
+                                }
+                            }
 
-                    );*/
+                    );
                 } else {
+                    if(this.getScore(played) <= this.getLastRound().opponentTurn.score){
+                        var values = new ArrayList<Played>();
+
+                        this.database.select("select b.letter_id, b.tile_x, b.tile_y from boardplayer2 b where game_id = ? AND turn_id = ?",
+                                (statement) -> {
+                                    statement.setInt(1, this.id);
+                                    statement.setInt(2, this.rounds.size());
+                                },
+                                (result) -> {
+                                    var id = result.getString("letter_id");
+                                    var character = this.pool.keySet().stream()
+                                            .filter((c) -> String.valueOf(c.id).equals(id))
+                                            .findFirst()
+                                            .orElseThrow();
+                                    var x = Integer.parseInt(result.getString("tile_x"));
+                                    var y = Integer.parseInt(result.getString("tile_y"));
+
+                                    values.add(new Played(character, x, y));
+                                }
+                        );
+                        var plek = new ArrayList<String>();
+                        for (int i = 0; i < values.size(); i++) {
+                            plek.add("(?, ?, ?, ?, ?)");
+                        }
+
+                        this.database.insert(
+                                "INSERT INTO turnboardletter (letter_id, game_id, turn_id, tile_x, tile_y) VALUES " + String.join(", ", plek) ,
+                                (statement) -> {
+                                    var offset = 0;
+                                    for(int i =0; i < values.size(); i++) {
+                                        statement.setInt(++offset, values.get(i).letter.id);
+                                        statement.setInt(++offset, this.id);
+                                        statement.setInt(++offset, this.rounds.size());
+                                        statement.setInt(++offset, values.get(i).x);
+                                        statement.setInt(++offset, values.get(i).y);
+                                    }
+                                }
+
+                        );
 
                 }
             }
