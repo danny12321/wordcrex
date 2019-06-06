@@ -568,7 +568,6 @@ public class Game implements Pollable<Game> {
         );
 
         if(action == TurnAction.PLAYED){
-            System.out.println(TurnAction.RESIGNED.action);
             if(username.equals(ref.username1)){
                 this.database.insert(
                         "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, ?, ?)",
@@ -724,8 +723,8 @@ public class Game implements Pollable<Game> {
                             }
                     );
 
-                    
-                    /*this.database.insert(
+/*
+                    this.database.insert(
                             "INSERT INTO turnboardletter (letter_id, game_id, turn_id, tile_x, tile_y)"
 
                     );*/
