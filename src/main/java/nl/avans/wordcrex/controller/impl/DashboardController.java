@@ -28,7 +28,7 @@ public class DashboardController extends Controller<User> {
     }
 
     public boolean isSelectable(Game game) {
-        return game.state != GameState.PENDING || (game.inviteState == InviteState.PENDING && this.isCurrentUser(game.opponent));
+        return game.state != GameState.PENDING || (game.inviteState == InviteState.PENDING && this.isCurrentUser(game.opponent)) && game.getLastRound() != null;
     }
 
     public String getLabel(Game game) {

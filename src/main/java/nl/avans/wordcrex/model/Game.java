@@ -316,10 +316,17 @@ public class Game implements Pollable<Game> {
                 var highest = last.hostTurn.score + last.hostTurn.bonus > last.opponentTurn.score + last.opponentTurn.bonus ? last.hostTurn : last.opponentTurn;
 
                 for (var r : last.deck) {
-                    if (highest.played.stream()
-                        .filter((p) -> p.letter.id == r.id)
-                        .findAny()
-                        .orElse(null) == null) {
+                    var found = false;
+
+                    for (var p : highest.played) {
+                        if (p.letter.id == r.id) {
+                            found = true;
+
+                            break;
+                        }
+                    }
+
+                    if (!found) {
                         deck.add(r);
                     }
                 }
@@ -449,7 +456,7 @@ public class Game implements Pollable<Game> {
                 if (current != null) {
                     hasCurrent = true;
                     builder.append(current.letter.character.character);
-                    tempScore += (current.letter.character.value * letterMultiplier);
+                    tempScore += current.letter.character.value;
                     order.add(false);
                 } else if (play != null) {
                     hasPlay = true;
