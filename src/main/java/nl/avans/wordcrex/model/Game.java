@@ -333,7 +333,7 @@ public class Game implements Pollable<Game> {
             var j = random.nextInt(pool.size());
 
             while (added.indexOf(j) != -1) {
-                j = random.nextInt(pool.size())
+                j = random.nextInt(pool.size());
             }
 
             added.add(j);
