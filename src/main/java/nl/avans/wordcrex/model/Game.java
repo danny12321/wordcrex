@@ -700,7 +700,7 @@ public class Game implements Pollable<Game> {
                 );
                 return;
             }
-        } else if(this.getLastRound().opponentTurn!= null || this.getLastRound().hostTurn!= null){
+        } if(this.getLastRound().opponentTurn!= null || this.getLastRound().hostTurn!= null){
             startNewRound();
         }
     }
