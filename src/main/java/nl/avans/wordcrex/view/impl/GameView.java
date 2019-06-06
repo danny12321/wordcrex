@@ -39,6 +39,7 @@ public class GameView extends View<GameController> {
     private int score = 0;
     private boolean repaint = false;
     private boolean shuffle;
+    private ArrayList<Letter> shuffledDeck;
 
     public GameView(GameController controller) {
         super(controller);
@@ -156,7 +157,12 @@ public class GameView extends View<GameController> {
         var deck =  new ArrayList<>(this.controller.getRound().deck);
         if(this.shuffle){
             Collections.shuffle(deck);
+            this.shuffledDeck = deck;
             shuffle = false;
+        } else {
+            if(this.shuffledDeck.size() > 0){
+                deck = this.shuffledDeck;
+            }
         }
 
 
@@ -164,8 +170,8 @@ public class GameView extends View<GameController> {
             list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, this::playTurn));
             list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
             list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
-            list.add(new ButtonWidget("r", 22, 220, 32, 32, this::clear));
-            list.add(new ButtonWidget("s", 22, 462, 32, 32, this::shuffle));
+            list.add(new ButtonWidget("V", 22, 220, 32, 32, this::clear));
+            list.add(new ButtonWidget("S", 22, 462, 32, 32, this::shuffle));
 
         } else {
             list.add(this.previousButton);
