@@ -384,6 +384,7 @@ public class Game implements Pollable<Game> {
         for (var y = 1; y <= size; y++) {
             var hasPlay = false;
             var hasCurrent = false;
+            var hasCenter = false;
             var tempScore = 0;
             var multipliers = new ArrayList<Integer>();
             var builder = new StringBuilder();
@@ -425,19 +426,23 @@ public class Game implements Pollable<Game> {
                     builder.append(current.letter.character.character);
                     tempScore += (current.letter.character.value * letterMultiplier);
                 } else if (play != null) {
+                    if (hasPlay && hasCurrent) {
+                        return null;
+                    }
+
                     hasPlay = true;
                     builder.append(play.letter.character.character);
                     tempScore += (play.letter.character.value * letterMultiplier);
                     playCount++;
 
                     if (x == center && y == center) {
-                        hasCurrent = true;
+                        hasCenter = true;
                         multipliers.add(2);
                     }
 
                     for (var side : TileSide.values()) {
                         if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
-                            hasCurrent = true;
+                            hasCenter = true;
                         }
                         if (this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
                             surrounded = true;
@@ -452,7 +457,7 @@ public class Game implements Pollable<Game> {
                         playFound = true;
                     }
 
-                    if (hasPlay && hasCurrent && builder.length() > 1) {
+                    if (hasPlay && (hasCurrent || hasCenter) && builder.length() > 1) {
                         words.add(builder.toString());
 
                         for (var multiplier : multipliers) {
@@ -468,6 +473,7 @@ public class Game implements Pollable<Game> {
 
                     hasPlay = false;
                     hasCurrent = false;
+                    hasCenter = false;
                     builder.setLength(0);
                     tempScore = 0;
                     multipliers.clear();
