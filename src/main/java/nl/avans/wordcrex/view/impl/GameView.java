@@ -161,6 +161,7 @@ public class GameView extends View<GameController> {
             this.lastRound = this.controller.getRound().round;
 
             this.repaint = true;
+            this.score = 0;
         }
 
         if (this.controller.canPlay()) {
