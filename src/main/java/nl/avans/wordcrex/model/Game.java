@@ -685,8 +685,8 @@ public class Game implements Pollable<Game> {
                 return;
             }
         } if(this.getLastRound().opponentTurn!= null || this.getLastRound().hostTurn!= null){
-            if(this.getLastRound().opponentTurn!= null){
-                if(this.getScore(played) <= this.getLastRound().opponentTurn.score){
+            if(this.getLastRound().opponentTurn!= null) {
+                if (this.getScore(played) <= this.getLastRound().opponentTurn.score) {
                     var values = new ArrayList<Played>();
 
                     this.database.select("select b.letter_id, b.tile_x, b.tile_y from boardplayer1 b where game_id = ? AND turn_id = ?",
@@ -712,10 +712,10 @@ public class Game implements Pollable<Game> {
                     }
 
                     this.database.insert(
-                            "INSERT INTO turnboardletter (letter_id, game_id, turn_id, tile_x, tile_y) VALUES " + String.join(", ", plek) ,
+                            "INSERT INTO turnboardletter (letter_id, game_id, turn_id, tile_x, tile_y) VALUES " + String.join(", ", plek),
                             (statement) -> {
                                 var offset = 0;
-                                for(int i =0; i < values.size(); i++) {
+                                for (int i = 0; i < values.size(); i++) {
                                     statement.setInt(++offset, values.get(i).letter.id);
                                     statement.setInt(++offset, this.id);
                                     statement.setInt(++offset, this.rounds.size());
@@ -725,7 +725,8 @@ public class Game implements Pollable<Game> {
                             }
 
                     );
-                } else {
+                }
+            } else {
                     if(this.getScore(played) <= this.getLastRound().opponentTurn.score) {
                         var values = new ArrayList<Played>();
 
@@ -772,7 +773,6 @@ public class Game implements Pollable<Game> {
 
             startNewRound();
         }
-    }
 
     public void resign(String username){
         var ref = new Object() {
