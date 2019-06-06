@@ -145,8 +145,10 @@ public class GameView extends View<GameController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        this.previousButton.setEnabled(this.controller.getRound().round > 1);
-        this.nextButton.setEnabled(this.controller.getRound().round < this.controller.getTotalRounds());
+        if (!this.controller.canPlay()) {
+            this.previousButton.setEnabled(this.controller.getRound().round > 1);
+            this.nextButton.setEnabled(this.controller.getRound().round < this.controller.getTotalRounds());
+        }
     }
 
     @Override

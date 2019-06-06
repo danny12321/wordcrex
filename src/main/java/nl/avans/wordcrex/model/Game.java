@@ -298,7 +298,7 @@ public class Game implements Pollable<Game> {
 
         var pool = new ArrayList<Letter>();
 
-        (this.pool.isEmpty() ? this.getPool() : this.pool).forEach((k, v) -> {
+        this.getPool().forEach((k, v) -> {
             if (v) {
                 pool.add(k);
             }
@@ -309,10 +309,35 @@ public class Game implements Pollable<Game> {
         var size = Math.min(7, pool.size() - 1);
         var random = new Random();
 
-        for (int i = 0; i < size; i++) {
-            var next = random.nextInt(pool.size());
+        if (!this.rounds.isEmpty()) {
+            var last = this.getLastRound();
 
-            deck.add(pool.get(next));
+            if (last.hostTurn != null && last.opponentTurn != null) {
+                var highest = last.hostTurn.score + last.hostTurn.bonus > last.opponentTurn.score + last.opponentTurn.bonus ? last.hostTurn : last.opponentTurn;
+
+                for (var r : last.deck) {
+                    if (highest.played.stream()
+                        .filter((p) -> p.letter.id == r.id)
+                        .findAny()
+                        .orElse(null) == null) {
+                        deck.add(r);
+                    }
+                }
+            }
+        }
+
+        var add = size - deck.size();
+        var added = new ArrayList<Integer>();
+
+        for (int i = 0; i < add; i++) {
+            var j = random.nextInt(pool.size());
+
+            while (added.indexOf(j) != -1) {
+                j = random.nextInt(pool.size())
+            }
+
+            added.add(j);
+            deck.add(pool.get(j));
             values.add("(?, ?, ?)");
         }
 
