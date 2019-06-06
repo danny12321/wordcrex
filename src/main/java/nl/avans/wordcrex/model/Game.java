@@ -673,7 +673,34 @@ public class Game implements Pollable<Game> {
                 );
             }
         }
-        if(this.getLastRound().opponentTurn!= null || this.getLastRound().hostTurn!= null){
+        if(this.getLastRound().hostTurn != null){
+            if(this.getLastRound().hostTurn.action == TurnAction.RESIGNED){
+                var resigned = TurnAction.RESIGNED.action;
+                this.database.update(
+                    "UPDATE game g SET g.game_state = ?, g.username_winner = ? where game_id = ?",
+                    (statement) -> {
+                        statement.setString(1, resigned);
+                        statement.setString(2, this.opponent);
+                        statement.setInt(3, this.id);
+                    }
+                );
+                return;
+            }
+
+        } else if(this.getLastRound().opponentTurn != null){
+            if(this.getLastRound().opponentTurn.action == TurnAction.RESIGNED){
+                var resigned = TurnAction.RESIGNED.action;
+                this.database.update(
+                        "UPDATE game g SET g.game_state = ?, g.username_winner = ? where game_id = ?",
+                        (statement) -> {
+                            statement.setString(1, resigned);
+                            statement.setString(2, this.host);
+                            statement.setInt(3, this.id);
+                        }
+                );
+                return;
+            }
+        } else if(this.getLastRound().opponentTurn!= null || this.getLastRound().hostTurn!= null){
             startNewRound();
         }
     }
@@ -683,10 +710,52 @@ public class Game implements Pollable<Game> {
             String username1;
             String username2;
         };
+        this.database.select(
+                "SELECT username_player1, username_player2 from game WHERE game_id = ?",
+                (statement) -> statement.setInt(1, this.id),
+                (result) -> {
+                    ref.username1 = result.getString("username_player1");
+                    ref.username2 = result.getString("username_player2");
+                }
+        );
         if(username.equals(ref.username1)){
-
+            this.database.insert(
+                    "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, ?)",
+                    (statement) -> {
+                        statement.setInt(1, this.id);
+                        statement.setInt(2, this.rounds.size());
+                        statement.setString(3, username);
+                        statement.setString(4, TurnAction.RESIGNED.action);
+                    }
+            );
+            if(this.getLastRound().opponentTurn.action == TurnAction.RESIGNED){
+                this.database.update("UPDATE game SET game_state = ?, username_winner = ? WHERE game_id = ?",
+                        (statement) -> {
+                            statement.setString(1, GameState.FINISHED.state);
+                            statement.setString(2, this.host);
+                            statement.setInt(3, this.id);
+                        });
+            }
         } else if (username.equals(ref.username2)){
-
+            this.database.insert(
+                    "INSERT INTO turnplayer2 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, ?)",
+                    (statement) -> {
+                        statement.setInt(1, this.id);
+                        statement.setInt(2, this.rounds.size());
+                        statement.setString(3, username);
+                        statement.setString(4, TurnAction.RESIGNED.action);
+                    }
+            );
+            if(this.getLastRound().hostTurn != null) {
+                if (this.getLastRound().hostTurn.action == TurnAction.RESIGNED) {
+                    this.database.update("UPDATE game SET game_state = ?, username_winner = ? WHERE game_id = ?",
+                            (statement) -> {
+                                statement.setString(1, GameState.FINISHED.state);
+                                statement.setString(2, this.host);
+                                statement.setInt(3, this.id);
+                            });
+                }
+            }
         }
 
     }
