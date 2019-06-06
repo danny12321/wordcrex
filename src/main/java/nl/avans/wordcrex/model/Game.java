@@ -467,7 +467,7 @@ public class Game implements Pollable<Game> {
 
                     if (x == center && y == center) {
                         hasCurrent = true;
-                        multipliers.add(2);
+                        multipliers.add(3);
                     }
 
                     for (var side : TileSide.values()) {
