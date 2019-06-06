@@ -203,7 +203,7 @@ public class User implements Pollable<User> {
     }
 
     public List<Pair<String, Boolean>> findOpponents(String username) {
-        if (!this.hasRole(UserRole.PLAYER) || username.isEmpty()) {
+        if (!this.hasRole(UserRole.PLAYER)) {
             return List.of();
         }
 

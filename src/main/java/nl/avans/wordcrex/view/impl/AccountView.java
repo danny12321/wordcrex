@@ -29,7 +29,7 @@ public class AccountView extends View<AccountController> {
         new ButtonWidget("Verander", this.gap * 2 + this.circle, Main.TASKBAR_SIZE + (this.section * 2) + this.header + (this.circle * 3) + 4 * this.gap, 96, 32, () -> this.controller.toggleRole(UserRole.ADMINISTRATOR))
     );
 
-    private final InputWidget input = new InputWidget("Verander Wachtwoord", this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, Main.FRAME_SIZE - 64 - this.gap * 3, 32, this.controller::setPassword);
+    private final InputWidget input = new InputWidget("Verander Wachtwoord", '*', this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, Main.FRAME_SIZE - 64 - this.gap * 3, 32, this.controller::setPassword);
     private final ButtonWidget changeButton = new ButtonWidget("+", Main.FRAME_SIZE - 64 - this.gap, Main.TASKBAR_SIZE + this.section + this.section / 2, 64, 32, this::changePassword);
 
     public AccountView(AccountController controller) {

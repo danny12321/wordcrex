@@ -34,6 +34,11 @@ public class IngameController extends GameController {
     }
 
     @Override
+    public boolean isHost() {
+        return this.getRoot().username.equals(this.getHostName());
+    }
+
+    @Override
     public Round getRound() {
         return this.getModel().getLastRound();
     }
@@ -91,16 +96,18 @@ public class IngameController extends GameController {
     }
 
     @Override
-    public void play(List<Played> played){
-        if(played.isEmpty()){
+    public void play(List<Played> played) {
+        if (played.isEmpty()) {
             this.getModel().playTurn(this.getRoot().username, TurnAction.PASSED, played);
+
             return;
         }
-            this.getModel().playTurn(this.getRoot().username,TurnAction.PLAYED, played);
+
+        this.getModel().playTurn(this.getRoot().username, TurnAction.PLAYED, played);
     }
 
     @Override
-    public void resign(){
+    public void resign() {
         this.getModel().resign(this.getRoot().username);
     }
 }

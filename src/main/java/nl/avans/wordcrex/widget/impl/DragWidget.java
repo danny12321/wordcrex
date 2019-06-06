@@ -17,7 +17,6 @@ public class DragWidget extends Widget {
     public final int initialY;
     public final int width;
     public final int height;
-    public final boolean enabled;
 
     private final BiConsumer<Graphics2D, Boolean> draw;
     private final BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute;
@@ -31,6 +30,7 @@ public class DragWidget extends Widget {
     private int offsetY;
     private boolean hover;
     private boolean dragging;
+    private boolean enabled;
 
     public DragWidget(int x, int y, int width, int height, boolean enabled, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute, BiFunction<Integer, Integer, Pair<Integer, Integer>> relative, BiFunction<Integer, Integer, Boolean> check, BiConsumer<Pair<Integer, Integer>, Boolean> state) {
         this.x = this.initialX = x;
@@ -120,8 +120,13 @@ public class DragWidget extends Widget {
 
         this.dragging = false;
     }
-    public void setPosition(int x, int y){
+
+    public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

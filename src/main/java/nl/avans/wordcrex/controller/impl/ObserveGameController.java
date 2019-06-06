@@ -55,6 +55,11 @@ public class ObserveGameController extends GameController {
     }
 
     @Override
+    public boolean isHost() {
+        return false;
+    }
+
+    @Override
     public Round getRound() {
         return this.game.rounds.get(this.round);
     }

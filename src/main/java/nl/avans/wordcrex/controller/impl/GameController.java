@@ -28,6 +28,8 @@ public abstract class GameController extends Controller<Game> {
 
     public abstract String getOpponentName();
 
+    public abstract boolean isHost();
+
     public abstract Round getRound();
 
     public abstract int getTotalRounds();

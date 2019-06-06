@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 
 public class GameView extends View<GameController> {
     private final DialogWidget dialog = new DialogWidget();
+    private final ButtonWidget playButton = new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, this::playTurn);
+    private final ButtonWidget resetButton = new ButtonWidget("V", 22, 220, 32, 32, this::clear);
+    private final ButtonWidget shuffleButton = new ButtonWidget("S", 22, 462, 32, 32, this::shuffle);
     private final ButtonWidget previousButton = new ButtonWidget("<", 22, 403, 32, 32, () -> {
         this.controller.previousRound();
         this.repaint = true;
@@ -41,6 +44,9 @@ public class GameView extends View<GameController> {
     private boolean repaint = false;
     private boolean shuffle;
     private ArrayList<Letter> shuffledDeck;
+    private boolean hasPlayed = false;
+    private List<DragWidget> drag;
+    private int lastRound = 0;
 
     public GameView(GameController controller) {
         super(controller);
@@ -147,7 +153,24 @@ public class GameView extends View<GameController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        if (!this.controller.canPlay()) {
+        this.hasPlayed = this.controller.isHost() ? this.controller.getRound().hostTurn != null : this.controller.getRound().opponentTurn != null;
+
+        if (this.lastRound == 0) {
+            this.lastRound = this.controller.getRound().round;
+        } else if (this.lastRound != this.controller.getRound().round) {
+            this.lastRound = this.controller.getRound().round;
+
+            this.repaint = true;
+        }
+
+        if (this.controller.canPlay()) {
+            var enabled = !this.hasPlayed && this.score > 0;
+
+            this.playButton.setEnabled(enabled);
+            this.resetButton.setEnabled(enabled);
+            this.shuffleButton.setEnabled(enabled);
+            this.drag.forEach((d) -> d.setEnabled(!this.hasPlayed));
+        } else {
             this.previousButton.setEnabled(this.controller.getRound().round > 1);
             this.nextButton.setEnabled(this.controller.getRound().round < this.controller.getTotalRounds());
         }
@@ -174,47 +197,58 @@ public class GameView extends View<GameController> {
     @Override
     public List<Widget> children() {
         var list = new ArrayList<Widget>();
-        var deck =  new ArrayList<>(this.controller.getRound().deck);
-        if(this.shuffle){
+        var deck = new ArrayList<>(this.controller.getRound().deck);
+        if (this.shuffle) {
             Collections.shuffle(deck);
             this.shuffledDeck = deck;
-            shuffle = false;
+            this.shuffle = false;
         } else {
-            if (this.shuffledDeck != null){
+            if (this.shuffledDeck != null) {
                 if (this.shuffledDeck.size() > 0) {
                     deck = this.shuffledDeck;
                 }
             }
         }
 
-
         if (this.controller.canPlay()) {
-            list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, this::playTurn));
+            list.add(this.playButton);
             list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
             list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
-            list.add(new ButtonWidget("V", 22, 220, 32, 32, this::clear));
-            list.add(new ButtonWidget("S", 22, 462, 32, 32, this::shuffle));
-
+            list.add(this.resetButton);
+            list.add(this.shuffleButton);
         } else {
             list.add(this.previousButton);
             list.add(this.nextButton);
         }
 
+        this.drag = new ArrayList<>();
+
         for (var i = 0; i < deck.size(); i++) {
             var letter = deck.get(i);
             var drag = new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, letter.character, hover), this::getAbsolutePos, this::getRelativePos, this::canDrop, (pair, active) -> this.changeState(letter, pair.a, pair.b, active));
-            for(Played p : played){
-                if(p.letter.id == letter.id){
-                    var pos = getAbsolutePos(p.x, p.y);
+
+            for (var p : this.played) {
+                if (p.letter.id == letter.id) {
+                    var pos = this.getAbsolutePos(p.x, p.y);
                     drag.setPosition(pos.a, pos.b);
                 }
             }
 
-            list.add(drag);
+            var round = this.controller.isHost() ? this.controller.getRound().hostTurn : this.controller.getRound().opponentTurn;
+
+            if (round != null) {
+                for (var p : round.played) {
+                    if (p.letter.id == letter.id) {
+                        var pos = this.getAbsolutePos(p.x, p.y);
+                        drag.setPosition(pos.a, pos.b);
+                    }
+                }
+            }
+
+            this.drag.add(drag);
         }
 
-
-
+        list.addAll(this.drag);
         list.add(this.dialog);
 
         return list;
@@ -251,7 +285,7 @@ public class GameView extends View<GameController> {
     }
 
     private Pair<Integer, Integer> getAbsolutePos(int x, int y) {
-        var size = Math.sqrt(this.controller.getTiles().size());
+        var size = Math.sqrt(225);
 
         if (x <= 0 || x > size || y <= 0 || y > size) {
             return null;
@@ -303,7 +337,7 @@ public class GameView extends View<GameController> {
 
     }
 
-    private void resign(){
+    private void resign() {
         this.dialog.show("Opgeven?", "JA", "NEE", (positive) -> {
             if (!positive) {
                 return;
@@ -313,12 +347,12 @@ public class GameView extends View<GameController> {
 
     }
 
-    private void clear(){
+    private void clear() {
         this.played.clear();
         this.repaint = true;
     }
 
-    private void shuffle(){
+    private void shuffle() {
         this.shuffle = true;
         this.repaint = true;
     }
