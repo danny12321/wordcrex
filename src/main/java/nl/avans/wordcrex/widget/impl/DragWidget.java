@@ -120,4 +120,8 @@ public class DragWidget extends Widget {
 
         this.dragging = false;
     }
+    public void setPosition(int x, int y){
+        this.x = x;
+        this.y = y;
+    }
 }

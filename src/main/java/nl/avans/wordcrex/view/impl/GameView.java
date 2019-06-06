@@ -15,6 +15,7 @@ import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -38,7 +39,8 @@ public class GameView extends View<GameController> {
     private List<Played> played = new ArrayList<>();
     private int score = 0;
     private boolean repaint = false;
-
+    private boolean shuffle;
+    private ArrayList<Letter> shuffledDeck;
 
     public GameView(GameController controller) {
         super(controller);
@@ -172,12 +174,27 @@ public class GameView extends View<GameController> {
     @Override
     public List<Widget> children() {
         var list = new ArrayList<Widget>();
-        var deck = this.controller.getRound().deck;
+        var deck =  new ArrayList<>(this.controller.getRound().deck);
+        if(this.shuffle){
+            Collections.shuffle(deck);
+            this.shuffledDeck = deck;
+            shuffle = false;
+        } else {
+            if (this.shuffledDeck != null){
+                if (this.shuffledDeck.size() > 0) {
+                    deck = this.shuffledDeck;
+                }
+            }
+        }
+
 
         if (this.controller.canPlay()) {
             list.add(new ButtonWidget(Asset.read("play"), 22, 76, 32, 32, this::playTurn));
             list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
             list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
+            list.add(new ButtonWidget("V", 22, 220, 32, 32, this::clear));
+            list.add(new ButtonWidget("S", 22, 462, 32, 32, this::shuffle));
+
         } else {
             list.add(this.previousButton);
             list.add(this.nextButton);
@@ -185,9 +202,18 @@ public class GameView extends View<GameController> {
 
         for (var i = 0; i < deck.size(); i++) {
             var letter = deck.get(i);
+            var drag = new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, letter.character, hover), this::getAbsolutePos, this::getRelativePos, this::canDrop, (pair, active) -> this.changeState(letter, pair.a, pair.b, active));
+            for(Played p : played){
+                if(p.letter.id == letter.id){
+                    var pos = getAbsolutePos(p.x, p.y);
+                    drag.setPosition(pos.a, pos.b);
+                }
+            }
 
-            list.add(new DragWidget(142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, letter.character, hover), this::getAbsolutePos, this::getRelativePos, this::canDrop, (pair, active) -> this.changeState(letter, pair.a, pair.b, active)));
+            list.add(drag);
         }
+
+
 
         list.add(this.dialog);
 
@@ -285,5 +311,15 @@ public class GameView extends View<GameController> {
             this.controller.resign();
         });
 
+    }
+
+    private void clear(){
+        this.played.clear();
+        this.repaint = true;
+    }
+
+    private void shuffle(){
+        this.shuffle = true;
+        this.repaint = true;
     }
 }
