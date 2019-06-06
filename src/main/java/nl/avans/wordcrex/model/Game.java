@@ -390,7 +390,6 @@ public class Game implements Pollable<Game> {
             var multipliers = new ArrayList<Integer>();
             var builder = new StringBuilder();
             var playCount = 0;
-            var surrounded = false;
 
             for (var x = 1; x <= size; x++) {
                 var pair = coords.apply(x, y);
@@ -442,7 +441,6 @@ public class Game implements Pollable<Game> {
                             if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
                                 hasCurrent = true;
                             }
-                            surrounded = surrounded || this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null;
                         }
                     }
                 } else {
