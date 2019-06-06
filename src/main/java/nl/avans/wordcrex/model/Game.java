@@ -568,6 +568,7 @@ public class Game implements Pollable<Game> {
         );
 
         if(action == TurnAction.PLAYED){
+            System.out.println(TurnAction.RESIGNED.action);
             if(username.equals(ref.username1)){
                 this.database.insert(
                         "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, ?, ?)",
@@ -599,7 +600,7 @@ public class Game implements Pollable<Game> {
                         }
                 );
                 if(this.getLastRound().opponentTurn!= null){
-                    if(this.getScore(played) == this.getLastRound().opponentScore){
+                    if(this.getScore(played) == this.getLastRound().opponentTurn.score){
                         this.database.update("UPDATE turnplayer2 T SET T.bonus = 5 WHERE T.game_id = ? AND T.turn_id = ?",
                                 (statement) -> {
                                     statement.setInt(1, this.id);
@@ -675,6 +676,7 @@ public class Game implements Pollable<Game> {
         }
         if(this.getLastRound().hostTurn != null){
             if(this.getLastRound().hostTurn.action == TurnAction.RESIGNED){
+                System.out.println("test2");
                 var resigned = TurnAction.RESIGNED.action;
                 this.database.update(
                     "UPDATE game g SET g.game_state = ?, g.username_winner = ? where game_id = ?",
@@ -689,6 +691,7 @@ public class Game implements Pollable<Game> {
 
         } else if(this.getLastRound().opponentTurn != null){
             if(this.getLastRound().opponentTurn.action == TurnAction.RESIGNED){
+                System.out.println("test2");
                 var resigned = TurnAction.RESIGNED.action;
                 this.database.update(
                         "UPDATE game g SET g.game_state = ?, g.username_winner = ? where game_id = ?",
