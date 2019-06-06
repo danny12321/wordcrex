@@ -108,7 +108,7 @@ public class Main extends JPanel {
         parents.forEach(widget::addParent);
         this.widgets.add(widget);
 
-        var children = widget.getChildren();
+        var children = widget.getChildren(true);
 
         parents.add(widget);
         children.forEach((child) -> this.addWidget(child, parents));
