@@ -31,6 +31,29 @@ public class GameView extends View<GameController> {
         this.repaint = true;
     });
 
+    private final ButtonWidget winningButton = new ButtonWidget("W", 22, 124, 32, 32, () -> {
+        if(this.controller.getRound().hostScore > this.controller.getRound().opponentScore){
+            for(Played p : this.controller.getRound().hostTurn.played){
+
+            }
+        } else {
+
+        }
+        this.repaint = true;
+    });
+
+    private final ButtonWidget losingButton = new ButtonWidget("L", 22, 172, 32, 32, () -> {
+        if(this.controller.getRound().hostScore < this.controller.getRound().opponentScore){
+
+        } else {
+
+        }
+        this.repaint = true;
+    });
+
+
+
+
     private boolean hover;
     private int offset;
     private int hostWidth;
@@ -179,6 +202,8 @@ public class GameView extends View<GameController> {
         } else {
             list.add(this.previousButton);
             list.add(this.nextButton);
+            list.add(this.winningButton);
+            list.add(this.losingButton);
         }
 
         for (var i = 0; i < deck.size(); i++) {
