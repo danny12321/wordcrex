@@ -1,7 +1,6 @@
 package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
-import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Pollable;
 
@@ -352,21 +351,18 @@ public class Game implements Pollable<Game> {
         }
 
         var board = this.getLastRound().board;
-
         var horizontal = this.checkDirection(played, board, Pair::new);
         var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
+
+        if (horizontal == null || vertical == null) {
+            return -1;
+        }
 
         var score = horizontal.b + vertical.b;
         var words = new ArrayList<String>();
 
         words.addAll(horizontal.a);
         words.addAll(vertical.a);
-
-        if (horizontal.a.size() > 1 && vertical.a.size() > 1) {
-            return -1;
-        }
-
-        System.out.println("Found words: " + String.join(", ", words) + " with score " + score);
 
         for (var word : words) {
             if (!this.dictionary.isWord(word)) {
@@ -383,18 +379,20 @@ public class Game implements Pollable<Game> {
         var center = (int) Math.ceil(size / 2);
         var score = 0;
         var words = new ArrayList<String>();
+        var playFound = false;
 
         for (var y = 1; y <= size; y++) {
-            var flag = false;
-            var flag2 = false;
-            var temp = 0;
-            var temp2 = new ArrayList<Integer>();
+            var hasPlay = false;
+            var hasCurrent = false;
+            var tempScore = 0;
+            var multipliers = new ArrayList<Integer>();
             var builder = new StringBuilder();
-            var count = 0;
+            var playCount = 0;
+            var surrounded = false;
+            var order = new ArrayList<Boolean>();
 
             for (var x = 1; x <= size; x++) {
                 var pair = coords.apply(x, y);
-
                 var tile = this.getTile(pair.a, pair.b);
 
                 if (tile == null) {
@@ -416,48 +414,86 @@ public class Game implements Pollable<Game> {
                         letterMultiplier = 6;
                         break;
                     case "3W":
-                        temp2.add(3);
+                        multipliers.add(3);
                         break;
                     case "4W":
-                        temp2.add(4);
+                        multipliers.add(4);
                         break;
-                }
-
-                if (x == center && y == center) {
-                    flag2 = true;
-                    temp2.add(2);
                 }
 
                 if (current != null) {
-                    flag2 = true;
+                    hasCurrent = true;
                     builder.append(current.letter.character.character);
-                    temp += (current.letter.character.value * letterMultiplier);
+                    tempScore += (current.letter.character.value * letterMultiplier);
+                    order.add(false);
                 } else if (play != null) {
-                    flag = true;
+                    hasPlay = true;
                     builder.append(play.letter.character.character);
-                    temp += (play.letter.character.value * letterMultiplier);
-                    count++;
-                } else {
-                    if (flag && flag2 && builder.length() > 1) {
-                        words.add(builder.toString());
+                    tempScore += (play.letter.character.value * letterMultiplier);
+                    playCount++;
+                    order.add(true);
 
-                        for (var multiplier : temp2) {
-                            temp *= multiplier;
+                    if (x == center && y == center) {
+                        hasCurrent = true;
+                        multipliers.add(2);
+                    }
+
+                    for (var side : TileSide.values()) {
+                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
+                            hasCurrent = true;
+                        }
+                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
+                            surrounded = true;
+                        }
+                    }
+                } else {
+                    if (hasPlay && playFound) {
+                        return null;
+                    }
+
+                    if (hasPlay && (builder.length() > 1 || !surrounded)) {
+                        playFound = true;
+                    }
+
+                    if (hasPlay && hasCurrent && builder.length() > 1) {
+                        Boolean last = null;
+                        var found = false;
+
+                        for (var b : order) {
+                            if (b != last) {
+                                if (b && found) {
+                                    return null;
+                                }
+
+                                last = b;
+
+                                if (b) {
+                                    found = true;
+                                }
+                            }
                         }
 
-                        score += temp;
+                        words.add(builder.toString());
 
-                        if (count == 7) {
+                        for (var multiplier : multipliers) {
+                            tempScore *= multiplier;
+                        }
+
+                        score += tempScore;
+
+                        if (playCount == 7) {
                             extra = 100;
                         }
                     }
 
-                    flag = false;
-                    flag2 = false;
+                    hasPlay = false;
+                    hasCurrent = false;
                     builder.setLength(0);
-                    temp = 0;
-                    temp2.clear();
-                    count = 0;
+                    tempScore = 0;
+                    multipliers.clear();
+                    playCount = 0;
+                    surrounded = false;
+                    order.clear();
                 }
             }
         }
@@ -503,7 +539,7 @@ public class Game implements Pollable<Game> {
         if(action == TurnAction.PLAYED){
             if(username.equals(ref.username1)){
                 this.database.insert(
-                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player2, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'play')",
+                        "INSERT INTO turnplayer1 (game_id, turn_id, username_player1, bonus, score, turnaction_type) VALUES (?, ?, ?, 0, 0, 'play')",
                         (statement) -> {
                             statement.setInt(1, this.id);
                             statement.setInt(2, this.rounds.size());

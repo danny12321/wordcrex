@@ -2,6 +2,7 @@ package nl.avans.wordcrex.widget.impl;
 
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
@@ -51,7 +52,7 @@ public class InputWidget extends Widget {
     public void draw(Graphics2D g) {
         var metrics = g.getFontMetrics();
         var rect = new Rectangle2D.Float(this.x, this.y, this.width, this.height);
-        var text = this.placeholder == null ? this.input.toString() : String.valueOf(this.placeholder).repeat(this.input.length());
+        var text = this.placeholder == null ? this.input.toString() : StringUtil.repeat(String.valueOf(this.placeholder), this.input.length());
         var position = metrics.stringWidth(this.input.substring(0, this.cursor)) - 1;
         var line = (this.height - metrics.getHeight()) / 2 + metrics.getAscent();
 

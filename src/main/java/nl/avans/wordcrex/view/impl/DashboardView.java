@@ -44,7 +44,7 @@ public class DashboardView extends View<DashboardController> {
                 g.drawString(this.controller.getSmallExtra(game) + game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);
                 g.setFont(Fonts.NORMAL);
 
-                if (game.state != GameState.PENDING) {
+                if (game.state != GameState.PENDING && game.getLastRound() != null) {
                     var metrics = g.getFontMetrics();
                     var score = " " + game.getLastRound().hostScore + " - " + game.getLastRound().opponentScore + " ";
                     var width = metrics.stringWidth(score);
