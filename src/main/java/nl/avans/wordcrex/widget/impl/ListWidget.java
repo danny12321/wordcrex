@@ -131,28 +131,31 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void keyPress(int code, int modifiers) {
+        if (!this.hasFocus()) {
+            return;
+        }
 
         if (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN) {
-            if (selected == null) {
+            if (this.selected == null) {
                 System.out.println("selected is empty");
-                selected = this.getId.apply(items.get(0));
+                this.selected = this.getId.apply(this.items.get(0));
             } else {
                 int way = code == KeyEvent.VK_UP ? -1 : 1;
 
-                if ((this.selectedId + way) >= 0 && (this.selectedId + way) < items.size()) {
+                if ((this.selectedId + way) >= 0 && (this.selectedId + way) < this.items.size()) {
                     this.selectedId += way;
-                    selected = this.getId.apply(items.get(this.selectedId));
+                    this.selected = this.getId.apply(this.items.get(this.selectedId));
 
                     int height = this.height * this.selectedId;
 
-                    for(int i = 0; i <= this.selectedId; i++) {
+                    for (int i = 0; i <= this.selectedId; i++) {
                         if (this.getHeader(i) != null && (i != this.selectedId || this.selectedId == this.items.size() - 1)) {
                             height += 64;
                         }
                     }
 
                     if (way == 1 && height - this.scroll > Main.FRAME_SIZE - this.height - this.y) {
-                        this.scrollbar.setOffset(height  - (Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.height - this.y));
+                        this.scrollbar.setOffset(height - (Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.height - this.y));
                     } else if (way == -1 && height < this.y + this.scroll) {
                         this.scrollbar.setOffset(height);
                     }
@@ -161,11 +164,11 @@ public class ListWidget<T> extends Widget {
             }
         }
 
-        if(code == KeyEvent.VK_ENTER){
+        if (code == KeyEvent.VK_ENTER) {
             this.click.accept(this.items.stream()
-                    .filter((item) -> this.getId.apply(item).equals(this.selected))
-                    .findFirst()
-                    .orElse(null));
+                .filter((item) -> this.getId.apply(item).equals(this.selected))
+                .findFirst()
+                .orElse(null));
         }
     }
 

@@ -84,7 +84,7 @@ public class User implements Pollable<User> {
 
     @Override
     public User poll() {
-        if (this.username.isEmpty()) {
+        if (this.username.isEmpty() || this.dictionaries.isEmpty()) {
             return this;
         }
 
@@ -122,8 +122,6 @@ public class User implements Pollable<User> {
                 var winner = result.getString("winner");
 
                 if (dictionary == null) {
-                    System.out.println("Dictionary not found: " + code);
-
                     return;
                 }
 
