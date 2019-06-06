@@ -32,4 +32,18 @@ public class StringUtil {
     public static boolean isAuthInput(String input) {
         return input.matches(StringUtil.REGEX);
     }
+
+    public static String repeat(String str, int n) {
+        if (str == null) {
+            return null;
+        }
+
+        var builder = new StringBuilder();
+
+        for (var i = 0; i < n; i++) {
+            builder.append(str);
+        }
+
+        return builder.toString();
+    }
 }
