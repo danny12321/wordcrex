@@ -25,6 +25,8 @@ public class ManageView extends View<ManageController> {
         this.list = new ListWidget<>(
             Main.TASKBAR_SIZE + 12,
             96,
+            (user) -> user.username,
+            (previous, next) -> null,
             (g, user) -> {
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
@@ -42,8 +44,6 @@ public class ManageView extends View<ManageController> {
                     StringUtil.drawCenteredString(g, 330 + (i * 30), 32, 30, 30, UserRole.values()[i].role.substring(0, 1).toUpperCase());
                 }
             },
-            (previous, next) -> null,
-            (user) -> user.username,
             (user) -> true,
             this.controller::navigateAccount
         );

@@ -28,6 +28,8 @@ public class DashboardView extends View<DashboardController> {
         this.list = new ListWidget<>(
             72,
             96,
+            (game) -> String.valueOf(game.id),
+            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (g, game) -> {
                 var other = this.controller.isCurrentUser(game.host) ? game.opponent : game.host;
 
@@ -55,8 +57,6 @@ public class DashboardView extends View<DashboardController> {
                     g.drawString(score, 450 - width, 54);
                 }
             },
-            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
-            (game) -> String.valueOf(game.id),
             this.controller::isSelectable,
             (game) -> {
                 if (game.inviteState == InviteState.PENDING) {

@@ -27,20 +27,21 @@ public class HistoryView extends View<HistoryController> {
         this.list = new ListWidget<>(
             116,
             118,
+            (round) -> String.valueOf(round.round),
+            (previous, next) -> "Ronde " + next.round + " - " + next.deck.stream().map((c) -> c.character.character).collect(Collectors.joining()),
             (g, round) -> {
                 this.drawScore(g, round.hostTurn, 30, this.controller.getHost());
                 this.drawScore(g, round.opponentTurn, 82, this.controller.getOpponent());
-            },
-            (previous, next) -> "Ronde " + next.round + " - " + next.deck.stream().map((c) -> c.character.character).collect(Collectors.joining()),
-            (round) -> String.valueOf(round.round),
-            (round) -> false,
-            (round) -> {
             }
         );
     }
 
     @Override
     public void draw(Graphics2D g) {
+    }
+
+    @Override
+    public void drawForeground(Graphics2D g) {
         this.drawPlayer(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 - 21, 0, this.controller.getHost(), String.valueOf(this.controller.getHostScore()));
         this.drawPlayer(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 * 3 - 21, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, this.controller.getOpponent(), String.valueOf(this.controller.getOpponentScore()));
     }
@@ -59,19 +60,17 @@ public class HistoryView extends View<HistoryController> {
     }
 
     private void drawPlayer(Graphics2D g, int ovalX, int stringX, String user, String score) {
-        var scroll = list.getScroll();
-
         g.setColor(Colors.DARK_YELLOW);
-        g.fillOval(ovalX, 48 - scroll, 42, 42);
+        g.fillOval(ovalX, 48, 42, 42);
         g.setFont(Fonts.BIG);
         g.setColor(Colors.DARKER_BLUE);
-        StringUtil.drawCenteredString(g, ovalX, 48 - scroll, 42, 42, user.substring(0, 1).toUpperCase());
+        StringUtil.drawCenteredString(g, ovalX, 48, 42, 42, user.substring(0, 1).toUpperCase());
         g.setFont(Fonts.NORMAL);
         g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, stringX, 112 - scroll, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, user);
+        StringUtil.drawCenteredString(g, stringX, 112, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, user);
         g.setFont(Fonts.SMALL);
         g.setColor(Color.LIGHT_GRAY);
-        StringUtil.drawCenteredString(g, stringX, 132 - scroll, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, score);
+        StringUtil.drawCenteredString(g, stringX, 132, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, score);
         g.setFont(Fonts.NORMAL);
     }
 

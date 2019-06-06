@@ -24,6 +24,8 @@ public class ObserveView extends View<ObserveController> {
         this.list = new ListWidget<>(
             47,
             96,
+            (game) -> String.valueOf(game.id),
+            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (g, game) -> {
                 var metrics = g.getFontMetrics();
                 var score = " " + game.getLastRound().hostScore + " - " + game.getLastRound().opponentScore + " ";
@@ -43,8 +45,6 @@ public class ObserveView extends View<ObserveController> {
                 g.setColor(Color.WHITE);
                 g.drawString(score, 450 - width, 54);
             },
-            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
-            (game) -> String.valueOf(game.id),
             (game) -> true,
             this.controller::navigateGame
         );

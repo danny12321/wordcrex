@@ -37,20 +37,20 @@ public class FrameWidget extends Widget {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        this.sidebarButton.setText(this.sidebar.isOpen() ? "x" : "+");
+        this.sidebarButton.setText(this.sidebar.open() ? "x" : "+");
     }
 
     @Override
     public List<Widget> children() {
         return List.of(
-            this.sidebar,
             this.sidebarButton,
-            new ButtonWidget("x", null, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Color.RED, Colors.DARK_RED, Color.WHITE, this.main::close)
+            this.sidebar,
+            new ButtonWidget("x", null, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 0, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Color.RED, Colors.DARK_RED, Color.WHITE, this.main::stop)
         );
     }
 
     @Override
     public boolean blocking() {
-        return this.sidebar.isOpen();
+        return this.sidebar.open();
     }
 }

@@ -50,11 +50,6 @@ public class DialogWidget extends Widget {
     }
 
     @Override
-    public boolean forceTop() {
-        return true;
-    }
-
-    @Override
     public List<Widget> children() {
         return List.of(
             this.positiveButton,

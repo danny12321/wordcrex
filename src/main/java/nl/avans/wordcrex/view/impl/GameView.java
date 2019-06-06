@@ -28,11 +28,11 @@ public class GameView extends View<GameController> {
     private final ButtonWidget shuffleButton = new ButtonWidget("S", 22, 462, 32, 32, this::shuffle);
     private final ButtonWidget previousButton = new ButtonWidget("<", 22, 403, 32, 32, () -> {
         this.controller.previousRound();
-        this.repaint = true;
+        this.requestInitialize();
     });
     private final ButtonWidget nextButton = new ButtonWidget(">", 456, 403, 32, 32, () -> {
         this.controller.nextRound();
-        this.repaint = true;
+        this.requestInitialize();
     });
 
     private boolean hover;
@@ -41,7 +41,6 @@ public class GameView extends View<GameController> {
     private int scoreWidth;
     private List<Played> played = new ArrayList<>();
     private int score = 0;
-    private boolean repaint = false;
     private boolean shuffle;
     private ArrayList<Letter> shuffledDeck;
     private boolean hasPlayed = false;
@@ -160,7 +159,7 @@ public class GameView extends View<GameController> {
         } else if (this.lastRound != this.controller.getRound().round) {
             this.lastRound = this.controller.getRound().round;
 
-            this.repaint = true;
+            this.requestInitialize();
             this.score = 0;
         }
 
@@ -214,7 +213,7 @@ public class GameView extends View<GameController> {
         if (this.controller.canPlay()) {
             list.add(this.playButton);
             list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
-            //list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
+            list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
             list.add(this.resetButton);
             list.add(this.shuffleButton);
         } else {
@@ -253,14 +252,6 @@ public class GameView extends View<GameController> {
         list.add(this.dialog);
 
         return list;
-    }
-
-    @Override
-    public boolean shouldReinitialize() {
-        var p = this.repaint;
-        this.repaint = false;
-
-        return p;
     }
 
     private void drawTile(Graphics2D g, Character character, boolean hover) {
@@ -335,7 +326,6 @@ public class GameView extends View<GameController> {
             }
             this.controller.play(this.played);
         });
-
     }
 
     private void resign() {
@@ -345,16 +335,15 @@ public class GameView extends View<GameController> {
             }
             this.controller.resign();
         });
-
     }
 
     private void clear() {
         this.played.clear();
-        this.repaint = true;
+        this.requestInitialize();
     }
 
     private void shuffle() {
         this.shuffle = true;
-        this.repaint = true;
+        this.requestInitialize();
     }
 }

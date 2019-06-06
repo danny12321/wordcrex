@@ -25,6 +25,8 @@ public class InviteView extends View<InviteController> {
         this.list = new ListWidget<>(
             96,
             96,
+            (pair) -> pair.a,
+            (previous, next) -> null,
             (g, pair) -> {
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
@@ -42,8 +44,6 @@ public class InviteView extends View<InviteController> {
                     g.setFont(Fonts.NORMAL);
                 }
             },
-            (previous, next) -> null,
-            (pair) -> pair.a,
             (pair) -> pair.b && this.controller.hasDictionary(),
             this.controller::invite
         );

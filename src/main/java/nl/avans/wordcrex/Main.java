@@ -45,7 +45,7 @@ public class Main extends JPanel {
         this.widgets = new CopyOnWriteArrayList<>();
         this.particles = new CopyOnWriteArrayList<>();
         this.loop = new Loop(Map.of(
-            2.0d, this::poll,
+            5.0d, this::poll,
             30.0d, this::update,
             60.0d, this::repaint
         ));
@@ -66,11 +66,30 @@ public class Main extends JPanel {
         this.start();
     }
 
-    private void start() {
+    @Override
+    public void paintComponent(Graphics graphics) {
+        super.paintComponent(graphics);
+
+        var g = (Graphics2D) graphics;
+
+        g.setRenderingHints(Main.RENDERING_HINTS);
+
+        this.drawParticles(g, false);
+        this.widgets.forEach((widget) -> widget.draw(g));
+        this.drawParticles(g, true);
+
+        var view = this.getView();
+
+        if (view != null) {
+            view.drawForeground(g);
+        }
+    }
+
+    public void start() {
         this.loop.start();
     }
 
-    public void close() {
+    public void stop() {
         this.loop.stop();
         this.frame.dispatchEvent(new WindowEvent(this.frame, WindowEvent.WINDOW_CLOSING));
     }
@@ -82,6 +101,69 @@ public class Main extends JPanel {
     public <T extends Pollable<T>> void openController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
         this.controller = this.createController(cls, fn);
         this.openView(this.controller.createView());
+    }
+
+    public void addParticle(Particle particle) {
+        this.particles.add(particle);
+    }
+
+    public User getModel() {
+        return this.model;
+    }
+
+    public void updateModel(Pollable<?> model) {
+        this.model = model.persist(this.model);
+    }
+
+    public List<Widget> getWidgets(boolean blocked) {
+        var blocker = this.widgets.stream()
+            .filter(Widget::blocking)
+            .reduce((a, b) -> b)
+            .orElse(null);
+
+        if (blocked || blocker == null) {
+            return List.copyOf(this.widgets);
+        }
+
+        return this.widgets.stream()
+            .filter((widget) -> widget == blocker || widget.isChild(blocker))
+            .collect(Collectors.toList());
+    }
+
+    public boolean isOpen(Class<? extends View<?>> cls) {
+        return this.widgets.stream()
+            .anyMatch(cls::isInstance);
+    }
+
+    public void tabFocus(boolean reverse) {
+        var widgets = this.getWidgets(false).stream()
+            .filter(Widget::canFocus)
+            .collect(Collectors.toList());
+        var updated = false;
+
+        for (int i = 0; i < widgets.size(); i++) {
+            var widget = widgets.get(i);
+
+            if (!widget.hasFocus()) {
+                continue;
+            }
+
+            if (reverse && i == 0) {
+                widgets.get(widgets.size() - 1).requestFocus();
+            } else if (reverse) {
+                widgets.get(i - 1).requestFocus();
+            } else if (i < widgets.size() - 1) {
+                widgets.get(i + 1).requestFocus();
+            } else {
+                widgets.get(0).requestFocus();
+            }
+
+            updated = true;
+        }
+
+        if (!updated && !widgets.isEmpty()) {
+            widgets.get(reverse ? widgets.size() - 1 : 0).requestFocus();
+        }
     }
 
     private void openView(View<?> view) {
@@ -106,21 +188,9 @@ public class Main extends JPanel {
 
     private void addWidget(Widget widget, List<Widget> parents) {
         parents.forEach(widget::addParent);
-        this.widgets.add(widget);
-
-        var children = widget.getChildren(true);
-
         parents.add(widget);
-        children.forEach((child) -> this.addWidget(child, parents));
-    }
-
-    public void addParticle(Particle particle) {
-        this.particles.add(particle);
-    }
-
-    public boolean isOpen(Class<? extends View<?>> cls) {
-        return this.widgets.stream()
-            .anyMatch(cls::isInstance);
+        this.widgets.add(widget);
+        widget.children().forEach((child) -> this.addWidget(child, parents));
     }
 
     private void poll() {
@@ -131,31 +201,26 @@ public class Main extends JPanel {
         this.controller.poll();
     }
 
-    public void updateModel(Pollable<?> model) {
-        this.model = model.persist(this.model);
-    }
-
-    public User getModel() {
-        return this.model;
-    }
-
     private void update() {
         this.widgets.forEach((widget) -> widget.update(this::addParticle));
 
         var dead = this.particles.stream()
-                .filter((particle) -> !particle.update(this::addParticle))
-                .collect(Collectors.toList());
+            .filter((particle) -> !particle.update(this::addParticle))
+            .collect(Collectors.toList());
         this.particles.removeAll(dead);
 
         var view = this.getView();
 
-        if (view.shouldReinitialize()) {
+        if (view.requestingInitialize()) {
             this.openView(view);
 
             return;
         }
 
-        var requester = view.getChildren().stream()
+        var widgets = this.getWidgets(false).stream()
+            .filter(Widget::canFocus)
+            .collect(Collectors.toList());
+        var requester = widgets.stream()
             .filter(Widget::requestingFocus)
             .findFirst()
             .orElse(null);
@@ -164,47 +229,18 @@ public class Main extends JPanel {
             return;
         }
 
-        view.getChildren().forEach((widget) -> widget.setFocus(false));
+        widgets.forEach((widget) -> widget.setFocus(false));
         requester.setFocus(true);
     }
 
-    @Override
-    public void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
-
-        var g = (Graphics2D) graphics;
-
-        g.setRenderingHints(Main.RENDERING_HINTS);
-
+    private void drawParticles(Graphics2D g, boolean foreground) {
         this.particles.stream()
-            .filter((particle) -> !particle.foreground)
-            .sorted(Comparator.comparingInt(Particle::priority))
-            .forEach((particle) -> particle.draw(g));
-        this.widgets.stream()
-            .sorted(Comparator.comparingInt((ui) -> ui.treeMatch(Widget::forceTop) ? 1 : 0))
-            .forEach((widget) -> widget.draw(g));
-        this.particles.stream()
-            .filter((particle) -> particle.foreground)
+            .filter((particle) -> particle.foreground == foreground)
             .sorted(Comparator.comparingInt(Particle::priority))
             .forEach((particle) -> particle.draw(g));
     }
 
-    public List<Widget> getWidgets(boolean blocked) {
-        var blocker = this.widgets.stream()
-            .filter(Widget::blocking)
-            .reduce((a, b) -> b)
-            .orElse(null);
-
-        if (blocked || blocker == null) {
-            return List.copyOf(this.widgets);
-        }
-
-        return this.widgets.stream()
-            .filter((widget) -> widget == blocker || widget.isChild(blocker))
-            .collect(Collectors.toList());
-    }
-
-    public View<?> getView() {
+    private View<?> getView() {
         return this.widgets.stream()
             .filter(View.class::isInstance)
             .map(View.class::cast)

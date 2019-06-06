@@ -18,24 +18,27 @@ public class ListWidget<T> extends Widget {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
     private final int y;
     private final int height;
-    private final BiConsumer<Graphics2D, T> draw;
+    private final Function<T, String> id;
     private final BiFunction<T, T, String> header;
-    private final Function<T, String> getId;
-    private final Function<T, Boolean> canClick;
+    private final BiConsumer<Graphics2D, T> draw;
+    private final Function<T, Boolean> clickable;
     private final Consumer<T> click;
 
     private List<T> items = new ArrayList<>();
     private int scroll;
     private String selected;
-    private int selectedId;
 
-    public ListWidget(int y, int height, BiConsumer<Graphics2D, T> draw, BiFunction<T, T, String> header, Function<T, String> getId, Function<T, Boolean> canClick, Consumer<T> click) {
+    public ListWidget(int y, int height, Function<T, String> id, BiFunction<T, T, String> header, BiConsumer<Graphics2D, T> draw) {
+        this(y, height, id, header, draw, (item) -> false, null);
+    }
+
+    public ListWidget(int y, int height, Function<T, String> id, BiFunction<T, T, String> header, BiConsumer<Graphics2D, T> draw, Function<T, Boolean> clickable, Consumer<T> click) {
         this.y = y;
         this.height = height;
-        this.draw = draw;
+        this.id = id;
         this.header = header;
-        this.getId = getId;
-        this.canClick = canClick;
+        this.draw = draw;
+        this.clickable = clickable;
         this.click = click;
     }
 
@@ -59,7 +62,7 @@ public class ListWidget<T> extends Widget {
                 position += 64;
             }
 
-            if (this.getId.apply(item).equals(this.selected)) {
+            if (this.id.apply(item).equals(this.selected)) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE, this.height);
             }
@@ -102,9 +105,9 @@ public class ListWidget<T> extends Widget {
                 position += 64;
             }
 
-            if (y > position && y < position + this.height && this.canClick.apply(item)) {
-                this.selected = this.getId.apply(item);
-                this.selectedId = this.items.indexOf(item);
+            if (y > position && y < position + this.height && this.clickable.apply(item)) {
+                this.selected = this.id.apply(item);
+
                 break;
             }
         }
@@ -116,10 +119,7 @@ public class ListWidget<T> extends Widget {
             return;
         }
 
-        this.click.accept(this.items.stream()
-            .filter((item) -> this.getId.apply(item).equals(this.selected))
-            .findFirst()
-            .orElse(null));
+        this.execute();
     }
 
     @Override
@@ -137,57 +137,85 @@ public class ListWidget<T> extends Widget {
 
         if (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN) {
             if (this.selected == null) {
-                System.out.println("selected is empty");
-                this.selected = this.getId.apply(this.items.get(0));
-            } else {
-                int way = code == KeyEvent.VK_UP ? -1 : 1;
+                this.setFocus(true);
 
-                if ((this.selectedId + way) >= 0 && (this.selectedId + way) < this.items.size()) {
-                    this.selectedId += way;
-                    this.selected = this.getId.apply(this.items.get(this.selectedId));
+                return;
+            }
 
-                    int height = this.height * this.selectedId;
+            var next = code == KeyEvent.VK_UP ? -1 : 1;
+            var index = this.getSelectedIndex();
+            var nextIndex = index + next;
 
-                    for (int i = 0; i <= this.selectedId; i++) {
-                        if (this.getHeader(i) != null && (i != this.selectedId || this.selectedId == this.items.size() - 1)) {
-                            height += 64;
-                        }
-                    }
+            while (this.isValidIndex(nextIndex) && !this.clickable.apply(this.items.get(nextIndex))) {
+                nextIndex += next;
+            }
 
-                    if (way == 1 && height - this.scroll > Main.FRAME_SIZE - this.height - this.y) {
-                        this.scrollbar.setOffset(height - (Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.height - this.y));
-                    } else if (way == -1 && height < this.y + this.scroll) {
-                        this.scrollbar.setOffset(height);
-                    }
+            if (!this.isValidIndex(nextIndex) || !this.clickable.apply(this.items.get(nextIndex))) {
+                return;
+            }
 
+            this.selected = this.id.apply(this.items.get(nextIndex));
+
+            var height = this.height * nextIndex;
+
+            for (var i = 0; i <= nextIndex; i++) {
+                if (this.getHeader(i) != null && (i != nextIndex || nextIndex == this.items.size() - 1)) {
+                    height += 64;
                 }
             }
-        }
 
-        if (code == KeyEvent.VK_ENTER) {
-            this.click.accept(this.items.stream()
-                .filter((item) -> this.getId.apply(item).equals(this.selected))
-                .findFirst()
-                .orElse(null));
+            if (next == 1 && height - this.scroll > Main.FRAME_SIZE - this.height - this.y) {
+                this.scrollbar.setOffset(height - (Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.height - this.y));
+            } else if (next == -1 && height < this.y + this.scroll) {
+                this.scrollbar.setOffset(height);
+            }
+        } else if (code == KeyEvent.VK_ENTER && this.selected != null) {
+            this.execute();
         }
     }
 
     @Override
     public boolean canFocus() {
-        return true;
+        return this.items.stream().anyMatch(this.clickable::apply);
     }
 
-    private String getHeader(int i) {
-        var previous = i > 0 ? this.items.get(i - 1) : null;
+    @Override
+    public void setFocus(boolean focus) {
+        this.selected = focus ? this.id.apply(this.items.get(0)) : null;
 
-        return this.header.apply(previous, this.items.get(i));
-    }
-
-    public int getScroll() {
-        return this.scroll;
+        super.setFocus(focus);
     }
 
     public void setItems(List<T> items) {
         this.items = items;
+    }
+
+    private void execute() {
+        this.click.accept(this.items.stream()
+            .filter((item) -> this.id.apply(item).equals(this.selected))
+            .findFirst()
+            .orElse(null));
+    }
+
+    private String getHeader(int i) {
+        return this.header.apply(i > 0 ? this.items.get(i - 1) : null, this.items.get(i));
+    }
+
+    private int getSelectedIndex() {
+        if (this.selected == null) {
+            return 0;
+        }
+
+        for (var i = 0; i < this.items.size(); i++) {
+            if (this.selected.equals(this.id.apply(this.items.get(i)))) {
+                return i;
+            }
+        }
+
+        return 0;
+    }
+
+    private boolean isValidIndex(int index) {
+        return index >= 0 && index < this.items.size();
     }
 }

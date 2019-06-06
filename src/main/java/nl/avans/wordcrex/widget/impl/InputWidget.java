@@ -12,13 +12,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class InputWidget extends Widget {
     private final StringBuilder input = new StringBuilder();
-
-    public final String label;
+    private final String label;
     private final Character placeholder;
     private final int x;
     private final int y;
@@ -44,7 +42,6 @@ public class InputWidget extends Widget {
         this.width = width;
         this.height = height;
         this.consumer = consumer;
-
         this.consumer.accept("");
     }
 
@@ -95,9 +92,7 @@ public class InputWidget extends Widget {
 
     @Override
     public void mousePress(int x, int y) {
-        if (!this.hasFocus() && this.hover) {
-            this.update = 0;
-        }
+        this.update = 0;
 
         if (!this.hover) {
             this.setFocus(false);
@@ -153,11 +148,6 @@ public class InputWidget extends Widget {
         }
 
         this.consumer.accept(this.input.toString());
-    }
-
-    @Override
-    public List<Widget> children() {
-        return List.of();
     }
 
     @Override

@@ -26,6 +26,7 @@ public class SidebarWidget extends Widget {
         new Item<>("BEHEREN", ManageController.class, ManageView.class, UserRole.ADMINISTRATOR),
         new Item<>("ACCOUNT", AccountController.class, AccountView.class, null)
     );
+
     private final Map<ButtonWidget, Item> children = new LinkedHashMap<>();
     private final Main main;
 
@@ -64,7 +65,7 @@ public class SidebarWidget extends Widget {
 
     @Override
     public List<Widget> children() {
-        this.ITEMS.forEach((item) -> this.children.put(new ButtonWidget(item.title, 32, 64, 192, 32, () -> this.main.openController(item.controller)), item));
+        SidebarWidget.ITEMS.forEach((item) -> this.children.put(new ButtonWidget(item.title, 32, 64, 192, 32, () -> this.main.openController(item.controller)), item));
         this.children.put(new ButtonWidget("LOG UIT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class)), null);
 
         return List.copyOf(this.children.keySet());
@@ -74,7 +75,7 @@ public class SidebarWidget extends Widget {
         this.open = !this.open;
     }
 
-    public boolean isOpen() {
+    public boolean open() {
         return this.open;
     }
 

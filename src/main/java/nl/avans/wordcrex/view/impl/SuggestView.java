@@ -30,6 +30,8 @@ public class SuggestView extends View<SuggestController> {
         this.list = new ListWidget<>(
             96,
             96,
+            (word) -> word.word,
+            (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.description.toUpperCase() : null,
             (g, word) -> {
                 g.setColor(Color.WHITE);
                 g.drawString(word.word, Main.TASKBAR_SIZE, 44);
@@ -37,11 +39,7 @@ public class SuggestView extends View<SuggestController> {
                 g.setFont(Fonts.SMALL);
                 g.drawString(this.controller.getLabel(word), Main.TASKBAR_SIZE, 60);
                 g.setFont(Fonts.NORMAL);
-            },
-            (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.description.toUpperCase() : null,
-            (word) -> word.word,
-            (word) -> false,
-            null
+            }
         );
     }
 

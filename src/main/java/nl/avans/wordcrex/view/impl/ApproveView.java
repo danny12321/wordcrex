@@ -25,6 +25,8 @@ public class ApproveView extends View<ApproveController> {
         this.list = new ListWidget<>(
             0,
             96,
+            (word) -> word.word,
+            (previous, next) -> null,
             (g, word) -> {
                 var metrics = g.getFontMetrics();
                 var score = " " + word.dictionary.code + " ";
@@ -41,8 +43,6 @@ public class ApproveView extends View<ApproveController> {
                 g.setColor(Color.WHITE);
                 g.drawString(score, 450 - width, 54);
             },
-            (previous, next) -> null,
-            (word) -> word.word,
             (word) -> true,
             (word) -> this.dialog.show("Accepteren?", "JA", "NEE", (positive) -> {
                if (positive) {
