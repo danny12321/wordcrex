@@ -178,8 +178,10 @@ public class GameView extends View<GameController> {
             this.shuffledDeck = deck;
             shuffle = false;
         } else {
-            if(this.shuffledDeck.size() > 0){
-                deck = this.shuffledDeck;
+            if (this.shuffledDeck != null){
+                if (this.shuffledDeck.size() > 0) {
+                    deck = this.shuffledDeck;
+                }
             }
         }
 
