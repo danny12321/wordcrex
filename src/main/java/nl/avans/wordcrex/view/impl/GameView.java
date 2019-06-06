@@ -165,7 +165,7 @@ public class GameView extends View<GameController> {
         }
 
         if (this.controller.canPlay()) {
-            var enabled = !this.hasPlayed && this.score > 0;
+            var enabled = !this.hasPlayed && this.score != 0;
 
             this.playButton.setEnabled(enabled);
             this.resetButton.setEnabled(enabled);
