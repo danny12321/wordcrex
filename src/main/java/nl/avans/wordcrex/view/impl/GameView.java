@@ -213,7 +213,7 @@ public class GameView extends View<GameController> {
         if (this.controller.canPlay()) {
             list.add(this.playButton);
             list.add(new ButtonWidget(Asset.read("chat"), 22, 124, 32, 32, this.controller::navigateChat));
-            list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
+            //list.add(new ButtonWidget(Asset.read("resign"), 22, 172, 32, 32, this::resign));
             list.add(this.resetButton);
             list.add(this.shuffleButton);
         } else {

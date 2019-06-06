@@ -222,7 +222,12 @@ public class Game implements Pollable<Game> {
                 var character = deck.stream()
                     .filter((c) -> c.character.character.equals(rawSplitted[index]))
                     .findFirst()
-                    .orElseThrow();
+                    .orElse(null);
+
+                if (character == null) {
+                    continue;
+                }
+
                 var x = Integer.parseInt(xSplitted[index]);
                 var y = Integer.parseInt(ySplitted[index]);
 
