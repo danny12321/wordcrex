@@ -46,7 +46,7 @@ public abstract class Widget {
         return false;
     }
 
-    public boolean isChild(Widget view) {
+    public boolean childOf(Widget view) {
         return this.parents.contains(view);
     }
 
@@ -54,7 +54,7 @@ public abstract class Widget {
         this.parents.add(parent);
     }
 
-    public boolean canFocus() {
+    public boolean focusable() {
         return false;
     }
 

@@ -127,17 +127,12 @@ public class DropdownWidget<T> extends Widget {
     }
 
     @Override
-    public List<Widget> children() {
-        return List.of();
-    }
-
-    @Override
     public boolean blocking() {
         return this.open;
     }
 
     @Override
-    public boolean canFocus() {
+    public boolean focusable() {
         return true;
     }
 }

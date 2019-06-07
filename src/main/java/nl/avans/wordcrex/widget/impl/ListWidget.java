@@ -27,6 +27,7 @@ public class ListWidget<T> extends Widget {
     private List<T> items = new ArrayList<>();
     private int scroll;
     private String selected;
+    private boolean outline;
 
     public ListWidget(int y, int height, Function<T, String> id, BiFunction<T, T, String> header, BiConsumer<Graphics2D, T> draw) {
         this(y, height, id, header, draw, (item) -> false, null);
@@ -51,6 +52,7 @@ public class ListWidget<T> extends Widget {
             var item = this.items.get(i);
             var position = this.height * i + offset - this.scroll + Main.TASKBAR_SIZE;
             var header = this.getHeader(i);
+            var active = this.id.apply(item).equals(this.selected);
 
             if (header != null) {
                 g.setColor(Colors.DARK_BLUE);
@@ -62,7 +64,7 @@ public class ListWidget<T> extends Widget {
                 position += 64;
             }
 
-            if (this.id.apply(item).equals(this.selected)) {
+            if (active) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE, this.height);
             }
@@ -74,6 +76,11 @@ public class ListWidget<T> extends Widget {
             if (i < this.items.size() - 1) {
                 g.setColor(Colors.DARKERER_BLUE);
                 g.fillRect(Main.TASKBAR_SIZE * 2 + 42, position + this.height - 2, 268, 4);
+            }
+
+            if (active && this.outline) {
+                g.setColor(Color.white);
+                g.drawRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 2, this.height - 2);
             }
 
             count++;
@@ -88,9 +95,9 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void mouseMove(int x, int y) {
-        this.selected = null;
-
         if (x > Main.FRAME_SIZE - Main.TASKBAR_SIZE || y < Main.TASKBAR_SIZE) {
+            this.selected = null;
+
             return;
         }
 
@@ -106,20 +113,80 @@ public class ListWidget<T> extends Widget {
             }
 
             if (y > position && y < position + this.height && this.clickable.apply(item)) {
-                this.selected = this.id.apply(item);
+                var next = this.id.apply(item);
 
-                break;
+                if (!next.equals(this.selected)) {
+                    this.outline = false;
+                }
+
+                this.selected = next;
+
+                return;
             }
         }
+
+        this.selected = null;
     }
 
     @Override
     public void mouseClick(int x, int y) {
         if (this.selected == null) {
+            this.setFocus(false);
+
             return;
         }
 
         this.execute();
+    }
+
+    @Override
+    public void keyPress(int code, int modifiers) {
+        if (!this.hasFocus()) {
+            this.outline = false;
+
+            return;
+        }
+
+        if (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN) {
+            this.outline = true;
+
+            if (this.selected == null) {
+                this.setFocus(true);
+
+                return;
+            }
+
+            var offset = code == KeyEvent.VK_UP ? -1 : 1;
+            var index = this.getSelectedIndex();
+
+            do {
+                index += offset;
+
+                if (!this.isValidIndex(index)) {
+                    return;
+                }
+            } while (!this.clickable.apply(this.items.get(index)));
+
+            this.selected = this.id.apply(this.items.get(index));
+
+            var height = this.height * index;
+
+            for (var i = 0; i <= index; i++) {
+                if (this.getHeader(i) != null && (i != index || index == this.items.size() - 1)) {
+                    height += 64;
+                }
+            }
+
+            if (offset == 1 && height - this.scroll > Main.FRAME_SIZE - this.height - this.y) {
+                this.scrollbar.setOffset(height - (Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.height - this.y));
+            } else if (offset == -1 && height < this.y + this.scroll) {
+                this.scrollbar.setOffset(height);
+            }
+        } else if (code == KeyEvent.VK_ENTER && this.selected != null) {
+            this.outline = true;
+
+            this.execute();
+        }
     }
 
     @Override
@@ -130,58 +197,21 @@ public class ListWidget<T> extends Widget {
     }
 
     @Override
-    public void keyPress(int code, int modifiers) {
-        if (!this.hasFocus()) {
-            return;
-        }
-
-        if (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN) {
-            if (this.selected == null) {
-                this.setFocus(true);
-
-                return;
-            }
-
-            var next = code == KeyEvent.VK_UP ? -1 : 1;
-            var index = this.getSelectedIndex();
-            var nextIndex = index + next;
-
-            while (this.isValidIndex(nextIndex) && !this.clickable.apply(this.items.get(nextIndex))) {
-                nextIndex += next;
-            }
-
-            if (!this.isValidIndex(nextIndex) || !this.clickable.apply(this.items.get(nextIndex))) {
-                return;
-            }
-
-            this.selected = this.id.apply(this.items.get(nextIndex));
-
-            var height = this.height * nextIndex;
-
-            for (var i = 0; i <= nextIndex; i++) {
-                if (this.getHeader(i) != null && (i != nextIndex || nextIndex == this.items.size() - 1)) {
-                    height += 64;
-                }
-            }
-
-            if (next == 1 && height - this.scroll > Main.FRAME_SIZE - this.height - this.y) {
-                this.scrollbar.setOffset(height - (Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.height - this.y));
-            } else if (next == -1 && height < this.y + this.scroll) {
-                this.scrollbar.setOffset(height);
-            }
-        } else if (code == KeyEvent.VK_ENTER && this.selected != null) {
-            this.execute();
-        }
-    }
-
-    @Override
-    public boolean canFocus() {
+    public boolean focusable() {
         return this.items.stream().anyMatch(this.clickable::apply);
     }
 
     @Override
     public void setFocus(boolean focus) {
-        this.selected = focus ? this.id.apply(this.items.get(0)) : null;
+        if (focus) {
+            this.outline = true;
+            this.selected = this.id.apply(this.items.stream()
+                .filter(this.clickable::apply)
+                .findFirst()
+                .orElseThrow());
+        } else {
+            this.selected = null;
+        }
 
         super.setFocus(focus);
     }
@@ -191,6 +221,7 @@ public class ListWidget<T> extends Widget {
     }
 
     private void execute() {
+        this.requestFocus();
         this.click.accept(this.items.stream()
             .filter((item) -> this.id.apply(item).equals(this.selected))
             .findFirst()

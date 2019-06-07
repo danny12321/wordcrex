@@ -29,12 +29,14 @@ public class Main extends JPanel {
     public static final int TASKBAR_SIZE = 32;
 
     private static final RenderingHints RENDERING_HINTS = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    private static final Stroke OUTLINE = new BasicStroke(2);
 
     private final JFrame frame;
     private final Database database;
     private final List<Widget> widgets;
     private final List<Particle> particles;
     private final Loop loop;
+    private final Listener listener;
 
     private Controller<?> controller;
     private User model;
@@ -49,9 +51,8 @@ public class Main extends JPanel {
             30.0d, this::update,
             60.0d, this::repaint
         ));
+        this.listener = new Listener(this.frame, this);
         this.model = new User(this.database);
-
-        var listener = new Listener(this.frame, this);
 
         this.setFont(Fonts.NORMAL);
         this.setForeground(Color.WHITE);
@@ -59,9 +60,9 @@ public class Main extends JPanel {
         this.setFocusable(true);
         this.setFocusTraversalKeysEnabled(false);
         this.setDoubleBuffered(true);
-        this.addMouseListener(listener);
-        this.addMouseMotionListener(listener);
-        this.addKeyListener(listener);
+        this.addMouseListener(this.listener);
+        this.addMouseMotionListener(this.listener);
+        this.addKeyListener(this.listener);
         this.openController(LoginController.class);
         this.start();
     }
@@ -73,6 +74,7 @@ public class Main extends JPanel {
         var g = (Graphics2D) graphics;
 
         g.setRenderingHints(Main.RENDERING_HINTS);
+        g.setStroke(Main.OUTLINE);
 
         this.drawParticles(g, false);
         this.widgets.forEach((widget) -> widget.draw(g));
@@ -126,7 +128,7 @@ public class Main extends JPanel {
         }
 
         return this.widgets.stream()
-            .filter((widget) -> widget == blocker || widget.isChild(blocker))
+            .filter((widget) -> widget == blocker || widget.childOf(blocker))
             .collect(Collectors.toList());
     }
 
@@ -136,9 +138,7 @@ public class Main extends JPanel {
     }
 
     public void tabFocus(boolean reverse) {
-        var widgets = this.getWidgets(false).stream()
-            .filter(Widget::canFocus)
-            .collect(Collectors.toList());
+        var widgets = this.getFocusable();
         var updated = false;
 
         for (int i = 0; i < widgets.size(); i++) {
@@ -212,14 +212,23 @@ public class Main extends JPanel {
         var view = this.getView();
 
         if (view.requestingInitialize()) {
+            var current = this.getFocusable();
+
             this.openView(view);
+            this.listener.mouseMoved(null);
+
+            var next = this.getFocusable();
+
+            if (current.size() == next.size()) {
+                for (var i = 0; i < current.size(); i++) {
+                    next.get(i).setFocus(current.get(i).hasFocus());
+                }
+            }
 
             return;
         }
 
-        var widgets = this.getWidgets(false).stream()
-            .filter(Widget::canFocus)
-            .collect(Collectors.toList());
+        var widgets = this.getFocusable();
         var requester = widgets.stream()
             .filter(Widget::requestingFocus)
             .findFirst()
@@ -246,6 +255,12 @@ public class Main extends JPanel {
             .map(View.class::cast)
             .findFirst()
             .orElse(null);
+    }
+
+    private List<Widget> getFocusable() {
+        return this.getWidgets(false).stream()
+            .filter(Widget::focusable)
+            .collect(Collectors.toList());
     }
 
     public static void main(String[] args) {

@@ -69,6 +69,11 @@ public class InputWidget extends Widget {
             g.drawString(this.label, this.x + 16, this.y + line);
         }
 
+        if (this.hasFocus()) {
+            g.setColor(Color.white);
+            g.drawRect(this.x, this.y, this.width - 2, this.height - 2);
+        }
+
         g.setClip(rect);
         g.setColor(Color.WHITE);
         g.drawString(text, this.x - this.offset, this.y + line);
@@ -151,7 +156,7 @@ public class InputWidget extends Widget {
     }
 
     @Override
-    public boolean canFocus() {
+    public boolean focusable() {
         return true;
     }
 

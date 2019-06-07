@@ -54,11 +54,6 @@ public class ButtonWidget extends Widget {
             return;
         }
 
-        if (this.hasFocus()) {
-            g.setColor(Color.white);
-            g.fillRect(this.x - 2, this.y - 2, this.width + 4, this.height + 4);
-        }
-
         g.setColor(this.hover || !this.enabled ? this.backgroundHover : this.background);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(this.foreground);
@@ -67,6 +62,11 @@ public class ButtonWidget extends Widget {
             g.drawImage(this.image, this.x, this.y, this.width, this.height, null);
         } else {
             StringUtil.drawCenteredString(g, this.x, this.y, this.width, this.height, this.text);
+        }
+
+        if (this.hasFocus()) {
+            g.setColor(Color.white);
+            g.drawRect(this.x, this.y, this.width - 2, this.height - 2);
         }
     }
 
@@ -82,6 +82,7 @@ public class ButtonWidget extends Widget {
     @Override
     public void mouseClick(int x, int y) {
         if (this.hover && this.enabled && this.visible) {
+            this.requestFocus();
             this.runnable.run();
         }
 
@@ -98,12 +99,7 @@ public class ButtonWidget extends Widget {
     }
 
     @Override
-    public List<Widget> children() {
-        return List.of();
-    }
-
-    @Override
-    public boolean canFocus() {
+    public boolean focusable() {
         return this.enabled && this.visible;
     }
 

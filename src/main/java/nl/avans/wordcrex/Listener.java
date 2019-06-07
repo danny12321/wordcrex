@@ -9,6 +9,8 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
     private final Main main;
 
     private Point dragPoint;
+    private int lastX;
+    private int lastY;
 
     public Listener(JFrame frame, Main main) {
         this.frame = frame;
@@ -59,7 +61,12 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        this.main.getWidgets(false).forEach((widget) -> widget.mouseMove(e.getX(), e.getY()));
+        if (e != null) {
+            this.lastX = e.getX();
+            this.lastY = e.getY();
+        }
+
+        this.main.getWidgets(false).forEach((widget) -> widget.mouseMove(this.lastX, this.lastY));
     }
 
     @Override
