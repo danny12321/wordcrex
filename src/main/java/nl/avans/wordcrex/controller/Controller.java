@@ -14,7 +14,6 @@ public abstract class Controller<T extends Pollable<T>> {
     private final List<Runnable> next = new CopyOnWriteArrayList<>();
 
     private Function<User, T> fn;
-    private boolean initial = true;
 
     public Controller(Main main, Function<User, T> fn) {
         this.main = main;
@@ -30,15 +29,7 @@ public abstract class Controller<T extends Pollable<T>> {
     }
 
     public void poll() {
-        this.replace((model) -> {
-            if (this.initial) {
-                model = model.initialize();
-
-                this.initial = false;
-            }
-
-            return model.poll();
-        });
+        this.replace(Pollable::poll);
         this.next.forEach(Runnable::run);
         this.next.clear();
     }

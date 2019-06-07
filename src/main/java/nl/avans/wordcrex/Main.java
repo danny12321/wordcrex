@@ -101,6 +101,7 @@ public class Main extends JPanel {
     }
 
     public <T extends Pollable<T>> void openController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
+        this.updateModel(fn.apply(this.getModel()).initialize());
         this.controller = this.createController(cls, fn);
         this.openView(this.controller.createView());
     }
