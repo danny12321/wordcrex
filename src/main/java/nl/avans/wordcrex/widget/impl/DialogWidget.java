@@ -22,15 +22,9 @@ public class DialogWidget extends Widget {
 
     @Override
     public void draw(Graphics2D g) {
-        this.positiveButton.setVisible(this.visible);
-        this.negativeButton.setVisible(this.visible);
-
         if (!this.visible) {
             return;
         }
-
-        this.positiveButton.setText(this.positive);
-        this.negativeButton.setText(this.negative);
 
         g.setColor(Colors.OVERLAY);
         g.fillRect(0, 0, Main.FRAME_SIZE, Main.FRAME_SIZE);
@@ -42,6 +36,15 @@ public class DialogWidget extends Widget {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        this.positiveButton.setVisible(this.visible);
+        this.negativeButton.setVisible(this.visible);
+
+        if (!this.visible) {
+            return;
+        }
+
+        this.positiveButton.setText(this.positive);
+        this.negativeButton.setText(this.negative);
     }
 
     @Override

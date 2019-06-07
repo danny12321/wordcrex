@@ -47,7 +47,7 @@ public class Main extends JPanel {
         this.widgets = new CopyOnWriteArrayList<>();
         this.particles = new CopyOnWriteArrayList<>();
         this.loop = new Loop(Map.of(
-            5.0d, this::poll,
+            2.0d, this::poll,
             30.0d, this::update,
             60.0d, this::repaint
         ));
@@ -238,7 +238,7 @@ public class Main extends JPanel {
             return;
         }
 
-        widgets.forEach((widget) -> widget.setFocus(false));
+        this.getWidgets(true).forEach((widget) -> widget.setFocus(false));
         requester.setFocus(true);
     }
 

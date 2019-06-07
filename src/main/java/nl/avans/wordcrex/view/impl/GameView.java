@@ -229,8 +229,7 @@ public class GameView extends View<GameController> {
 
             for (var p : this.played) {
                 if (p.letter.id == letter.id) {
-                    var pos = this.getAbsolutePos(p.x, p.y);
-                    drag.setPosition(pos.a, pos.b);
+                    drag.setPosition(p.x, p.y);
                 }
             }
 
@@ -239,8 +238,7 @@ public class GameView extends View<GameController> {
             if (round != null) {
                 for (var p : round.played) {
                     if (p.letter.id == letter.id) {
-                        var pos = this.getAbsolutePos(p.x, p.y);
-                        drag.setPosition(pos.a, pos.b);
+                        drag.setPosition(p.x, p.y);
                     }
                 }
             }

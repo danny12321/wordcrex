@@ -122,8 +122,14 @@ public class DragWidget extends Widget {
     }
 
     public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
+        var pos = this.absolute.apply(x, y);
+
+        if (pos == null) {
+            return;
+        }
+
+        this.x = pos.a;
+        this.y = pos.b;
     }
 
     public void setEnabled(boolean enabled) {

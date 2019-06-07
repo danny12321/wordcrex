@@ -27,7 +27,6 @@ public class ListWidget<T> extends Widget {
     private List<T> items = new ArrayList<>();
     private int scroll;
     private String selected;
-    private boolean outline;
 
     public ListWidget(int y, int height, Function<T, String> id, BiFunction<T, T, String> header, BiConsumer<Graphics2D, T> draw) {
         this(y, height, id, header, draw, (item) -> false, null);
@@ -78,11 +77,6 @@ public class ListWidget<T> extends Widget {
                 g.fillRect(Main.TASKBAR_SIZE * 2 + 42, position + this.height - 2, 268, 4);
             }
 
-            if (active && this.outline) {
-                g.setColor(Color.white);
-                g.drawRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 2, this.height - 2);
-            }
-
             count++;
         }
 
@@ -95,9 +89,9 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void mouseMove(int x, int y) {
-        if (x > Main.FRAME_SIZE - Main.TASKBAR_SIZE || y < Main.TASKBAR_SIZE) {
-            this.selected = null;
+        this.selected = null;
 
+        if (x > Main.FRAME_SIZE - Main.TASKBAR_SIZE || y < Main.TASKBAR_SIZE) {
             return;
         }
 
@@ -113,19 +107,9 @@ public class ListWidget<T> extends Widget {
             }
 
             if (y > position && y < position + this.height && this.clickable.apply(item)) {
-                var next = this.id.apply(item);
-
-                if (!next.equals(this.selected)) {
-                    this.outline = false;
-                }
-
-                this.selected = next;
-
-                return;
+                this.selected = this.id.apply(item);
             }
         }
-
-        this.selected = null;
     }
 
     @Override
@@ -137,19 +121,16 @@ public class ListWidget<T> extends Widget {
         }
 
         this.execute();
+        this.requestFocus();
     }
 
     @Override
     public void keyPress(int code, int modifiers) {
         if (!this.hasFocus()) {
-            this.outline = false;
-
             return;
         }
 
         if (code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN) {
-            this.outline = true;
-
             if (this.selected == null) {
                 this.setFocus(true);
 
@@ -183,8 +164,6 @@ public class ListWidget<T> extends Widget {
                 this.scrollbar.setOffset(height);
             }
         } else if (code == KeyEvent.VK_ENTER && this.selected != null) {
-            this.outline = true;
-
             this.execute();
         }
     }
@@ -203,15 +182,10 @@ public class ListWidget<T> extends Widget {
 
     @Override
     public void setFocus(boolean focus) {
-        if (focus) {
-            this.outline = true;
-            this.selected = this.id.apply(this.items.stream()
-                .filter(this.clickable::apply)
-                .findFirst()
-                .orElseThrow());
-        } else {
-            this.selected = null;
-        }
+        this.selected = focus ? this.id.apply(this.items.stream()
+            .filter(this.clickable::apply)
+            .findFirst()
+            .orElseThrow()) : null;
 
         super.setFocus(focus);
     }
