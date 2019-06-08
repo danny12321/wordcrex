@@ -12,8 +12,8 @@ public class Fonts {
         try {
             var font = Font.createFont(Font.TRUETYPE_FONT, Fonts.class.getResourceAsStream("/fonts/RobotoMono.ttf"));
 
-            SMALL = font.deriveFont(10.0f);
-            NORMAL = font.deriveFont(16.0f);
+            SMALL = font.deriveFont(Font.BOLD, 10.0f);
+            NORMAL = font.deriveFont(Font.BOLD, 16.0f);
             BIG = font.deriveFont(Font.BOLD, 24.0f);
 
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);

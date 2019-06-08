@@ -3,25 +3,29 @@ package nl.avans.wordcrex.model;
 import nl.avans.wordcrex.util.Pair;
 
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public enum TileType {
-    NONE("--", (type) -> 1),
-    LETTER("L", (type) -> Integer.parseInt(type.substring(1))),
-    WORD("W", (type) -> Integer.parseInt(type.substring(1))),
-    CENTER("*", (type) -> 3);
+    NONE("^--$", (match) -> 1),
+    LETTER("^([0-9]+)L$", (match) -> Integer.parseInt(match.group(1))),
+    WORD("^([0-9]+)W$", (match) -> Integer.parseInt(match.group(1))),
+    CENTER("^\\*$", (match) -> 3);
 
-    public final String type;
-    public final Function<String, Integer> multiplier;
+    public final Pattern type;
+    public final Function<Matcher, Integer> multiplier;
 
-    TileType(String type, Function<String, Integer> multiplier) {
-        this.type = type;
+    TileType(String type, Function<Matcher, Integer> multiplier) {
+        this.type = Pattern.compile(type);
         this.multiplier = multiplier;
     }
 
     public static Pair<TileType, Integer> byType(String type) {
         for (var t : TileType.values()) {
-            if (type.startsWith(t.type)) {
-                return new Pair<>(t, t.multiplier.apply(type));
+            var match = t.type.matcher(type);
+
+            if (match.matches()) {
+                return new Pair<>(t, t.multiplier.apply(match));
             }
         }
 

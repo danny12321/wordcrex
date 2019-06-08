@@ -80,7 +80,7 @@ public class ButtonWidget extends Widget {
     }
 
     @Override
-    public void mouseClick(int x, int y) {
+    public void mousePress(int x, int y) {
         if (this.hover && this.enabled && this.visible) {
             this.requestFocus();
             this.runnable.run();

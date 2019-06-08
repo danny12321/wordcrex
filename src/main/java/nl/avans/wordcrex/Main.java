@@ -184,6 +184,7 @@ public class Main extends JPanel {
 
     private void addWidget(Widget widget, List<Widget> parents) {
         parents.forEach(widget::addParent);
+        widget.update(this::addParticle);
         parents.add(widget);
         this.widgets.add(widget);
         widget.children().forEach((child) -> this.addWidget(child, parents));
@@ -195,7 +196,9 @@ public class Main extends JPanel {
         }
 
         this.controller.poll();
-        System.out.println("Executed " + this.database.flush() + " queries");
+
+        var count = this.database.flush();
+        System.out.println("Executed " + count + " quer" + (count == 1 ? "y" : "ies"));
     }
 
     private void update() {

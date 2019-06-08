@@ -2,37 +2,41 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.model.Wordcrex;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.RegisterView;
 
 import java.util.function.Function;
 
-public class RegisterController extends Controller<User> {
+public class RegisterController extends Controller<Wordcrex> {
     private String username;
     private String password;
     private boolean failed;
 
-    public RegisterController(Main main, Function<User, User> fn) {
+    public RegisterController(Main main, Function<Wordcrex, Wordcrex> fn) {
         super(main, fn);
     }
 
     @Override
-    public View<? extends Controller<User>> createView() {
+    public void poll() {
+    }
+
+    @Override
+    public View<? extends Controller<Wordcrex>> createView() {
         return new RegisterView(this);
     }
 
     public void register() {
-        this.replace((user) -> user.register(this.username, this.password));
+        this.update((user) -> user.register(this.username, this.password));
 
-        if (this.getModel().username.isEmpty()) {
+        if (this.getModel().user == null) {
             this.failed = true;
 
             return;
         }
 
-        this.main.openController(DashboardController.class);
+        // this.main.openController(DashboardController.class);
     }
 
     public void setUsername(String username) {
@@ -54,6 +58,6 @@ public class RegisterController extends Controller<User> {
     }
 
     public void navigateLogin() {
-        this.main.openController(LoginController.class);
+        this.main.openController(LoginController.class, Function.identity());
     }
 }
