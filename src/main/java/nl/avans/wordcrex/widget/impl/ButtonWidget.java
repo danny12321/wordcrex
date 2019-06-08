@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class ButtonWidget extends Widget {
-    private final BufferedImage image;
     private final int width;
     private final int height;
     private final Color background;
@@ -20,9 +19,10 @@ public class ButtonWidget extends Widget {
     private final Color foreground;
     private final Runnable runnable;
 
+    private BufferedImage image;
+    private String text;
     private int x;
     private int y;
-    private String text;
     private boolean hover;
     private boolean enabled = true;
     private boolean visible = true;
@@ -110,6 +110,10 @@ public class ButtonWidget extends Widget {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
     }
 
     public void setEnabled(boolean enabled) {

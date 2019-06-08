@@ -3,6 +3,7 @@ package nl.avans.wordcrex.widget.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.controller.impl.*;
+import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class SidebarWidget extends Widget {
     public static final List<Item> ITEMS = List.of(
@@ -38,9 +40,13 @@ public class SidebarWidget extends Widget {
 
     @Override
     public void draw(Graphics2D g) {
+        if (this.main.getModel().user == null) {
+            return;
+        }
+
         var index = new AtomicInteger();
         this.children.forEach((key, value) -> {
-            var has = value == null || value.role == null || this.main.getModel().hasRole(value.role);
+            var has = value == null || value.role == null || this.main.getModel().user.hasRole(value.role);
 
             key.setVisible(this.open && has);
 
@@ -65,8 +71,8 @@ public class SidebarWidget extends Widget {
 
     @Override
     public List<Widget> children() {
-        SidebarWidget.ITEMS.forEach((item) -> this.children.put(new ButtonWidget(item.title, 32, 64, 192, 32, () -> this.main.openController(item.controller)), item));
-        this.children.put(new ButtonWidget("LOG UIT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class)), null);
+        SidebarWidget.ITEMS.forEach((item) -> this.children.put(new ButtonWidget(item.title, 32, 64, 192, 32, () -> this.main.openController(item.controller, (model) -> model.user)), item));
+        this.children.put(new ButtonWidget("LOG UIT", 32, 448, 192, 32, () -> this.main.openController(LoginController.class, Function.identity())), null);
 
         return List.copyOf(this.children.keySet());
     }
@@ -79,7 +85,7 @@ public class SidebarWidget extends Widget {
         return this.open;
     }
 
-    public static class Item<T extends Controller<?>> {
+    public static class Item<T extends Controller<User>> {
         public final String title;
         public final Class<T> controller;
         public final Class<? extends View<T>> view;

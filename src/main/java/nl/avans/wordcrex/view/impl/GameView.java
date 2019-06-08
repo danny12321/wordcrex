@@ -76,10 +76,10 @@ public class GameView extends View<GameController> {
             g.setColor(Color.WHITE);
             StringUtil.drawCenteredString(g, -24, 44, 72, String.valueOf(this.controller.getPoolSize()));
             g.translate(-x, -y);
-        } else {
-            StringUtil.drawCenteredString(g, 436, 140, 72, "RND");
-            StringUtil.drawCenteredString(g, 436, 160, 72, String.valueOf(this.controller.getRound().round));
         }
+
+        StringUtil.drawCenteredString(g, 436, 140, 72, "RND");
+        StringUtil.drawCenteredString(g, 436, 160, 72, String.valueOf(this.controller.getRound().round));
 
         for (var tile : this.controller.getTiles()) {
             var position = this.getAbsolutePos(tile.x, tile.y);

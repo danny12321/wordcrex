@@ -17,27 +17,29 @@ import java.util.function.Consumer;
 
 public class LoginView extends View<LoginController> {
     private final ButtonWidget submitButton = new ButtonWidget("LOG IN", 64, 312, 184, 48, this.controller::login);
+
     private int update;
 
     public LoginView(LoginController controller) {
         super(controller);
-        this.controller.logout();
     }
 
     @Override
     public void draw(Graphics2D g) {
-        this.submitButton.setEnabled(this.controller.isValid());
-
-        if (this.controller.hasFailed()) {
-            g.setColor(Colors.DARK_RED);
-            g.fillRect(64, 360, 184, 32);
-            g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 64, 360, 184, 32, "ongeldig");
+        if (!this.controller.hasFailed()) {
+            return;
         }
+
+        g.setColor(Colors.DARK_RED);
+        g.fillRect(64, 360, 184, 32);
+        g.setColor(Color.WHITE);
+        StringUtil.drawCenteredString(g, 64, 360, 184, 32, "ongeldig");
     }
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        this.submitButton.setEnabled(this.controller.isValid());
+
         if (this.update++ % 5 != 0) {
             return;
         }

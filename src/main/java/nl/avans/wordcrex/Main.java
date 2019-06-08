@@ -3,12 +3,12 @@ package nl.avans.wordcrex;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.controller.impl.LoginController;
 import nl.avans.wordcrex.data.Database;
-import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.model.Wordcrex;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.Loop;
-import nl.avans.wordcrex.util.Pollable;
+import nl.avans.wordcrex.util.Persistable;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.FrameWidget;
@@ -39,7 +39,7 @@ public class Main extends JPanel {
     private final Listener listener;
 
     private Controller<?> controller;
-    private User model;
+    private Wordcrex model;
 
     private Main(JFrame frame, String config) {
         this.frame = frame;
@@ -52,7 +52,7 @@ public class Main extends JPanel {
             60.0d, this::repaint
         ));
         this.listener = new Listener(this.frame, this);
-        this.model = new User(this.database);
+        this.model = Wordcrex.initialize(this.database);
 
         this.setFont(Fonts.NORMAL);
         this.setForeground(Color.WHITE);
@@ -63,7 +63,7 @@ public class Main extends JPanel {
         this.addMouseListener(this.listener);
         this.addMouseMotionListener(this.listener);
         this.addKeyListener(this.listener);
-        this.openController(LoginController.class);
+        this.openController(LoginController.class, Function.identity());
         this.start();
     }
 
@@ -96,12 +96,7 @@ public class Main extends JPanel {
         this.frame.dispatchEvent(new WindowEvent(this.frame, WindowEvent.WINDOW_CLOSING));
     }
 
-    public void openController(Class<? extends Controller<User>> cls) {
-        this.openController(cls, Function.identity());
-    }
-
-    public <T extends Pollable<T>> void openController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
-        this.updateModel(fn.apply(this.getModel()).initialize());
+    public <T extends Persistable> void openController(Class<? extends Controller<T>> cls, Function<Wordcrex, T> fn) {
         this.controller = this.createController(cls, fn);
         this.openView(this.controller.createView());
     }
@@ -110,12 +105,12 @@ public class Main extends JPanel {
         this.particles.add(particle);
     }
 
-    public User getModel() {
+    public Wordcrex getModel() {
         return this.model;
     }
 
-    public void updateModel(Pollable<?> model) {
-        this.model = model.persist(this.model);
+    public void updateModel(Persistable model) {
+        this.model = model.persist();
     }
 
     public List<Widget> getWidgets(boolean blocked) {
@@ -179,7 +174,7 @@ public class Main extends JPanel {
         this.addWidget(new FrameWidget(this), new ArrayList<>());
     }
 
-    private <T extends Pollable<T>> Controller<T> createController(Class<? extends Controller<T>> cls, Function<User, T> fn) {
+    private <T extends Persistable> Controller<T> createController(Class<? extends Controller<T>> cls, Function<Wordcrex, T> fn) {
         try {
             return cls.getConstructor(Main.class, Function.class).newInstance(this, fn);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
@@ -200,6 +195,7 @@ public class Main extends JPanel {
         }
 
         this.controller.poll();
+        System.out.println("Executed " + this.database.flush() + " queries");
     }
 
     private void update() {
