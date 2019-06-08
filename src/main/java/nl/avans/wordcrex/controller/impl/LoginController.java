@@ -5,6 +5,7 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Wordcrex;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.LoginView;
+import nl.avans.wordcrex.widget.impl.SidebarWidget;
 
 import java.util.function.Function;
 
@@ -36,13 +37,13 @@ public class LoginController extends Controller<Wordcrex> {
             return;
         }
 
-        /*for (var item : SidebarWidget.ITEMS) {
+        for (var item : SidebarWidget.ITEMS) {
             if (item.role == null || this.getModel().user.hasRole(item.role)) {
                 this.main.openController(item.controller, (model) -> model.user);
 
                 return;
             }
-        }*/
+        }
     }
 
     public void setUsername(String username) {

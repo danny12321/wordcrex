@@ -30,7 +30,7 @@ public class Game implements Persistable {
     }
 
     @Override
-    public Wordcrex persist() {
+    public Wordcrex persist(Wordcrex model) {
         throw new RuntimeException();
     }
 

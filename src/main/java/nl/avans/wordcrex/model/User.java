@@ -8,14 +8,16 @@ import java.util.List;
 public class User implements Persistable {
     private final Database database;
 
+    public final String username;
     public final List<UserRole> roles;
     public final List<Word> words;
     public final List<Game> games;
     public final List<Game> observable;
     public final List<User> manageable;
 
-    public User(Database database, List<UserRole> roles, List<Word> words, List<Game> games, List<Game> observable, List<User> manageable) {
+    public User(Database database, String username, List<UserRole> roles, List<Word> words, List<Game> games, List<Game> observable, List<User> manageable) {
         this.database = database;
+        this.username = username;
         this.roles = roles;
         this.words = words;
         this.games = games;
@@ -24,8 +26,8 @@ public class User implements Persistable {
     }
 
     @Override
-    public Wordcrex persist() {
-        throw new RuntimeException();
+    public Wordcrex persist(Wordcrex model) {
+        return new Wordcrex(this.database, this, model.tiles, model.dictionaries);
     }
 
     public User poll(UserPoll poll) {

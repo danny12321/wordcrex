@@ -2,6 +2,7 @@ package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Persistable;
+import nl.avans.wordcrex.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,16 +60,66 @@ public class Wordcrex implements Persistable {
     }
 
     @Override
-    public Wordcrex persist() {
+    public Wordcrex persist(Wordcrex model) {
         return this;
     }
 
     public Wordcrex register(String username, String password) {
-        throw new RuntimeException();
+        if (!StringUtil.isAuthInput(username) || !StringUtil.isAuthInput(password)) {
+            return this;
+        }
+
+        var insertedUser = this.database.insert(
+            "INSERT INTO account VALUES (?, ?)",
+            (statement) -> {
+                statement.setString(1, username);
+                statement.setString(2, password);
+            }
+        );
+
+        if (insertedUser == -1) {
+            return this;
+        }
+
+        this.database.insert(
+            "INSERT INTO accountrole VALUES (?, ?)",
+            (statement) -> {
+                statement.setString(1, username);
+                statement.setString(2, UserRole.PLAYER.role);
+            }
+        );
+
+        return this.login(username, password);
     }
 
     public Wordcrex login(String username, String password) {
-        throw new RuntimeException();
+        var ref = new Object() {
+            String username;
+            List<UserRole> roles = new ArrayList<>();
+        };
+
+        var selected = this.database.select(
+            "SELECT a.username, group_concat(r.role) roles FROM account a JOIN accountrole r ON a.username = r.username WHERE lower(a.username) = lower(?) AND lower(a.password) = lower(?) GROUP BY a.username",
+            (statement) -> {
+                statement.setString(1, username);
+                statement.setString(2, password);
+            },
+            (result) -> {
+                var rolesRaw = result.getString("roles").split(",");
+
+                ref.username = result.getString("username");
+
+                for (var role : rolesRaw) {
+                    ref.roles.add(UserRole.byRole(role));
+                }
+            }
+        );
+
+        if (selected <= 0) {
+            return this;
+        }
+
+        return new Wordcrex(this.database, new User(this.database, username, List.copyOf(ref.roles), List.of(), List.of(), List.of(), List.of()), this.tiles, this.dictionaries);
     }
 
     public Wordcrex logout() {

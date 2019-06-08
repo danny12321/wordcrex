@@ -110,7 +110,7 @@ public class Main extends JPanel {
     }
 
     public void updateModel(Persistable model) {
-        this.model = model.persist();
+        this.model = model.persist(this.model);
     }
 
     public List<Widget> getWidgets(boolean blocked) {
