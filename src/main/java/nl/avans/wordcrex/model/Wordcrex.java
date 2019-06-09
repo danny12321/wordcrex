@@ -93,33 +93,13 @@ public class Wordcrex implements Persistable {
     }
 
     public Wordcrex login(String username, String password) {
-        var ref = new Object() {
-            String username;
-            List<UserRole> roles = new ArrayList<>();
-        };
+        var user = User.initialize(this.database, this, username, password);
 
-        var selected = this.database.select(
-            "SELECT a.username, group_concat(r.role) roles FROM account a JOIN accountrole r ON a.username = r.username WHERE lower(a.username) = lower(?) AND lower(a.password) = lower(?) GROUP BY a.username",
-            (statement) -> {
-                statement.setString(1, username);
-                statement.setString(2, password);
-            },
-            (result) -> {
-                var rolesRaw = result.getString("roles").split(",");
-
-                ref.username = result.getString("username");
-
-                for (var role : rolesRaw) {
-                    ref.roles.add(UserRole.byRole(role));
-                }
-            }
-        );
-
-        if (selected <= 0) {
+        if (user == null) {
             return this;
         }
 
-        return new Wordcrex(this.database, new User(this.database, username, List.copyOf(ref.roles), List.of(), List.of(), List.of(), List.of()), this.tiles, this.dictionaries);
+        return new Wordcrex(this.database, user, this.tiles, this.dictionaries);
     }
 
     public Wordcrex logout() {

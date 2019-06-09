@@ -19,7 +19,7 @@ import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -46,11 +46,6 @@ public class Main extends JPanel {
         this.database = new Database(config);
         this.widgets = new CopyOnWriteArrayList<>();
         this.particles = new CopyOnWriteArrayList<>();
-        this.loop = new Loop(Map.of(
-            2.0d, this::poll,
-            30.0d, this::update,
-            60.0d, this::repaint
-        ));
         this.listener = new Listener(this.frame, this);
         this.model = Wordcrex.initialize(this.database);
 
@@ -64,7 +59,12 @@ public class Main extends JPanel {
         this.addMouseMotionListener(this.listener);
         this.addKeyListener(this.listener);
         this.openController(LoginController.class, Function.identity());
-        this.start();
+
+        this.loop = Loop.start(Map.of(
+            5, this::poll,
+            30, this::update,
+            120, this::repaint
+        ));
     }
 
     @Override
@@ -85,10 +85,6 @@ public class Main extends JPanel {
         if (view != null) {
             view.drawForeground(g);
         }
-    }
-
-    public void start() {
-        this.loop.start();
     }
 
     public void stop() {
@@ -211,6 +207,10 @@ public class Main extends JPanel {
 
         var view = this.getView();
 
+        if (view == null) {
+            return;
+        }
+
         if (view.requestingInitialize()) {
             var current = this.getFocusable();
 
@@ -264,15 +264,17 @@ public class Main extends JPanel {
     }
 
     public static void main(String[] args) {
-        var frame = new JFrame();
+        SwingUtilities.invokeLater(() -> {
+            var frame = new JFrame();
 
-        frame.setTitle("Wordcrex");
-        frame.setSize(Main.FRAME_SIZE, Main.FRAME_SIZE);
-        frame.setLocationRelativeTo(null);
-        frame.setResizable(false);
-        frame.setUndecorated(true);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.add(new Main(frame, args.length > 0 ? args[0] : "prod"));
-        frame.setVisible(true);
+            frame.setTitle("Wordcrex");
+            frame.setSize(Main.FRAME_SIZE, Main.FRAME_SIZE);
+            frame.setLocationRelativeTo(null);
+            frame.setResizable(false);
+            frame.setUndecorated(true);
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.add(new Main(frame, args.length > 0 ? args[0] : "prod"));
+            frame.setVisible(true);
+        });
     }
 }

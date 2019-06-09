@@ -2,12 +2,12 @@ package nl.avans.wordcrex.model;
 
 public class Playable {
     public final int id;
-    public final boolean played;
+    public final boolean available;
     public final Character character;
 
-    public Playable(int id, boolean played, Character character) {
+    public Playable(int id, boolean available, Character character) {
         this.id = id;
-        this.played = played;
+        this.available = available;
         this.character = character;
     }
 }

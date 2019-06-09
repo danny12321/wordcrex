@@ -36,7 +36,7 @@ public class RegisterController extends Controller<Wordcrex> {
             return;
         }
 
-        // this.main.openController(DashboardController.class);
+        this.main.openController(GamesController.class, (model) -> model.user);
     }
 
     public void setUsername(String username) {
