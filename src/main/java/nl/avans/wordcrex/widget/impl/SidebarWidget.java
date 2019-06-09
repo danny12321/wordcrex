@@ -47,12 +47,14 @@ public class SidebarWidget extends Widget {
 
             key.setVisible(this.open && has);
 
-            if (has && value != null) {
-                key.setPosition(32, 64 + 48 * index.getAndIncrement());
+            if (value == null) {
+                return;
             }
 
-            if (value != null && value.controller != null) {
-                key.setEnabled(!this.main.isOpen(value.controller));
+            key.setEnabled(!this.main.isOpen(value.view));
+
+            if (has) {
+                key.setPosition(32, 64 + 48 * index.getAndIncrement());
             }
         });
 

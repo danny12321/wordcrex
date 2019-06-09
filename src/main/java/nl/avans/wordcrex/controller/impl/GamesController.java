@@ -57,4 +57,20 @@ public class GamesController extends Controller<User> {
     public List<Game> getGames() {
         return this.getModel().games;
     }
+
+    public boolean canClick(Game game) {
+        if (game.state == GameState.PLAYING && game.getLastRound() == null) {
+            return false;
+        }
+
+        return game.state != GameState.PENDING || (game.inviteState == InviteState.PENDING && this.isCurrentUser(game.opponent));
+    }
+
+    public void clickGame(Game game) {
+        throw new RuntimeException();
+    }
+
+    public void navigateInvite() {
+        this.main.openController(InviteController.class, (model) -> model.user);
+    }
 }

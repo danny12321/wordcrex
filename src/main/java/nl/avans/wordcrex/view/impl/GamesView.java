@@ -23,7 +23,7 @@ public class GamesView extends View<GamesController> {
     public GamesView(GamesController controller) {
         super(controller);
         this.list = new ListWidget<>(
-            72,
+            64,
             96,
             (game) -> String.valueOf(game.id),
             (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
@@ -54,7 +54,9 @@ public class GamesView extends View<GamesController> {
                     g.setColor(Color.WHITE);
                     g.drawString(score, 450 - width, 54);
                 }
-            }
+            },
+            this.controller::canClick,
+            this.controller::clickGame
         );
     }
 
@@ -74,8 +76,8 @@ public class GamesView extends View<GamesController> {
     @Override
     public List<Widget> children() {
         return List.of(
-            new ButtonWidget("NIEUW SPEL", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, () -> {}),
-            this.list
+            this.list,
+            new ButtonWidget("NIEUW SPEL", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 64, this.controller::navigateInvite)
         );
     }
 }

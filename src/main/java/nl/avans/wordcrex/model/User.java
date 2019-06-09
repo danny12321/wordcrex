@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
+import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Persistable;
 
 import java.util.ArrayList;
@@ -75,8 +76,36 @@ public class User implements Persistable {
         return this.roles.indexOf(role) != -1;
     }
 
-    public List<String> findOpponents(String username) {
-        throw new RuntimeException();
+    public List<Pair<String, Boolean>> findOpponents(String username) {
+        if (!this.hasRole(UserRole.PLAYER)) {
+            return List.of();
+        }
+
+        var ref = new Object() {
+            List<Pair<String, Boolean>> opponents = new ArrayList<>();
+        };
+
+        this.database.select(
+            "SELECT u.username, (SELECT count(*) = 0 FROM game g WHERE ((g.username_player1 = u.username AND g.username_player2 = ?) OR (g.username_player1 = ? AND g.username_player2 = u.username)) AND g.game_state IN (?, ?) AND g.answer_player2 != ?) available FROM account u JOIN accountrole r ON u.username = r.username WHERE u.username != ? AND u.username LIKE ? AND r.role = ?",
+            (statement) -> {
+                statement.setString(1, this.username);
+                statement.setString(2, this.username);
+                statement.setString(3, GameState.PENDING.state);
+                statement.setString(4, GameState.PLAYING.state);
+                statement.setString(5, InviteState.REJECTED.state);
+                statement.setString(6, this.username);
+                statement.setString(7, "%" + username + "%");
+                statement.setString(8, UserRole.PLAYER.role);
+            },
+            (result) -> {
+                var opponent = result.getString("username");
+                var available = result.getBoolean("available");
+
+                ref.opponents.add(new Pair<>(opponent, available));
+            }
+        );
+
+        return List.copyOf(ref.opponents);
     }
 
     public void sendInvite(String username, Dictionary dictionary) {

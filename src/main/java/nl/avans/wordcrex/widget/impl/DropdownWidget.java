@@ -88,6 +88,8 @@ public class DropdownWidget<T> extends Widget {
 
         if (this.open) {
             this.requestFocus();
+        } else if (this.hover < 0) {
+            this.setFocus(false);
         }
     }
 
