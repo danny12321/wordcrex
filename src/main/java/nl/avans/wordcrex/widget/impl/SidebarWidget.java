@@ -25,7 +25,7 @@ public class SidebarWidget extends Widget {
         new Item<>("BEKIJKEN", ObserveController.class, ObserveView.class, UserRole.OBSERVER),
         new Item<>("SUGGEREREN", SuggestController.class, SuggestView.class, UserRole.PLAYER),
         new Item<>("GOEDKEUREN", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
-        /*new Item<>("BEHEREN", ManageController.class, ManageView.class, UserRole.ADMINISTRATOR),*/
+        new Item<>("BEHEREN", ManageController.class, ManageView.class, UserRole.ADMINISTRATOR),
         new Item<>("ACCOUNT", AccountController.class, AccountView.class, null)
     );
 

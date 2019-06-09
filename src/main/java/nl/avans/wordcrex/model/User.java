@@ -6,7 +6,9 @@ import nl.avans.wordcrex.util.Persistable;
 import nl.avans.wordcrex.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class User implements Persistable {
     private final Database database;
@@ -62,9 +64,41 @@ public class User implements Persistable {
         return new User(database, wordcrex, username, List.copyOf(ref.roles), List.of(), List.of(), List.of(), List.of(), List.of());
     }
 
+    public static List<User> initialize(Database database, Wordcrex wordcrex) {
+        var ref = new Object() {
+            List<User> users = new ArrayList<>();
+        };
+
+        database.select(
+            "SELECT a.username, group_concat(r.role) roles FROM account a JOIN accountrole r ON a.username = r.username GROUP BY a.username",
+            (result) -> {
+                var username = result.getString("username");
+
+                var rolesRaw = result.getString("roles").split(",");
+                var roles = Arrays.stream(rolesRaw)
+                    .map(UserRole::byRole)
+                    .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+
+                ref.users.add(new User(database, wordcrex, username, roles, List.of(), List.of(), List.of(), List.of(), List.of()));
+            }
+        );
+
+        return List.copyOf(ref.users);
+    }
+
     @Override
     public Wordcrex persist(Wordcrex model) {
-        return new Wordcrex(this.database, this, model.tiles, model.dictionaries);
+        if (this.username.equals(model.user.username)) {
+            return new Wordcrex(this.database, this, model.tiles, model.dictionaries);
+        }
+
+        var user = model.user;
+        var manageable = user.manageable.stream()
+            .map((u) -> u.username.equals(this.username) ? this : u)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+        var next = new User(user.database, user.wordcrex, user.username, user.roles, user.approvable, user.observable, user.observable, manageable, user.approvable);
+
+        return new Wordcrex(this.database, next, model.tiles, model.dictionaries);
     }
 
     public User poll(UserPoll poll) {
@@ -88,13 +122,19 @@ public class User implements Persistable {
             return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), Word.initialize(this.database, this.wordcrex, this.username), this.games, this.observable, this.manageable, this.approvable);
         } else if (poll == UserPoll.APPROVABLE) {
             return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, this.manageable, Word.initialize(this.database, this.wordcrex, "", WordState.PENDING));
+        } else if (poll == UserPoll.MANAGEABLE) {
+            var users = User.initialize(this.database, this.wordcrex).stream()
+                .filter((u) -> !u.username.equals(this.username))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, users, this.approvable);
         }
 
         return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, this.manageable, this.approvable);
     }
 
     public boolean hasRole(UserRole role) {
-        return this.roles.indexOf(role) != -1;
+        return this.roles.contains(role);
     }
 
     public List<Pair<String, Boolean>> findOpponents(String username) {
