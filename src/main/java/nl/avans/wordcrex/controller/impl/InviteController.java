@@ -25,6 +25,7 @@ public class InviteController extends Controller<User> {
 
     @Override
     public void poll() {
+        this.update((model) -> model.poll(null));
     }
 
     @Override

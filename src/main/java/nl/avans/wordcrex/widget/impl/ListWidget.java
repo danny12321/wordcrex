@@ -121,7 +121,6 @@ public class ListWidget<T> extends Widget {
         }
 
         this.execute();
-        this.requestFocus();
     }
 
     @Override

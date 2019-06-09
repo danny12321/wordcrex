@@ -47,7 +47,7 @@ public abstract class Widget {
     }
 
     public boolean childOf(Widget view) {
-        return this.parents.contains(view);
+        return view == this || this.parents.contains(view);
     }
 
     public void addParent(Widget parent) {

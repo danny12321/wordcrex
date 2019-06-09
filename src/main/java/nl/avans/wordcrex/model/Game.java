@@ -7,6 +7,7 @@ import nl.avans.wordcrex.util.Persistable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Game implements Persistable {
     public final int id;
@@ -58,19 +59,26 @@ public class Game implements Persistable {
                 var dictionary = ListUtil.find(wordcrex.dictionaries, (d) -> d.id.equals(dictionaryId));
 
                 var pool = new ArrayList<Playable>();
-                var ids = result.getString("ids").split(",");
-                var characters = result.getString("characters").split(",");
-                var availables = result.getString("availables").split(",");
 
-                for (var i = 0; i < ids.length; i++) {
-                    var character = characters[i];
+                if (state != GameState.PENDING) {
+                    var ids = result.getString("ids").split(",");
+                    var characters = result.getString("characters").split(",");
+                    var availables = result.getString("availables").split(",");
 
-                    pool.add(new Playable(Integer.parseInt(ids[i]), Boolean.parseBoolean(availables[i]), ListUtil.find(dictionary.characters, (c) -> c.character.equals(character))));
+                    for (var i = 0; i < ids.length; i++) {
+                        var character = characters[i];
+
+                        pool.add(new Playable(Integer.parseInt(ids[i]), Boolean.parseBoolean(availables[i]), ListUtil.find(dictionary.characters, (c) -> c.character.equals(character))));
+                    }
                 }
 
                 ref.temp.put(id, new TempGame(host, opponent, winner, state, inviteState, dictionary, List.copyOf(pool)));
             }
         );
+
+        if (ref.temp.isEmpty()) {
+            return List.of();
+        }
 
         var placeholders = new String[ref.temp.size()];
         Arrays.fill(placeholders, "?");
@@ -125,7 +133,9 @@ public class Game implements Persistable {
             games.add(new Game(id, data.host, data.opponent, data.winner, data.state, data.inviteState, data.dictionary, data.pool, List.copyOf(rounds), List.of()));
         }
 
-        return List.copyOf(games);
+        return List.copyOf(games.stream()
+            .sorted(Comparator.comparingInt((game) -> game.state.order))
+            .collect(Collectors.toList()));
     }
 
     private static Turn parseTurn(ResultSet result, String player, List<Playable> pool, List<Tile> tiles) throws SQLException {

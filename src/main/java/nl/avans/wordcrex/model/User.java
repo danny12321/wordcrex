@@ -67,8 +67,16 @@ public class User implements Persistable {
     }
 
     public User poll(UserPoll poll) {
+        var roles = new ArrayList<UserRole>();
+
+        this.database.select(
+            "SELECT r.role FROM accountrole r WHERE r.username = ?",
+            (statement) -> statement.setString(1, this.username),
+            (result) -> roles.add(UserRole.byRole(result.getString("role")))
+        );
+
         if (poll == UserPoll.GAMES) {
-            return new User(this.database, this.wordcrex, this.username, this.roles, this.words, Game.initialize(this.database, this.wordcrex, this.username), this.observable, this.manageable);
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, Game.initialize(this.database, this.wordcrex, this.username), this.observable, this.manageable);
         } else if (poll == UserPoll.WORDS) {
             var ref = new Object() {
                 List<Word> words = new ArrayList<>();
@@ -88,10 +96,10 @@ public class User implements Persistable {
                 }
             );
 
-            return new User(this.database, this.wordcrex, this.username, this.roles, List.copyOf(ref.words), this.games, this.observable, this.manageable);
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), List.copyOf(ref.words), this.games, this.observable, this.manageable);
         }
 
-        return this;
+        return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, this.manageable);
     }
 
     public boolean hasRole(UserRole role) {
@@ -131,7 +139,20 @@ public class User implements Persistable {
     }
 
     public void sendInvite(String username, Dictionary dictionary) {
-        throw new RuntimeException();
+        if (!this.hasRole(UserRole.PLAYER)) {
+            return;
+        }
+
+        this.database.insert(
+            "INSERT INTO game (game_state, letterset_code, username_player1, username_player2, answer_player2) VALUES (?, ?, ?, ?, ?)",
+            (statement) -> {
+                statement.setString(1, GameState.PENDING.state);
+                statement.setString(2, dictionary.id);
+                statement.setString(3, this.username);
+                statement.setString(4, username);
+                statement.setString(5, InviteState.PENDING.state);
+            }
+        );
     }
 
     public void respondInvite(Game game, GameState state) {
@@ -161,10 +182,44 @@ public class User implements Persistable {
     }
 
     public void changePassword(String password) {
-        throw new RuntimeException();
+        if (!StringUtil.isAuthInput(password)) {
+            return;
+        }
+
+        this.database.update(
+            "UPDATE account SET password = ? WHERE username = ?",
+            (statement) -> {
+                statement.setString(1, password);
+                statement.setString(2, this.username);
+            }
+        );
     }
 
-    public void setRoles(String username, List<UserRole> roles) {
-        throw new RuntimeException();
+    public void toggleRole(User user, UserRole role) {
+        if (!this.hasRole(UserRole.ADMINISTRATOR)) {
+            return;
+        }
+
+        if (user.hasRole(role)) {
+            if (user.roles.size() <= 1) {
+                return;
+            }
+
+            this.database.update(
+                "DELETE FROM accountrole WHERE role = ? AND username = ?",
+                (statement) -> {
+                    statement.setString(1, role.role);
+                    statement.setString(2, user.username);
+                }
+            );
+        } else {
+            this.database.insert(
+                "INSERT INTO accountrole VALUES (?, ?)",
+                (statement) -> {
+                    statement.setString(1, user.username);
+                    statement.setString(2, role.role);
+                }
+            );
+        }
     }
 }

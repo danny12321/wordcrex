@@ -19,7 +19,7 @@ import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -77,14 +77,23 @@ public class Main extends JPanel {
         g.setStroke(Main.OUTLINE);
 
         this.drawParticles(g, false);
-        this.widgets.forEach((widget) -> widget.draw(g));
         this.drawParticles(g, true);
 
         var view = this.getView();
+        var drawn = new ArrayList<Widget>();
 
         if (view != null) {
+            drawn.addAll(this.widgets.stream()
+                .filter((widget) -> widget.childOf(view))
+                .peek((widget) -> widget.draw(g))
+                .collect(Collectors.toList()));
+
             view.drawForeground(g);
         }
+
+        this.widgets.stream()
+            .filter((widget) -> drawn.indexOf(widget) == -1)
+            .forEach((widget) -> widget.draw(g));
     }
 
     public void stop() {
@@ -234,7 +243,7 @@ public class Main extends JPanel {
             .findFirst()
             .orElse(null);
 
-        if (requester == null) {
+        if (requester == null || requester.hasFocus()) {
             return;
         }
 

@@ -19,7 +19,13 @@ public class Loop {
         var executors = new ArrayList<ScheduledFuture<?>>();
 
         for (var loop : loops.entrySet()) {
-            executors.add(pool.scheduleAtFixedRate(loop.getValue(), 0, 1000 / loop.getKey(), TimeUnit.MILLISECONDS));
+            executors.add(pool.scheduleAtFixedRate(() -> {
+                try {
+                    loop.getValue().run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, 0, 1000 / loop.getKey(), TimeUnit.MILLISECONDS));
         }
 
         return new Loop(executors);

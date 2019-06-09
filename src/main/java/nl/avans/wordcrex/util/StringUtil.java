@@ -19,11 +19,11 @@ public class StringUtil {
     }
 
     public static boolean isAuthInput(String input) {
-        return input.matches(StringUtil.AUTH_REGEX);
+        return input != null && input.matches(StringUtil.AUTH_REGEX);
     }
 
     public static boolean isWordInput(String input) {
-        return input.matches(StringUtil.WORD_REGEX);
+        return input != null && input.matches(StringUtil.WORD_REGEX);
     }
 
     public static String repeat(String str, int n) {
