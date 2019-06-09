@@ -116,11 +116,9 @@ public class ListWidget<T> extends Widget {
     public void mouseClick(int x, int y) {
         if (this.selected == null) {
             this.setFocus(false);
-
-            return;
+        } else {
+            this.execute();
         }
-
-        this.execute();
     }
 
     @Override
@@ -194,7 +192,6 @@ public class ListWidget<T> extends Widget {
     }
 
     private void execute() {
-        this.requestFocus();
         this.click.accept(this.items.stream()
             .filter((item) -> this.id.apply(item).equals(this.selected))
             .findFirst()

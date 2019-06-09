@@ -3,6 +3,7 @@ package nl.avans.wordcrex.model;
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.ListUtil;
 import nl.avans.wordcrex.util.Persistable;
+import nl.avans.wordcrex.util.StringUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,18 +35,24 @@ public class Game implements Persistable {
         this.messages = messages;
     }
 
-    public static List<Game> initialize(Database database, Wordcrex wordcrex, String username) {
+    public static List<Game> initialize(Database database, Wordcrex wordcrex, String username, GameState... states) {
         var ref = new Object() {
             Map<Integer, TempGame> temp = new HashMap<>();
             Map<Integer, List<Round>> rounds = new HashMap<>();
         };
 
+        var finalStates = states.length == 0 ? GameState.values() : states;
+
         database.select(
-            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.username_winner winner, g.letterset_code dictionary_id, group_concat(c.letter_id) ids, group_concat(c.symbol) characters, group_concat(!isnull(p.symbol)) availables FROM game g LEFT JOIN letter c ON g.game_id = c.game_id LEFT JOIN pot p ON g.game_id = p.game_id AND c.letter_id = p.letter_id WHERE (g.username_player1 LIKE ? OR g.username_player2 LIKE ?) AND g.answer_player2 != ? GROUP BY g.game_id",
+            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.username_winner winner, g.letterset_code dictionary_id, group_concat(c.letter_id) ids, group_concat(c.symbol) characters, group_concat(!isnull(p.symbol)) availables FROM game g LEFT JOIN letter c ON g.game_id = c.game_id LEFT JOIN pot p ON g.game_id = p.game_id AND c.letter_id = p.letter_id WHERE (g.username_player1 LIKE ? OR g.username_player2 LIKE ?) AND g.answer_player2 != ? AND g.game_state IN (" + StringUtil.getPlaceholders(finalStates.length) + ") GROUP BY g.game_id",
             (statement) -> {
                 statement.setString(1, username.isEmpty() ? "%" : username);
                 statement.setString(2, username.isEmpty() ? "%" : username);
                 statement.setString(3, InviteState.REJECTED.state);
+
+                for (var i = 0; i < finalStates.length; i++) {
+                    statement.setString(i + 4, finalStates[i].state);
+                }
             },
             (result) -> {
                 var id = result.getInt("id");
@@ -80,11 +87,8 @@ public class Game implements Persistable {
             return List.of();
         }
 
-        var placeholders = new String[ref.temp.size()];
-        Arrays.fill(placeholders, "?");
-
         database.select(
-            "SELECT t.game_id id, t.turn_id turn, group_concat(DISTINCT b.letter_id, ' ', b.tile_x, ' ', b.tile_y) board, group_concat(DISTINCT d.letter_id) deck, h.score host_score, h.bonus host_bonus, h.turnaction_type host_action, group_concat(DISTINCT hb.letter_id, ' ', hb.tile_x, ' ', hb.tile_y) host_board, o.score opponent_score, o.bonus opponent_bonus, o.turnaction_type opponent_action, group_concat(DISTINCT ob.letter_id, ' ', ob.tile_x, ' ', ob.tile_y) opponent_board FROM turn t LEFT JOIN turnboardletter b ON t.game_id = b.game_id AND t.turn_id = b.turn_id LEFT JOIN handletter d ON t.game_id = d.game_id AND t.turn_id = d.turn_id LEFT JOIN turnplayer1 h ON t.game_id = h.game_id AND t.turn_id = h.turn_id LEFT JOIN boardplayer1 hb ON t.game_id = hb.game_id AND t.turn_id = hb.turn_id LEFT JOIN turnplayer2 o ON t.game_id = o.game_id AND t.turn_id = o.turn_id LEFT JOIN boardplayer2 ob ON t.game_id = ob.game_id AND t.turn_id = ob.turn_id WHERE t.game_id IN (" + String.join(",", placeholders) + ") GROUP BY t.game_id, t.turn_id, h.username_player1, o.username_player2",
+            "SELECT t.game_id id, t.turn_id turn, group_concat(DISTINCT b.letter_id, ' ', b.tile_x, ' ', b.tile_y) board, group_concat(DISTINCT d.letter_id) deck, h.score host_score, h.bonus host_bonus, h.turnaction_type host_action, group_concat(DISTINCT hb.letter_id, ' ', hb.tile_x, ' ', hb.tile_y) host_board, o.score opponent_score, o.bonus opponent_bonus, o.turnaction_type opponent_action, group_concat(DISTINCT ob.letter_id, ' ', ob.tile_x, ' ', ob.tile_y) opponent_board FROM turn t LEFT JOIN turnboardletter b ON t.game_id = b.game_id AND t.turn_id = b.turn_id LEFT JOIN handletter d ON t.game_id = d.game_id AND t.turn_id = d.turn_id LEFT JOIN turnplayer1 h ON t.game_id = h.game_id AND t.turn_id = h.turn_id LEFT JOIN boardplayer1 hb ON t.game_id = hb.game_id AND t.turn_id = hb.turn_id LEFT JOIN turnplayer2 o ON t.game_id = o.game_id AND t.turn_id = o.turn_id LEFT JOIN boardplayer2 ob ON t.game_id = ob.game_id AND t.turn_id = ob.turn_id WHERE t.game_id IN (" + StringUtil.getPlaceholders(ref.temp.size()) + ") GROUP BY t.game_id, t.turn_id, h.username_player1, o.username_player2",
             (statement) -> {
                 var index = 0;
 

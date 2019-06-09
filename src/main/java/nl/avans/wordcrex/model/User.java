@@ -1,7 +1,6 @@
 package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
-import nl.avans.wordcrex.util.ListUtil;
 import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Persistable;
 import nl.avans.wordcrex.util.StringUtil;
@@ -19,8 +18,9 @@ public class User implements Persistable {
     public final List<Game> games;
     public final List<Game> observable;
     public final List<User> manageable;
+    public final List<Word> approvable;
 
-    public User(Database database, Wordcrex wordcrex, String username, List<UserRole> roles, List<Word> words, List<Game> games, List<Game> observable, List<User> manageable) {
+    public User(Database database, Wordcrex wordcrex, String username, List<UserRole> roles, List<Word> words, List<Game> games, List<Game> observable, List<User> manageable, List<Word> approvable) {
         this.database = database;
         this.wordcrex = wordcrex;
         this.username = username;
@@ -29,6 +29,7 @@ public class User implements Persistable {
         this.games = games;
         this.observable = observable;
         this.manageable = manageable;
+        this.approvable = approvable;
     }
 
     public static User initialize(Database database, Wordcrex wordcrex, String username, String password) {
@@ -58,7 +59,7 @@ public class User implements Persistable {
             return null;
         }
 
-        return new User(database, wordcrex, username, List.copyOf(ref.roles), List.of(), List.of(), List.of(), List.of());
+        return new User(database, wordcrex, username, List.copyOf(ref.roles), List.of(), List.of(), List.of(), List.of(), List.of());
     }
 
     @Override
@@ -80,32 +81,16 @@ public class User implements Persistable {
         );
 
         if (poll == UserPoll.GAMES) {
-            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, Game.initialize(this.database, this.wordcrex, this.username), this.observable, this.manageable);
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, Game.initialize(this.database, this.wordcrex, this.username), this.observable, this.manageable, this.approvable);
         } else if (poll == UserPoll.OBSERVABLE) {
-            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, Game.initialize(this.database, this.wordcrex, ""), this.manageable);
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, Game.initialize(this.database, this.wordcrex, "", GameState.PLAYING, GameState.FINISHED, GameState.RESIGNED), this.manageable, this.approvable);
         } else if (poll == UserPoll.WORDS) {
-            var ref = new Object() {
-                List<Word> words = new ArrayList<>();
-            };
-
-            this.database.select(
-                "SELECT w.word, w.letterset_code dictionary_id, w.state FROM dictionary w WHERE w.username = ? ORDER BY w.letterset_code LIMIT 100",
-                (statement) -> statement.setString(1, this.username),
-                (result) -> {
-                    var word = result.getString("word");
-                    var state = WordState.byState(result.getString("state"));
-
-                    var dictionaryId = result.getString("dictionary_id");
-                    var dictionary = ListUtil.find(wordcrex.dictionaries, (d) -> d.id.equals(dictionaryId));
-
-                    ref.words.add(new Word(word, this.username, state, dictionary));
-                }
-            );
-
-            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), List.copyOf(ref.words), this.games, this.observable, this.manageable);
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), Word.initialize(this.database, this.wordcrex, this.username), this.games, this.observable, this.manageable, this.approvable);
+        } else if (poll == UserPoll.APPROVABLE) {
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, this.manageable, Word.initialize(this.database, this.wordcrex, "", WordState.PENDING));
         }
 
-        return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, this.manageable);
+        return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, this.manageable, this.approvable);
     }
 
     public boolean hasRole(UserRole role) {
@@ -184,7 +169,17 @@ public class User implements Persistable {
     }
 
     public void respondSuggestion(Word word, WordState state) {
-        throw new RuntimeException();
+        if (!this.hasRole(UserRole.MODERATOR) || word.state != WordState.PENDING) {
+            return;
+        }
+
+        this.database.update(
+            "UPDATE dictionary w SET w.state = ? WHERE w.word = ?",
+            (statement) -> {
+                statement.setString(1, state.state);
+                statement.setString(2, word.word);
+            }
+        );
     }
 
     public void changePassword(String password) {

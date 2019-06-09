@@ -1,6 +1,7 @@
 package nl.avans.wordcrex.util;
 
 import java.awt.*;
+import java.util.Arrays;
 
 public class StringUtil {
     private static final String AUTH_REGEX = "^[a-zA-Z0-9]{5,25}$";
@@ -38,5 +39,13 @@ public class StringUtil {
         }
 
         return builder.toString();
+    }
+
+    public static String getPlaceholders(int amount) {
+        var placeholders = new String[amount];
+
+        Arrays.fill(placeholders, "?");
+
+        return String.join(",", placeholders);
     }
 }

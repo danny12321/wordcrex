@@ -4,9 +4,8 @@ import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
-import java.util.stream.Collectors;
 
-public abstract class View<T extends Controller> extends Widget {
+public abstract class View<T extends Controller<?>> extends Widget {
     protected final T controller;
 
     private boolean request;

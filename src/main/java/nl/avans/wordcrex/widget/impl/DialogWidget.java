@@ -71,5 +71,6 @@ public class DialogWidget extends Widget {
         this.negative = negative;
         this.callback = callback;
         this.visible = true;
+        this.positiveButton.requestFocus();
     }
 }

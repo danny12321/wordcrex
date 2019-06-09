@@ -46,8 +46,13 @@ public abstract class Widget {
         return false;
     }
 
-    public boolean childOf(Widget view) {
-        return view == this || this.parents.contains(view);
+    public boolean childOf(Widget widget) {
+        return widget == this || this.parents.contains(widget);
+    }
+
+    public boolean treeMatch(Predicate<Widget> predicate) {
+        return predicate.test(this) || this.parents.stream()
+            .anyMatch(predicate);
     }
 
     public void addParent(Widget parent) {

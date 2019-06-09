@@ -77,7 +77,6 @@ public class Main extends JPanel {
         g.setStroke(Main.OUTLINE);
 
         this.drawParticles(g, false);
-        this.drawParticles(g, true);
 
         var view = this.getView();
         var drawn = new ArrayList<Widget>();
@@ -94,6 +93,8 @@ public class Main extends JPanel {
         this.widgets.stream()
             .filter((widget) -> drawn.indexOf(widget) == -1)
             .forEach((widget) -> widget.draw(g));
+
+        this.drawParticles(g, true);
     }
 
     public void stop() {
@@ -129,7 +130,7 @@ public class Main extends JPanel {
         }
 
         return this.widgets.stream()
-            .filter((widget) -> widget == blocker || widget.childOf(blocker))
+            .filter((widget) -> widget.childOf(blocker))
             .collect(Collectors.toList());
     }
 

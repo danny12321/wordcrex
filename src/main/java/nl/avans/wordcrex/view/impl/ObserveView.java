@@ -26,6 +26,9 @@ public class ObserveView extends View<ObserveController> {
             (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (g, game) -> {
                 var round = game.getLastRound();
+                var score = round == null ? " 0 - 0 " : (" " + round.hostScore + " - " + round.opponentScore + " ");
+                var metrics = g.getFontMetrics();
+                var width = metrics.stringWidth(score);
 
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Color.WHITE);
@@ -36,17 +39,10 @@ public class ObserveView extends View<ObserveController> {
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Color.WHITE);
                 g.drawString(game.opponent, Main.TASKBAR_SIZE, 70);
-
-                if (round != null) {
-                    var score = " " + round.hostScore + " - " + round.opponentScore + " ";
-                    var metrics = g.getFontMetrics();
-                    var width = metrics.stringWidth(score);
-
-                    g.setColor(Colors.DARK_BLUE);
-                    g.fillRect(450 - width, 34, width, 28);
-                    g.setColor(Color.WHITE);
-                    g.drawString(score, 450 - width, 54);
-                }
+                g.setColor(Colors.DARK_BLUE);
+                g.fillRect(450 - width, 34, width, 28);
+                g.setColor(Color.WHITE);
+                g.drawString(score, 450 - width, 54);
             },
             this.controller::canClick,
             this.controller::clickGame
