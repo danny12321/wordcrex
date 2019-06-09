@@ -60,7 +60,7 @@ public class InviteController extends Controller<User> {
     }
 
     public void invite(Pair<String, Boolean> opponent) {
-        if (this.dictionary == null || !opponent.b) {
+        if (!this.canClick(opponent)) {
             return;
         }
 

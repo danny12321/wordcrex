@@ -26,18 +26,18 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
     public void mousePressed(MouseEvent e) {
         if (e.getY() <= Main.TASKBAR_SIZE && e.getX() > Main.TASKBAR_SIZE && e.getX() < Main.FRAME_SIZE - Main.TASKBAR_SIZE) {
             this.dragPoint = e.getPoint();
-        } else {
-            this.main.getWidgets(false).forEach((widget) -> widget.mousePress(e.getX(), e.getY()));
         }
+
+        this.main.getWidgets(false).forEach((widget) -> widget.mousePress(e.getX(), e.getY()));
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         if (this.dragPoint != null) {
             this.dragPoint = null;
-        } else {
-            this.main.getWidgets(false).forEach((widget) -> widget.mouseRelease(e.getX(), e.getY()));
         }
+
+        this.main.getWidgets(false).forEach((widget) -> widget.mouseRelease(e.getX(), e.getY()));
     }
 
     @Override

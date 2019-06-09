@@ -1,8 +1,10 @@
 package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
+import nl.avans.wordcrex.util.ListUtil;
 import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Persistable;
+import nl.avans.wordcrex.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +69,26 @@ public class User implements Persistable {
     public User poll(UserPoll poll) {
         if (poll == UserPoll.GAMES) {
             return new User(this.database, this.wordcrex, this.username, this.roles, this.words, Game.initialize(this.database, this.wordcrex, this.username), this.observable, this.manageable);
+        } else if (poll == UserPoll.WORDS) {
+            var ref = new Object() {
+                List<Word> words = new ArrayList<>();
+            };
+
+            this.database.select(
+                "SELECT w.word, w.letterset_code dictionary_id, w.state FROM dictionary w WHERE w.username = ? ORDER BY w.letterset_code LIMIT 100",
+                (statement) -> statement.setString(1, this.username),
+                (result) -> {
+                    var word = result.getString("word");
+                    var state = WordState.byState(result.getString("state"));
+
+                    var dictionaryId = result.getString("dictionary_id");
+                    var dictionary = ListUtil.find(wordcrex.dictionaries, (d) -> d.id.equals(dictionaryId));
+
+                    ref.words.add(new Word(word, this.username, state, dictionary));
+                }
+            );
+
+            return new User(this.database, this.wordcrex, this.username, this.roles, List.copyOf(ref.words), this.games, this.observable, this.manageable);
         }
 
         return this;
@@ -116,8 +138,22 @@ public class User implements Persistable {
         throw new RuntimeException();
     }
 
-    public void suggestWord(String word, Dictionary dictionary) {
-        throw new RuntimeException();
+    public boolean suggestWord(String word, Dictionary dictionary) {
+        if (!StringUtil.isWordInput(word)) {
+            return false;
+        }
+
+        var updated = this.database.insert(
+            "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
+            (statement) -> {
+                statement.setString(1, word);
+                statement.setString(2, dictionary.id);
+                statement.setString(3, WordState.PENDING.state);
+                statement.setString(4, this.username);
+            }
+        );
+
+        return updated != -1;
     }
 
     public void respondSuggestion(Word word, WordState state) {
