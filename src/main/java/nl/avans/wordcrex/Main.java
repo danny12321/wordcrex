@@ -5,10 +5,7 @@ import nl.avans.wordcrex.controller.impl.LoginController;
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.model.Wordcrex;
 import nl.avans.wordcrex.particle.Particle;
-import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Fonts;
-import nl.avans.wordcrex.util.Loop;
-import nl.avans.wordcrex.util.Persistable;
+import nl.avans.wordcrex.util.*;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.FrameWidget;
@@ -63,7 +60,7 @@ public class Main extends JPanel {
         this.loop = Loop.start(Map.of(
             5, this::poll,
             30, this::update,
-            120, this::repaint
+            60, this::repaint
         ));
     }
 
@@ -282,6 +279,7 @@ public class Main extends JPanel {
         frame.setResizable(false);
         frame.setUndecorated(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setIconImage(Asset.read("icon"));
         frame.add(new Main(frame, args.length > 0 ? args[0] : "prod"));
         frame.setVisible(true);
     }

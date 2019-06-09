@@ -88,7 +88,9 @@ public class User implements Persistable {
 
     @Override
     public Wordcrex persist(Wordcrex model) {
-        if (this.username.equals(model.user.username)) {
+        if (model.user == null) {
+            return model;
+        } else if (this.username.equals(model.user.username)) {
             return new Wordcrex(this.database, this, model.tiles, model.dictionaries);
         }
 
@@ -186,8 +188,18 @@ public class User implements Persistable {
         );
     }
 
-    public void respondInvite(Game game, GameState state) {
-        throw new RuntimeException();
+    public void respondInvite(Game game, InviteState state) {
+        if (!this.hasRole(UserRole.PLAYER) || !game.opponent.equals(this.username)) {
+            return;
+        }
+
+        this.database.update(
+            "UPDATE game g SET g.answer_player2 = ? WHERE g.game_id = ?",
+            (statement) -> {
+                statement.setString(1, state.state);
+                statement.setInt(2, game.id);
+            }
+        );
     }
 
     public boolean suggestWord(String word, Dictionary dictionary) {

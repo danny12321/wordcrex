@@ -3,6 +3,7 @@ package nl.avans.wordcrex.controller.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.*;
+import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GamesView;
 
@@ -66,8 +67,16 @@ public class GamesController extends Controller<User> {
         return game.state != GameState.PENDING || (game.inviteState == InviteState.PENDING && this.isCurrentUser(game.opponent));
     }
 
-    public void clickGame(Game game) {
-        throw new RuntimeException();
+    public void acceptInvite(Game game) {
+        this.getModel().respondInvite(game, InviteState.ACCEPTED);
+    }
+
+    public void rejectInvite(Game game) {
+        this.getModel().respondInvite(game, InviteState.REJECTED);
+    }
+
+    public void navigateGame(Game game) {
+        // this.main.openController(IngameController.class, StreamUtil.getModelProperty((model) -> model.user.games, (g) -> g.id == game.id));
     }
 
     public void navigateInvite() {

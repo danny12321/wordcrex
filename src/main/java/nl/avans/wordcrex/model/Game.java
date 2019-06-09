@@ -1,5 +1,6 @@
 package nl.avans.wordcrex.model;
 
+import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.ListUtil;
 import nl.avans.wordcrex.util.Persistable;
@@ -11,6 +12,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Game implements Persistable {
+    private final Database database;
+
     public final int id;
     public final String host;
     public final String opponent;
@@ -22,7 +25,8 @@ public class Game implements Persistable {
     public final List<Round> rounds;
     public final List<Message> messages;
 
-    public Game(int id, String host, String opponent, String winner, GameState state, InviteState inviteState, Dictionary dictionary, List<Playable> pool, List<Round> rounds, List<Message> messages) {
+    public Game(Database database, int id, String host, String opponent, String winner, GameState state, InviteState inviteState, Dictionary dictionary, List<Playable> pool, List<Round> rounds, List<Message> messages) {
+        this.database = database;
         this.id = id;
         this.host = host;
         this.opponent = opponent;
@@ -134,7 +138,13 @@ public class Game implements Persistable {
             var rounds = ref.rounds.getOrDefault(id, new ArrayList<>());
             var data = temp.getValue();
 
-            games.add(new Game(id, data.host, data.opponent, data.winner, data.state, data.inviteState, data.dictionary, data.pool, List.copyOf(rounds), List.of()));
+            games.add(new Game(database, id, data.host, data.opponent, data.winner, data.state, data.inviteState, data.dictionary, data.pool, List.copyOf(rounds), List.of()));
+        }
+
+        for (var game : games) {
+            if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && game.host.equals(username)) {
+                game.startGame();
+            }
         }
 
         return List.copyOf(games.stream()
@@ -224,6 +234,94 @@ public class Game implements Persistable {
 
     public int getScore(List<Played> played) {
         throw new RuntimeException();
+    }
+
+    public void startGame() {
+        this.database.update(
+            "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",
+            (statement) -> {
+                statement.setString(1, GameState.PLAYING.state);
+                statement.setInt(2, this.id);
+            }
+        );
+
+        var playable = new ArrayList<Playable>();
+        var id = 0;
+
+        for (var character : this.dictionary.characters) {
+            for (var i = 0; i < character.amount; i++) {
+                playable.add(new Playable(++id, true, character));
+            }
+        }
+
+        this.database.insert(
+            "INSERT INTO letter VALUES " + playable.stream().map((p) -> "(?, ?, ?, ?)").collect(Collectors.joining(", ")),
+            (statement) -> {
+                var index = 0;
+
+                for (var p : playable) {
+                    statement.setInt(++index, p.id);
+                    statement.setInt(++index, this.id);
+                    statement.setString(++index, this.dictionary.id);
+                    statement.setString(++index, p.character.character);
+                }
+            }
+        );
+
+        this.nextRound(playable);
+    }
+
+    private void nextRound(List<Playable> pool) {
+        if (!this.rounds.isEmpty() && (this.getLastRound().hostTurn == null || this.getLastRound().opponentTurn == null)) {
+            return;
+        }
+
+        var turn = this.rounds.size() + 1;
+        var deck = new ArrayList<Playable>();
+        var round = this.getLastRound();
+
+        if (round != null) {
+            deck.addAll(round.deck.stream()
+                .filter((a) -> round.board.stream().noneMatch((p) -> p.playable.id == a.id))
+                .collect(Collectors.toList()));
+        }
+
+        var add = Math.min(7 - deck.size(), pool.size());
+
+        for (var i = 0; i < add; i++) {
+            Playable playable;
+
+            do {
+                playable = pool.get(Main.RANDOM.nextInt(pool.size()));
+            } while (!playable.available || this.hasPlayable(deck, playable));
+
+            deck.add(playable);
+        }
+
+        this.database.insert(
+            "INSERT INTO turn VALUES (?, ?)",
+            (statement) -> {
+                statement.setInt(1, this.id);
+                statement.setInt(2, turn);
+            }
+        );
+
+        this.database.insert(
+            "INSERT INTO handletter VALUES " + deck.stream().map((p) -> "(?, ?, ?)").collect(Collectors.joining(", ")),
+            (statement) -> {
+                var index = 0;
+
+                for (var playable : deck) {
+                    statement.setInt(++index, this.id);
+                    statement.setInt(++index, turn);
+                    statement.setInt(++index, playable.id);
+                }
+            }
+        );
+    }
+
+    private boolean hasPlayable(List<Playable> playable, Playable p) {
+        return playable.stream().anyMatch((d) -> d.id == p.id);
     }
 
     public void playTurn(String username, List<Played> played) {

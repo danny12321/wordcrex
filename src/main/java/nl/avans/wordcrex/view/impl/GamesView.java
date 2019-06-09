@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.GamesController;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.GameState;
+import nl.avans.wordcrex.model.InviteState;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
@@ -11,6 +12,7 @@ import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
+import nl.avans.wordcrex.widget.impl.DialogWidget;
 import nl.avans.wordcrex.widget.impl.ListWidget;
 
 import java.awt.*;
@@ -19,6 +21,7 @@ import java.util.function.Consumer;
 
 public class GamesView extends View<GamesController> {
     private final ListWidget<Game> list;
+    private final DialogWidget dialog = new DialogWidget();
 
     public GamesView(GamesController controller) {
         super(controller);
@@ -56,7 +59,21 @@ public class GamesView extends View<GamesController> {
                 }
             },
             this.controller::canClick,
-            this.controller::clickGame
+            (game) -> {
+                if (game.inviteState == InviteState.PENDING) {
+                    this.dialog.show("Accepteren?", "JA", "NEE", (positive) -> {
+                        if (positive) {
+                            this.controller.acceptInvite(game);
+                        } else {
+                            this.controller.rejectInvite(game);
+                        }
+                    });
+
+                    return;
+                }
+
+                this.controller.navigateGame(game);
+            }
         );
     }
 
@@ -77,7 +94,8 @@ public class GamesView extends View<GamesController> {
     public List<Widget> children() {
         return List.of(
             this.list,
-            new ButtonWidget("NIEUW SPEL", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 64, this.controller::navigateInvite)
+            new ButtonWidget("NIEUW SPEL", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 64, this.controller::navigateInvite),
+            this.dialog
         );
     }
 }

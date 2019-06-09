@@ -39,7 +39,7 @@ public class ObserveController extends Controller<User> {
     }
 
     public boolean canClick(Game game) {
-        return game.state != GameState.PENDING && game.getLastRound() != null;
+        return game.getLastRound() != null;
     }
 
     public void clickGame(Game game) {
