@@ -41,10 +41,10 @@ public class Game implements Persistable {
         };
 
         database.select(
-            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.username_winner winner, g.letterset_code dictionary_id, group_concat(c.letter_id) ids, group_concat(c.symbol) characters, group_concat(!isnull(p.symbol)) availables FROM game g LEFT JOIN letter c ON g.game_id = c.game_id LEFT JOIN pot p ON g.game_id = p.game_id AND c.letter_id = p.letter_id WHERE (g.username_player1 = ? OR g.username_player2 = ?) AND g.answer_player2 != ? GROUP BY g.game_id",
+            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.username_winner winner, g.letterset_code dictionary_id, group_concat(c.letter_id) ids, group_concat(c.symbol) characters, group_concat(!isnull(p.symbol)) availables FROM game g LEFT JOIN letter c ON g.game_id = c.game_id LEFT JOIN pot p ON g.game_id = p.game_id AND c.letter_id = p.letter_id WHERE (g.username_player1 LIKE ? OR g.username_player2 LIKE ?) AND g.answer_player2 != ? GROUP BY g.game_id",
             (statement) -> {
-                statement.setString(1, username);
-                statement.setString(2, username);
+                statement.setString(1, username.isEmpty() ? "%" : username);
+                statement.setString(2, username.isEmpty() ? "%" : username);
                 statement.setString(3, InviteState.REJECTED.state);
             },
             (result) -> {

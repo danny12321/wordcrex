@@ -36,7 +36,7 @@ public class DropdownWidget<T> extends Widget {
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(this.hover == 0 && !this.hasFocus() ? Colors.DARKER_YELLOW : Colors.DARK_YELLOW);
+        g.setColor(this.hover == 0 ? Colors.DARKER_YELLOW : Colors.DARK_YELLOW);
         g.fillRect(this.x, this.y, this.width, this.height);
         g.setColor(Colors.DARKER_BLUE);
         g.drawString(this.selected != null ? this.options.get(this.selected) : this.placeholder, this.x + 16, this.y + this.height / 2 + 5);

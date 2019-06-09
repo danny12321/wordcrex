@@ -2,10 +2,7 @@ package nl.avans.wordcrex.widget.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.controller.impl.AccountController;
-import nl.avans.wordcrex.controller.impl.GamesController;
-import nl.avans.wordcrex.controller.impl.LoginController;
-import nl.avans.wordcrex.controller.impl.SuggestController;
+import nl.avans.wordcrex.controller.impl.*;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.particle.Particle;
@@ -13,6 +10,7 @@ import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.AccountView;
 import nl.avans.wordcrex.view.impl.GamesView;
+import nl.avans.wordcrex.view.impl.ObserveView;
 import nl.avans.wordcrex.view.impl.SuggestView;
 import nl.avans.wordcrex.widget.Widget;
 
@@ -27,7 +25,7 @@ import java.util.function.Function;
 public class SidebarWidget extends Widget {
     public static final List<Item> ITEMS = List.of(
         new Item<>("SPELLEN", GamesController.class, GamesView.class, UserRole.PLAYER),
-        /*new Item<>("BEKIJKEN", ObserveController.class, ObserveView.class, UserRole.OBSERVER),*/
+        new Item<>("BEKIJKEN", ObserveController.class, ObserveView.class, UserRole.OBSERVER),
         new Item<>("SUGGEREREN", SuggestController.class, SuggestView.class, UserRole.PLAYER),
         /*new Item<>("GOEDKEUREN", ApproveController.class, ApproveView.class, UserRole.MODERATOR),
         new Item<>("BEHEREN", ManageController.class, ManageView.class, UserRole.ADMINISTRATOR),*/

@@ -67,6 +67,10 @@ public class User implements Persistable {
     }
 
     public User poll(UserPoll poll) {
+        if (poll != null && !this.hasRole(poll.role)) {
+            return this;
+        }
+
         var roles = new ArrayList<UserRole>();
 
         this.database.select(
@@ -77,6 +81,8 @@ public class User implements Persistable {
 
         if (poll == UserPoll.GAMES) {
             return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, Game.initialize(this.database, this.wordcrex, this.username), this.observable, this.manageable);
+        } else if (poll == UserPoll.OBSERVABLE) {
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, Game.initialize(this.database, this.wordcrex, ""), this.manageable);
         } else if (poll == UserPoll.WORDS) {
             var ref = new Object() {
                 List<Word> words = new ArrayList<>();

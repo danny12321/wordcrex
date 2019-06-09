@@ -273,17 +273,15 @@ public class Main extends JPanel {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            var frame = new JFrame();
+        var frame = new JFrame();
 
-            frame.setTitle("Wordcrex");
-            frame.setSize(Main.FRAME_SIZE, Main.FRAME_SIZE);
-            frame.setLocationRelativeTo(null);
-            frame.setResizable(false);
-            frame.setUndecorated(true);
-            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.add(new Main(frame, args.length > 0 ? args[0] : "prod"));
-            frame.setVisible(true);
-        });
+        frame.setTitle("Wordcrex");
+        frame.setSize(Main.FRAME_SIZE, Main.FRAME_SIZE);
+        frame.setLocationRelativeTo(null);
+        frame.setResizable(false);
+        frame.setUndecorated(true);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.add(new Main(frame, args.length > 0 ? args[0] : "prod"));
+        frame.setVisible(true);
     }
 }
