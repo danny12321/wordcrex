@@ -308,16 +308,15 @@ public class Game implements Persistable {
         var size = Math.sqrt(this.wordcrex.tiles.size());
         var score = 0;
         var words = new ArrayList<String>();
-        var playFound = false;
         var tiles = new ArrayList<Tile>();
 
         for (var y = 1; y <= size + 1; y++) {
-            var playCount = 0;
+            var hasPlay = false;
             var hasCurrent = false;
             var tempScore = 0;
             var multipliers = new ArrayList<Integer>();
             var builder = new StringBuilder();
-            var surrounded = false;
+            var playFound = false;
 
             for (var x = 1; x <= size + 1; x++) {
                 var pair = coords.apply(x, y);
@@ -327,15 +326,15 @@ public class Game implements Persistable {
                 var tile = current != null ? current.tile : play != null ? play.tile : null;
 
                 if (tile == null) {
-                    if (playCount > 0 && (builder.length() > 1 || !surrounded)) {
-                        if ((playCount > 1 || !surrounded) && playFound) {
+                    if (hasPlay && builder.length() > 1) {
+                        if (playFound) {
                             return null;
                         }
 
                         playFound = true;
                     }
 
-                    if (playCount > 0 && hasCurrent && builder.length() > 1) {
+                    if (hasPlay && hasCurrent && builder.length() > 1) {
                         words.add(builder.toString());
 
                         for (var multiplier : multipliers) {
@@ -345,12 +344,11 @@ public class Game implements Persistable {
                         score += tempScore;
                     }
 
-                    playCount = 0;
+                    hasPlay = false;
                     hasCurrent = false;
                     builder.setLength(0);
                     tempScore = 0;
                     multipliers.clear();
-                    surrounded = false;
 
                     continue;
                 }
@@ -368,7 +366,7 @@ public class Game implements Persistable {
                         multipliers.add(tile.multiplier);
                     }
 
-                    playCount++;
+                    hasPlay = true;
                     builder.append(play.playable.character.character);
                     tempScore += (play.playable.character.value * multiplier);
                     tiles.add(tile);
@@ -381,11 +379,6 @@ public class Game implements Persistable {
                     for (var side : TileSide.values()) {
                         if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
                             hasCurrent = true;
-                            surrounded = true;
-                        }
-
-                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
-                            surrounded = true;
                         }
                     }
                 }
