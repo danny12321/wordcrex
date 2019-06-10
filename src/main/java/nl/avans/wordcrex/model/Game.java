@@ -306,32 +306,31 @@ public class Game implements Persistable {
         var words = new ArrayList<String>();
         var playFound = false;
 
-        for (var y = 1; y <= size; y++) {
-            var hasPlay = false;
+        for (var y = 1; y <= size + 1; y++) {
+            var playCount = 0;
             var hasCurrent = false;
             var tempScore = 0;
             var multipliers = new ArrayList<Integer>();
             var builder = new StringBuilder();
             var surrounded = false;
 
-            for (var x = 1; x <= size; x++) {
+            for (var x = 1; x <= size + 1; x++) {
                 var pair = coords.apply(x, y);
 
                 var current = this.getPlayed(pair.a, pair.b, board);
                 var play = this.getPlayed(pair.a, pair.b, played);
                 var tile = current != null ? current.tile : play != null ? play.tile : null;
-                var letterMultiplier = 1;
 
                 if (tile == null) {
-                    if (hasPlay && playFound) {
-                        return null;
-                    }
+                    if (playCount > 0 && (builder.length() > 1 || !surrounded)) {
+                        if (playCount > 1 && playFound) {
+                            return null;
+                        }
 
-                    if (hasPlay && (builder.length() > 1 || !surrounded)) {
                         playFound = true;
                     }
 
-                    if (hasPlay && hasCurrent && builder.length() > 1) {
+                    if (playCount > 0 && hasCurrent && builder.length() > 1) {
                         words.add(builder.toString());
 
                         for (var multiplier : multipliers) {
@@ -341,7 +340,7 @@ public class Game implements Persistable {
                         score += tempScore;
                     }
 
-                    hasPlay = false;
+                    playCount = 0;
                     hasCurrent = false;
                     builder.setLength(0);
                     tempScore = 0;
@@ -351,20 +350,22 @@ public class Game implements Persistable {
                     continue;
                 }
 
-                if (tile.type == TileType.LETTER) {
-                    letterMultiplier = tile.multiplier;
-                } else if (tile.type == TileType.WORD) {
-                    multipliers.add(tile.multiplier);
-                }
-
                 if (current != null) {
                     hasCurrent = true;
                     builder.append(current.playable.character.character);
                     tempScore += current.playable.character.value;
                 } else {
-                    hasPlay = true;
+                    var multiplier = 1;
+
+                    if (tile.type == TileType.LETTER) {
+                        multiplier = tile.multiplier;
+                    } else if (tile.type == TileType.WORD) {
+                        multipliers.add(tile.multiplier);
+                    }
+
+                    playCount++;
                     builder.append(play.playable.character.character);
-                    tempScore += (play.playable.character.value * letterMultiplier);
+                    tempScore += (play.playable.character.value * multiplier);
 
                     if (tile.type == TileType.CENTER) {
                         hasCurrent = true;
