@@ -5,6 +5,7 @@ import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.model.Round;
 import nl.avans.wordcrex.model.Wordcrex;
+import nl.avans.wordcrex.util.StreamUtil;
 
 import java.util.List;
 import java.util.function.Function;
@@ -30,6 +31,13 @@ public class GameController extends AbstractGameController {
     }
 
     @Override
+    public String getFormattedScore() {
+        var round = this.getRound();
+
+        return round.hostScore + " - " + round.opponentScore;
+    }
+
+    @Override
     public void nextRound() {
         throw new RuntimeException();
     }
@@ -40,7 +48,7 @@ public class GameController extends AbstractGameController {
     }
 
     @Override
-    public int getScore() {
-        return 0;
+    public void navigateHistory() {
+        this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.user.games, (game) -> game.id == this.getModel().id));
     }
 }

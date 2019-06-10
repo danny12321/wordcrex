@@ -51,6 +51,16 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public abstract Round getRound();
 
+    public String getHost() {
+        return this.getModel().host;
+    }
+
+    public String getOpponent() {
+        return this.getModel().opponent;
+    }
+
+    public abstract String getFormattedScore();
+
     public int getTotalRounds() {
         return this.getModel().rounds.size();
     }
@@ -77,4 +87,6 @@ public abstract class AbstractGameController extends Controller<Game> {
     public int getScore() {
         return this.getModel().getScore(this.getBoard(), this.getPlayed());
     }
+
+    public abstract void navigateHistory();
 }

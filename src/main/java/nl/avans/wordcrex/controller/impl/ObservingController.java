@@ -5,6 +5,7 @@ import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.model.Round;
 import nl.avans.wordcrex.model.Wordcrex;
+import nl.avans.wordcrex.util.StreamUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,15 @@ public class ObservingController extends AbstractGameController {
     }
 
     @Override
+    public String getFormattedScore() {
+        var round = this.getRound();
+        var hostCurrent = round.hostTurn != null ? round.hostTurn.score + round.hostTurn.bonus : 0;
+        var opponentCurrent = round.opponentTurn != null ? round.opponentTurn.score + round.opponentTurn.bonus : 0;
+
+        return (round.hostScore + hostCurrent) + " - " + (round.opponentScore + opponentCurrent);
+    }
+
+    @Override
     public void nextRound() {
         if (this.round < this.getTotalRounds() - 1) {
             this.round++;
@@ -61,5 +71,10 @@ public class ObservingController extends AbstractGameController {
     @Override
     public int getScore() {
         return this.getModel().getScore(super.getBoard(), this.getPlayed());
+    }
+
+    @Override
+    public void navigateHistory() {
+        this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.user.observable, (game) -> game.id == this.getModel().id));
     }
 }

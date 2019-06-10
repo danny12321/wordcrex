@@ -66,6 +66,8 @@ public class ListWidget<T> extends Widget {
                 g.fillRect(0, position, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 64);
                 g.setColor(Colors.DARK_YELLOW);
                 g.drawString(header, Main.TASKBAR_SIZE, position + 38);
+                g.setColor(Colors.DARKER_BLUE);
+                g.fillRect(0, position - 2, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 2);
 
                 offset += 64;
                 position += 64;

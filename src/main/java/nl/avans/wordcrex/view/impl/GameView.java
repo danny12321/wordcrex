@@ -1,5 +1,6 @@
 package nl.avans.wordcrex.view.impl;
 
+import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.AbstractGameController;
 import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.Played;
@@ -23,12 +24,31 @@ public class GameView extends View<AbstractGameController> {
     private final ButtonWidget nextButton = new ButtonWidget(Assets.read("next"), "volgende ronde", 22, 356, 32, 32, this.controller::nextRound);
     private final ButtonWidget previousButton = new ButtonWidget(Assets.read("back"), "vorige ronde", 22, 404, 32, 32, this.controller::previousRound);
 
+    private boolean hover;
+    private int scoreWidth = 0;
+
     public GameView(AbstractGameController controller) {
         super(controller);
     }
 
     @Override
     public void draw(Graphics2D g) {
+        var metrics = g.getFontMetrics();
+        var score = this.controller.getFormattedScore();
+        var host = this.controller.getHost();
+        var opponent = this.controller.getOpponent();
+
+        this.scoreWidth = metrics.stringWidth(score) + 16;
+
+        var offset = Main.FRAME_SIZE / 2 - this.scoreWidth / 2 - 8;
+
+        g.setColor(this.hover ? Colors.DARKERER_BLUE : Colors.DARK_BLUE);
+        g.fillRect(offset, 40, this.scoreWidth, 28);
+        g.setColor(Color.WHITE);
+        g.drawString(score, offset + 8, 60);
+        g.drawString(host, offset - metrics.stringWidth(host) - 8, 60);
+        g.drawString(opponent, offset + this.scoreWidth + 8, 60);
+
         for (var tile : this.controller.getTiles()) {
             var position = this.getAbsolutePos(tile.x, tile.y);
 
@@ -58,6 +78,23 @@ public class GameView extends View<AbstractGameController> {
             this.drawTile(g, b.playable.character, played.stream().noneMatch((p) -> p.tile == b.tile));
             g.translate(-position.a, -position.b);
         });
+
+        var deck = this.controller.getRound().deck;
+
+        for (var i = 0; i < deck.size(); i++) {
+            var p = deck.get(i);
+
+            if (played.stream().anyMatch((d) -> d.playable.id == p.id)) {
+                continue;
+            }
+
+            var x = 142 + i * 34;
+            var y = 462;
+
+            g.translate(x, y);
+            this.drawTile(g, p.character, false);
+            g.translate(-x, -y);
+        }
     }
 
     @Override
@@ -73,6 +110,11 @@ public class GameView extends View<AbstractGameController> {
         var last = played.stream()
             .max(Comparator.comparingInt((Played a) -> a.tile.x).thenComparingInt(a -> a.tile.y))
             .orElse(null);
+
+        if (last == null) {
+            return;
+        }
+
         var abs = this.getAbsolutePos(last.tile.x, last.tile.y);
         var score = String.valueOf(this.controller.getScore());
         var metrics = g.getFontMetrics();
@@ -89,6 +131,22 @@ public class GameView extends View<AbstractGameController> {
     public void update(Consumer<Particle> addParticle) {
         this.nextButton.setEnabled(this.controller.getRound().id < this.controller.getTotalRounds());
         this.previousButton.setEnabled(this.controller.getRound().id > 1);
+    }
+
+    @Override
+    public void mouseMove(int x, int y) {
+        var offset = Main.FRAME_SIZE / 2 - this.scoreWidth / 2 - 8;
+
+        this.hover = x > offset && x < offset + this.scoreWidth && y > 40 && y < 68;
+    }
+
+    @Override
+    public void mouseClick(int x, int y) {
+        if (!this.hover) {
+            return;
+        }
+
+        this.controller.navigateHistory();
     }
 
     @Override

@@ -54,7 +54,7 @@ public class Game implements Persistable {
 
     public static List<Game> initialize(Database database, Wordcrex wordcrex, String username, int id, GameState... states) {
         var ref = new Object() {
-            Map<Integer, TempGame> temp = new HashMap<>();
+            List<Game> temp = new ArrayList<>();
             Map<Integer, List<Round>> rounds = new HashMap<>();
         };
 
@@ -103,7 +103,7 @@ public class Game implements Persistable {
                     }
                 }
 
-                ref.temp.put(game, new TempGame(host, opponent, winner, state, inviteState, dictionary, List.copyOf(pool)));
+                ref.temp.add(new Game(database, wordcrex, game, host, opponent, winner, state, inviteState, dictionary, List.copyOf(pool), List.of(), List.of()));
             }
         );
 
@@ -116,13 +116,13 @@ public class Game implements Persistable {
             (statement) -> {
                 var index = 0;
 
-                for (var game : ref.temp.keySet()) {
-                    statement.setInt(++index, game);
+                for (var game : ref.temp) {
+                    statement.setInt(++index, game.id);
                 }
             },
             (result) -> {
                 var game = result.getInt("id");
-                var temp = ref.temp.get(game);
+                var temp = ListUtil.find(ref.temp, (t) -> t.id == game);
 
                 if (temp == null) {
                     return;
@@ -153,12 +153,10 @@ public class Game implements Persistable {
 
         var games = new ArrayList<Game>();
 
-        for (var temp : ref.temp.entrySet()) {
-            var game = temp.getKey();
-            var rounds = ref.rounds.getOrDefault(game, new ArrayList<>());
-            var data = temp.getValue();
+        for (var game : ref.temp) {
+            var rounds = ref.rounds.getOrDefault(game.id, new ArrayList<>());
 
-            games.add(new Game(database, wordcrex, game, data.host, data.opponent, data.winner, data.state, data.inviteState, data.dictionary, data.pool, List.copyOf(rounds), List.of()));
+            games.add(new Game(database, wordcrex, game.id, game.host, game.opponent, game.winner, game.state, game.inviteState, game.dictionary, game.pool, List.copyOf(rounds), game.messages));
         }
 
         for (var game : games) {
@@ -215,26 +213,6 @@ public class Game implements Persistable {
         }
 
         return List.copyOf(list);
-    }
-
-    private static class TempGame {
-        public final String host;
-        public final String opponent;
-        public final String winner;
-        public final GameState state;
-        public final InviteState inviteState;
-        public final Dictionary dictionary;
-        public final List<Playable> pool;
-
-        private TempGame(String host, String opponent, String winner, GameState state, InviteState inviteState, Dictionary dictionary, List<Playable> pool) {
-            this.host = host;
-            this.opponent = opponent;
-            this.winner = winner;
-            this.state = state;
-            this.inviteState = inviteState;
-            this.dictionary = dictionary;
-            this.pool = pool;
-        }
     }
 
     @Override
@@ -413,7 +391,7 @@ public class Game implements Persistable {
         return ListUtil.find(played, (p) -> p.tile.x == x && p.tile.y == y);
     }
 
-    public void startGame() {
+    private void startGame() {
         this.database.update(
             "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",
             (statement) -> {
