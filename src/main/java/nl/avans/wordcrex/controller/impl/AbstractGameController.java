@@ -3,6 +3,7 @@ package nl.avans.wordcrex.controller.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.*;
+import nl.avans.wordcrex.util.BoardView;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;
@@ -13,6 +14,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public abstract class AbstractGameController extends Controller<Game> {
+    private BoardView view = BoardView.WINNER;
+
     public AbstractGameController(Main main, Function<Wordcrex, Game> fn) {
         super(main, fn);
     }
@@ -89,4 +92,12 @@ public abstract class AbstractGameController extends Controller<Game> {
     }
 
     public abstract void navigateHistory();
+
+    public void setView(BoardView view) {
+        this.view = view;
+    }
+
+    public BoardView getView() {
+        return view;
+    }
 }

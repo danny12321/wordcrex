@@ -28,7 +28,7 @@ public class HistoryView extends View<HistoryController> {
             128,
             "Geen rondes",
             (round) -> String.valueOf(round.id),
-            (previous, next) -> "Ronde " + next.id + " - " + next.deck.stream().map((c) -> c.character.character).collect(Collectors.joining()),
+            (previous, next) -> "RONDE " + next.id + " - " + next.deck.stream().map((c) -> c.character.character).collect(Collectors.joining()),
             (g, round) -> {
                 this.drawScore(g, round.hostTurn, 8, this.controller.getHost());
                 this.drawScore(g, round.opponentTurn, 56, this.controller.getOpponent());

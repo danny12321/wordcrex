@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class GameView extends View<AbstractGameController> {
-    private final ButtonWidget winnerButton = new ButtonWidget(Assets.read("winner"), "winnende bord", 22, 76, 32, 32, () -> {});
-    private final ButtonWidget hostButton = new ButtonWidget(Assets.read("host"), "bord van uitdager", 22, 124, 32, 32, () -> {});
-    private final ButtonWidget opponentButton = new ButtonWidget(Assets.read("opponent"), "bord van tegenstander", 22, 172, 32, 32, () -> {});
+    private final ButtonWidget winnerButton = new ButtonWidget(Assets.read("winner"), "winnende bord", 22, 76, 32, 32, () -> this.controller.setView(BoardView.WINNER));
+    private final ButtonWidget hostButton = new ButtonWidget(Assets.read("host"), "bord van uitdager", 22, 124, 32, 32, () -> this.controller.setView(BoardView.HOST));
+    private final ButtonWidget opponentButton = new ButtonWidget(Assets.read("opponent"), "bord van tegenstander", 22, 172, 32, 32, () -> this.controller.setView(BoardView.OPPONENT));
     private final ButtonWidget nextButton = new ButtonWidget(Assets.read("next"), "volgende ronde", 22, 356, 32, 32, this.controller::nextRound);
     private final ButtonWidget previousButton = new ButtonWidget(Assets.read("back"), "vorige ronde", 22, 404, 32, 32, this.controller::previousRound);
 
@@ -48,6 +48,9 @@ public class GameView extends View<AbstractGameController> {
         g.drawString(score, offset + 8, 60);
         g.drawString(host, offset - metrics.stringWidth(host) - 8, 60);
         g.drawString(opponent, offset + this.scoreWidth + 8, 60);
+
+        StringUtil.drawCenteredString(g, 436, 140, 72, "ronde");
+        StringUtil.drawCenteredString(g, 436, 160, 72, String.valueOf(this.controller.getRound().id));
 
         for (var tile : this.controller.getTiles()) {
             var position = this.getAbsolutePos(tile.x, tile.y);
@@ -129,8 +132,13 @@ public class GameView extends View<AbstractGameController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        this.nextButton.setEnabled(this.controller.getRound().id < this.controller.getTotalRounds());
-        this.previousButton.setEnabled(this.controller.getRound().id > 1);
+        if (!this.controller.canPlay()) {
+            this.winnerButton.setEnabled(this.controller.getView() != BoardView.WINNER);
+            this.hostButton.setEnabled(this.controller.getView() != BoardView.HOST);
+            this.opponentButton.setEnabled(this.controller.getView() != BoardView.OPPONENT);
+            this.nextButton.setEnabled(this.controller.getRound().id < this.controller.getTotalRounds());
+            this.previousButton.setEnabled(this.controller.getRound().id > 1);
+        }
     }
 
     @Override

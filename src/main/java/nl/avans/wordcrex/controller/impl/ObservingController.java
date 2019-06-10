@@ -5,11 +5,13 @@ import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.model.Round;
 import nl.avans.wordcrex.model.Wordcrex;
+import nl.avans.wordcrex.util.BoardView;
 import nl.avans.wordcrex.util.StreamUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ObservingController extends AbstractGameController {
     private int round;
@@ -26,18 +28,23 @@ public class ObservingController extends AbstractGameController {
     @Override
     public List<Played> getBoard() {
         var board = new ArrayList<>(super.getBoard());
-        var add = this.getRound().board;
 
-        if (add != null) {
-            board.addAll(add);
-        }
+        board.addAll(this.getPlayed());
 
         return board;
     }
 
     @Override
     public List<Played> getPlayed() {
-        return this.getRound().board;
+        var round = this.getRound();
+
+        if (this.getView() == BoardView.HOST) {
+            return round.hostTurn != null ? round.hostTurn.played : List.of();
+        } else if (this.getView() == BoardView.OPPONENT) {
+            return round.opponentTurn != null ? round.opponentTurn.played : List.of();
+        }
+
+        return round.board;
     }
 
     @Override
