@@ -76,7 +76,7 @@ public class GamesController extends Controller<User> {
     }
 
     public void navigateGame(Game game) {
-        // this.main.openController(IngameController.class, StreamUtil.getModelProperty((model) -> model.user.games, (g) -> g.id == game.id));
+        this.main.openController(GameController.class, StreamUtil.getModelProperty((model) -> model.user.games, (g) -> g.id == game.id));
     }
 
     public void navigateInvite() {

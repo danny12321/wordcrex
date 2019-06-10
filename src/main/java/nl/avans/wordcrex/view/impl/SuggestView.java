@@ -42,16 +42,24 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public void draw(Graphics2D g) {
+        if (!this.controller.getWords().isEmpty()) {
+            return;
+        }
+
+        g.setColor(Color.WHITE);
+        StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen suggesties");
     }
 
     @Override
     public void drawForeground(Graphics2D g) {
-        if (this.controller.hasFailed()) {
-            g.setColor(Colors.DARK_RED);
-            g.fillRect(0, Main.FRAME_SIZE - 32, Main.FRAME_SIZE - 32, 32);
-            g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 0, Main.FRAME_SIZE - 32, Main.FRAME_SIZE - 32, 32, "Dit woord kan je niet suggereren");
+        if (!this.controller.hasFailed()) {
+            return;
         }
+
+        g.setColor(Colors.DARK_RED);
+        g.fillRect(0, Main.FRAME_SIZE - 32, Main.FRAME_SIZE - 32, 32);
+        g.setColor(Color.WHITE);
+        StringUtil.drawCenteredString(g, 0, Main.FRAME_SIZE - 32, Main.FRAME_SIZE - 32, 32, "Dit woord kan je niet suggereren");
     }
 
     @Override

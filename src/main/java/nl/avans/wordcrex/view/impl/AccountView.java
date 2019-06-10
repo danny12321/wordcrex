@@ -4,7 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.AccountController;
 import nl.avans.wordcrex.model.UserRole;
 import nl.avans.wordcrex.particle.Particle;
-import nl.avans.wordcrex.util.Asset;
+import nl.avans.wordcrex.util.Assets;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 public class AccountView extends View<AccountController> {
     private final ListWidget<UserRole> list;
-    private final ButtonWidget submitButton = new ButtonWidget(Asset.read("next"), Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, 168, 32, 32, this.controller::changePassword);
+    private final ButtonWidget submitButton = new ButtonWidget(Assets.read("next"), null, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, 168, 32, 32, this.controller::changePassword);
 
     public AccountView(AccountController controller) {
         super(controller);

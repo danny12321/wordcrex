@@ -3,16 +3,20 @@ package nl.avans.wordcrex.model;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.ListUtil;
+import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.util.Persistable;
 import nl.avans.wordcrex.util.StringUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class Game implements Persistable {
     private final Database database;
+    private final Wordcrex wordcrex;
 
     public final int id;
     public final String host;
@@ -25,8 +29,9 @@ public class Game implements Persistable {
     public final List<Round> rounds;
     public final List<Message> messages;
 
-    public Game(Database database, int id, String host, String opponent, String winner, GameState state, InviteState inviteState, Dictionary dictionary, List<Playable> pool, List<Round> rounds, List<Message> messages) {
+    public Game(Database database, Wordcrex wordcrex, int id, String host, String opponent, String winner, GameState state, InviteState inviteState, Dictionary dictionary, List<Playable> pool, List<Round> rounds, List<Message> messages) {
         this.database = database;
+        this.wordcrex = wordcrex;
         this.id = id;
         this.host = host;
         this.opponent = opponent;
@@ -39,17 +44,32 @@ public class Game implements Persistable {
         this.messages = messages;
     }
 
+    public static Game initialize(Database database, Wordcrex wordcrex, int id) {
+        return Game.initialize(database, wordcrex, "", id).get(0);
+    }
+
     public static List<Game> initialize(Database database, Wordcrex wordcrex, String username, GameState... states) {
+        return Game.initialize(database, wordcrex, username, 0, states);
+    }
+
+    public static List<Game> initialize(Database database, Wordcrex wordcrex, String username, int id, GameState... states) {
         var ref = new Object() {
             Map<Integer, TempGame> temp = new HashMap<>();
             Map<Integer, List<Round>> rounds = new HashMap<>();
         };
 
         var finalStates = states.length == 0 ? GameState.values() : states;
+        var where = id > 0 ? "g.game_id = ?" : "(g.username_player1 LIKE ? OR g.username_player2 LIKE ?) AND g.answer_player2 != ? AND g.game_state IN (" + StringUtil.getPlaceholders(finalStates.length) + ")";
 
         database.select(
-            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.username_winner winner, g.letterset_code dictionary_id, group_concat(c.letter_id) ids, group_concat(c.symbol) characters, group_concat(!isnull(p.symbol)) availables FROM game g LEFT JOIN letter c ON g.game_id = c.game_id LEFT JOIN pot p ON g.game_id = p.game_id AND c.letter_id = p.letter_id WHERE (g.username_player1 LIKE ? OR g.username_player2 LIKE ?) AND g.answer_player2 != ? AND g.game_state IN (" + StringUtil.getPlaceholders(finalStates.length) + ") GROUP BY g.game_id",
+            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.username_winner winner, g.letterset_code dictionary_id, group_concat(c.letter_id) ids, group_concat(c.symbol) characters, group_concat(!isnull(p.symbol)) availables FROM game g LEFT JOIN letter c ON g.game_id = c.game_id LEFT JOIN pot p ON g.game_id = p.game_id AND c.letter_id = p.letter_id WHERE " + where + " GROUP BY g.game_id",
             (statement) -> {
+                if (id > 0) {
+                    statement.setInt(1, id);
+
+                    return;
+                }
+
                 statement.setString(1, username.isEmpty() ? "%" : username);
                 statement.setString(2, username.isEmpty() ? "%" : username);
                 statement.setString(3, InviteState.REJECTED.state);
@@ -59,7 +79,7 @@ public class Game implements Persistable {
                 }
             },
             (result) -> {
-                var id = result.getInt("id");
+                var game = result.getInt("id");
                 var state = GameState.byState(result.getString("state"));
                 var inviteState = InviteState.byState(result.getString("invite_state"));
                 var host = result.getString("host");
@@ -83,7 +103,7 @@ public class Game implements Persistable {
                     }
                 }
 
-                ref.temp.put(id, new TempGame(host, opponent, winner, state, inviteState, dictionary, List.copyOf(pool)));
+                ref.temp.put(game, new TempGame(host, opponent, winner, state, inviteState, dictionary, List.copyOf(pool)));
             }
         );
 
@@ -96,13 +116,13 @@ public class Game implements Persistable {
             (statement) -> {
                 var index = 0;
 
-                for (var id : ref.temp.keySet()) {
-                    statement.setInt(++index, id);
+                for (var game : ref.temp.keySet()) {
+                    statement.setInt(++index, game);
                 }
             },
             (result) -> {
-                var id = result.getInt("id");
-                var temp = ref.temp.get(id);
+                var game = result.getInt("id");
+                var temp = ref.temp.get(game);
 
                 if (temp == null) {
                     return;
@@ -120,30 +140,36 @@ public class Game implements Persistable {
 
                 var host = Game.parseTurn(result, "host", temp.pool, wordcrex.tiles);
                 var opponent = Game.parseTurn(result, "opponent", temp.pool, wordcrex.tiles);
-                var rounds = ref.rounds.getOrDefault(id, new ArrayList<>());
+                var rounds = ref.rounds.getOrDefault(game, new ArrayList<>());
 
                 var hostScore = rounds.stream().mapToInt((r) -> r.hostTurn == null ? 0 : r.hostTurn.score + r.hostTurn.bonus).sum();
                 var opponentScore = rounds.stream().mapToInt((r) -> r.opponentTurn == null ? 0 : r.opponentTurn.score + r.opponentTurn.bonus).sum();
 
                 rounds.add(new Round(turn, board, List.copyOf(deck), hostScore, opponentScore, host, opponent));
 
-                ref.rounds.put(id, rounds);
+                ref.rounds.put(game, rounds);
             }
         );
 
         var games = new ArrayList<Game>();
 
         for (var temp : ref.temp.entrySet()) {
-            var id = temp.getKey();
-            var rounds = ref.rounds.getOrDefault(id, new ArrayList<>());
+            var game = temp.getKey();
+            var rounds = ref.rounds.getOrDefault(game, new ArrayList<>());
             var data = temp.getValue();
 
-            games.add(new Game(database, id, data.host, data.opponent, data.winner, data.state, data.inviteState, data.dictionary, data.pool, List.copyOf(rounds), List.of()));
+            games.add(new Game(database, wordcrex, game, data.host, data.opponent, data.winner, data.state, data.inviteState, data.dictionary, data.pool, List.copyOf(rounds), List.of()));
         }
 
         for (var game : games) {
-            if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && game.host.equals(username)) {
+            if (!game.host.equals(username)) {
+                continue;
+            }
+
+            if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED) {
                 game.startGame();
+            } else if (game.state == GameState.PLAYING && game.getLastRound() != null && game.getLastRound().hostTurn != null && game.getLastRound().hostTurn != null) {
+                game.nextRound(game.pool);
             }
         }
 
@@ -213,11 +239,33 @@ public class Game implements Persistable {
 
     @Override
     public Wordcrex persist(Wordcrex model) {
-        throw new RuntimeException();
+        if (model.user == null) {
+            return model;
+        }
+
+        var user = model.user.poll(null);
+        var games = user.games.stream()
+            .map((g) -> g.id == this.id ? this : g)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+        var observable = user.observable.stream()
+            .map((g) -> g.id == this.id ? this : g)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+        var next = new User(this.database, this.wordcrex, user.username, user.roles, user.words, games, observable, user.manageable, user.approvable);
+
+        return new Wordcrex(this.database, next, model.tiles, model.dictionaries);
     }
 
-    public Game poll(GamePoll poll) {
-        throw new RuntimeException();
+    public Game poll() {
+        var game = Game.initialize(this.database, this.wordcrex, this.id);
+        var messages = new ArrayList<Message>();
+
+        this.database.select(
+            "SELECT m.message, m.username, m.moment date FROM chatline m WHERE game_id = ? ORDER BY moment",
+            (statement) -> statement.setInt(1, this.id),
+            (result) -> messages.add(new Message(result.getString("message"), result.getString("username"), result.getDate("date")))
+        );
+
+        return new Game(this.database, this.wordcrex, this.id, game.host, game.opponent, game.winner, game.state, game.inviteState, game.dictionary, game.pool, game.rounds, List.copyOf(messages));
     }
 
     public Round getLastRound() {
@@ -229,11 +277,141 @@ public class Game implements Persistable {
     }
 
     public void sendMessage(String username, String message) {
-        throw new RuntimeException();
+        if (!this.host.equals(username) && !this.opponent.equals(username)) {
+            return;
+        }
+
+        this.database.insert("INSERT INTO chatline VALUES (?, ?, ?, ?)",
+            (statement) -> {
+                statement.setString(1, username);
+                statement.setInt(2, this.id);
+                statement.setTimestamp(3, new Timestamp(new Date().getTime()));
+                statement.setString(4, message.trim().replaceAll("( )+", " "));
+            }
+        );
     }
 
     public int getScore(List<Played> played) {
-        throw new RuntimeException();
+        if (played.isEmpty()) {
+            return 0;
+        }
+
+        var board = this.getLastRound().board;
+        var horizontal = this.checkDirection(played, board, Pair::new);
+        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
+
+        if (horizontal == null || vertical == null) {
+            return 0;
+        }
+
+        var score = horizontal.b + vertical.b;
+        var words = new ArrayList<String>();
+
+        words.addAll(horizontal.a);
+        words.addAll(vertical.a);
+
+        for (var word : words) {
+            if (!this.dictionary.isWord(word)) {
+                return 0;
+            }
+        }
+
+        return score;
+    }
+
+    private Pair<List<String>, Integer> checkDirection(List<Played> played, List<Played> board, BiFunction<Integer, Integer, Pair<Integer, Integer>> coords) {
+        var size = Math.sqrt(this.wordcrex.tiles.size());
+        var score = 0;
+        var words = new ArrayList<String>();
+        var playFound = false;
+
+        for (var y = 1; y <= size; y++) {
+            var hasPlay = false;
+            var hasCurrent = false;
+            var tempScore = 0;
+            var multipliers = new ArrayList<Integer>();
+            var builder = new StringBuilder();
+            var surrounded = false;
+
+            for (var x = 1; x <= size; x++) {
+                var pair = coords.apply(x, y);
+
+                var current = this.getPlayed(pair.a, pair.b, board);
+                var play = this.getPlayed(pair.a, pair.b, played);
+                var tile = current == null ? play == null ? null : play.tile : current.tile;
+                var letterMultiplier = 1;
+
+                if (tile == null) {
+                    if (hasPlay && playFound) {
+                        return null;
+                    }
+
+                    if (hasPlay && (builder.length() > 1 || !surrounded)) {
+                        playFound = true;
+                    }
+
+                    if (hasPlay && hasCurrent && builder.length() > 1) {
+                        words.add(builder.toString());
+
+                        for (var multiplier : multipliers) {
+                            tempScore *= multiplier;
+                        }
+
+                        score += tempScore;
+                    }
+
+                    hasPlay = false;
+                    hasCurrent = false;
+                    builder.setLength(0);
+                    tempScore = 0;
+                    multipliers.clear();
+                    surrounded = false;
+
+                    continue;
+                }
+
+                if (tile.type == TileType.LETTER) {
+                    letterMultiplier = tile.multiplier;
+                } else if (tile.type == TileType.WORD) {
+                    multipliers.add(tile.multiplier);
+                }
+
+                if (current != null) {
+                    hasCurrent = true;
+                    builder.append(current.playable.character.character);
+                    tempScore += current.playable.character.value;
+                } else if (play != null) {
+                    hasPlay = true;
+                    builder.append(play.playable.character.character);
+                    tempScore += (play.playable.character.value * letterMultiplier);
+
+                    if (tile.type == TileType.CENTER) {
+                        hasCurrent = true;
+                        multipliers.add(tile.multiplier);
+                    }
+
+                    for (var side : TileSide.values()) {
+                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
+                            hasCurrent = true;
+                        }
+
+                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
+                            surrounded = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (played.size() == 7) {
+            score += 100;
+        }
+
+        return new Pair<>(words, score);
+    }
+
+    private Played getPlayed(int x, int y, List<Played> played) {
+        return ListUtil.find(played, (p) -> p.tile.x == x && p.tile.y == y);
     }
 
     public void startGame() {

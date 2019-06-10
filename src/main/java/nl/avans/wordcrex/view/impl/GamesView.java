@@ -79,10 +79,12 @@ public class GamesView extends View<GamesController> {
 
     @Override
     public void draw(Graphics2D g) {
-        if (this.controller.getGames().isEmpty()) {
-            g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen spellen of uitdagingen");
+        if (!this.controller.getGames().isEmpty()) {
+            return;
         }
+
+        g.setColor(Color.WHITE);
+        StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen spellen of uitdagingen");
     }
 
     @Override

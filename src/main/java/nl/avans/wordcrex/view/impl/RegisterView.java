@@ -4,7 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.RegisterController;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.particle.impl.TileParticle;
-import nl.avans.wordcrex.util.Asset;
+import nl.avans.wordcrex.util.Assets;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -51,7 +51,7 @@ public class RegisterView extends View<RegisterController> {
         return List.of(
             new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, this.controller::setUsername),
             new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, this.controller::setPassword),
-            new ButtonWidget(Asset.read("back"), 64, 312, 32, 32, this.controller::navigateLogin),
+            new ButtonWidget(Assets.read("back"), null, 64, 312, 32, 32, this.controller::navigateLogin),
             this.submitButton
         );
     }

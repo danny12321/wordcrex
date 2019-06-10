@@ -3,6 +3,7 @@ package nl.avans.wordcrex.controller.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.*;
+import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.ObserveView;
 
@@ -43,6 +44,6 @@ public class ObserveController extends Controller<User> {
     }
 
     public void clickGame(Game game) {
-        throw new RuntimeException();
+        this.main.openController(ObservingController.class, StreamUtil.getModelProperty((model) -> model.user.observable, (g) -> g.id == game.id));
     }
 }

@@ -8,12 +8,12 @@ import nl.avans.wordcrex.widget.Widget;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class ButtonWidget extends Widget {
     private final int width;
     private final int height;
+    private final String tooltip;
     private final Color background;
     private final Color backgroundHover;
     private final Color foreground;
@@ -28,16 +28,17 @@ public class ButtonWidget extends Widget {
     private boolean visible = true;
 
     public ButtonWidget(String text, int x, int y, int width, int height, Runnable runnable) {
-        this(text, null, x, y, width, height, Colors.DARK_YELLOW, Colors.DARKER_YELLOW, Colors.DARKER_BLUE, runnable);
+        this(text, null, null, x, y, width, height, Colors.DARK_YELLOW, Colors.DARKER_YELLOW, Colors.DARKER_BLUE, runnable);
     }
 
-    public ButtonWidget(BufferedImage image, int x, int y, int width, int height, Runnable runnable) {
-        this(null, image, x, y, width, height, Colors.DARK_YELLOW, Colors.DARKER_YELLOW, Colors.DARKER_BLUE, runnable);
+    public ButtonWidget(BufferedImage image, String tooltip, int x, int y, int width, int height, Runnable runnable) {
+        this(null, image, tooltip, x, y, width, height, Colors.DARK_YELLOW, Colors.DARKER_YELLOW, Colors.DARKER_BLUE, runnable);
     }
 
-    public ButtonWidget(String text, BufferedImage image, int x, int y, int width, int height, Color background, Color hover, Color foreground, Runnable runnable) {
+    public ButtonWidget(String text, BufferedImage image, String tooltip, int x, int y, int width, int height, Color background, Color hover, Color foreground, Runnable runnable) {
         this.text = text;
         this.image = image;
+        this.tooltip = tooltip;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -68,6 +69,20 @@ public class ButtonWidget extends Widget {
             g.setColor(Color.white);
             g.drawRect(this.x, this.y, this.width - 2, this.height - 2);
         }
+
+        if (!this.hover || this.tooltip == null) {
+            return;
+        }
+
+        var metrics = g.getFontMetrics();
+        var width = metrics.stringWidth(this.tooltip) + 16;
+        var x = this.x + this.width + 12;
+
+        g.setColor(Color.BLACK);
+        g.fillRect(x, this.y, width, this.height);
+        g.fillPolygon(new int[]{x - 7, x, x}, new int[]{this.y + 16, this.y + 9, this.y + 23}, 3);
+        g.setColor(Color.WHITE);
+        StringUtil.drawCenteredString(g, x, this.y, width, this.height, this.tooltip);
     }
 
     @Override

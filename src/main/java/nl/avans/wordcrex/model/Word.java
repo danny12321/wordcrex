@@ -5,7 +5,6 @@ import nl.avans.wordcrex.util.ListUtil;
 import nl.avans.wordcrex.util.StringUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Word {

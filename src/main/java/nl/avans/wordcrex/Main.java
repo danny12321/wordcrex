@@ -219,18 +219,8 @@ public class Main extends JPanel {
         }
 
         if (view.requestingInitialize()) {
-            var current = this.getFocusable();
-
             this.openView(view);
             this.listener.mouseMoved(null);
-
-            var next = this.getFocusable();
-
-            if (current.size() == next.size()) {
-                for (var i = 0; i < current.size(); i++) {
-                    next.get(i).setFocus(current.get(i).hasFocus());
-                }
-            }
 
             return;
         }
@@ -279,7 +269,7 @@ public class Main extends JPanel {
         frame.setResizable(false);
         frame.setUndecorated(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setIconImage(Asset.read("icon"));
+        frame.setIconImage(Assets.read("icon"));
         frame.add(new Main(frame, args.length > 0 ? args[0] : "prod"));
         frame.setVisible(true);
     }
