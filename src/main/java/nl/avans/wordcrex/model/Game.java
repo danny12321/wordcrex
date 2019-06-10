@@ -317,6 +317,7 @@ public class Game implements Persistable {
             var multipliers = new ArrayList<Integer>();
             var builder = new StringBuilder();
             var playFound = false;
+            var surrounded = false;
 
             for (var x = 1; x <= size + 1; x++) {
                 var pair = coords.apply(x, y);
@@ -326,7 +327,7 @@ public class Game implements Persistable {
                 var tile = current != null ? current.tile : play != null ? play.tile : null;
 
                 if (tile == null) {
-                    if (hasPlay && builder.length() > 1) {
+                    if (hasPlay && (builder.length() > 1 || !surrounded)) {
                         if (playFound) {
                             return null;
                         }
@@ -349,6 +350,7 @@ public class Game implements Persistable {
                     builder.setLength(0);
                     tempScore = 0;
                     multipliers.clear();
+                    surrounded = false;
 
                     continue;
                 }
@@ -379,6 +381,11 @@ public class Game implements Persistable {
                     for (var side : TileSide.values()) {
                         if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
                             hasCurrent = true;
+                            surrounded = true;
+                        }
+
+                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
+                            surrounded = true;
                         }
                     }
                 }
