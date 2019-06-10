@@ -47,7 +47,7 @@ public abstract class AbstractGameController extends Controller<Game> {
             board.addAll(round.board);
         }
 
-        return List.copyOf(board);
+        return board;
     }
 
     public abstract List<Played> getPlayed();

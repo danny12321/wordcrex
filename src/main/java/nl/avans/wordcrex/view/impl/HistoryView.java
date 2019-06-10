@@ -47,8 +47,8 @@ public class HistoryView extends View<HistoryController> {
         g.setColor(Colors.DARKERER_BLUE);
         g.fillRect(Main.TASKBAR_SIZE * 2 + 42, 156, 268, 4);
 
-        this.drawUser(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 - 21, 0, this.controller.getHost(), String.valueOf(this.controller.getHostScore()));
-        this.drawUser(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 * 3 - 21, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, this.controller.getOpponent(), String.valueOf(this.controller.getOpponentScore()));
+        this.drawUser(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 - 21, 0, this.controller.getHost(), this.controller.getHostScore());
+        this.drawUser(g, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 4 * 3 - 21, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, this.controller.getOpponent(), this.controller.getOpponentScore());
     }
 
     @Override
@@ -63,7 +63,7 @@ public class HistoryView extends View<HistoryController> {
         );
     }
 
-    private void drawUser(Graphics2D g, int ovalX, int stringX, String username, String score) {
+    private void drawUser(Graphics2D g, int ovalX, int stringX, String username, int score) {
         g.setColor(Colors.DARK_YELLOW);
         g.fillOval(ovalX, 50, 42, 42);
         g.setFont(Fonts.BIG);
@@ -74,7 +74,7 @@ public class HistoryView extends View<HistoryController> {
         StringUtil.drawCenteredString(g, stringX, 120, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, username);
         g.setFont(Fonts.SMALL);
         g.setColor(Color.LIGHT_GRAY);
-        StringUtil.drawCenteredString(g, stringX, 134, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, score);
+        StringUtil.drawCenteredString(g, stringX, 134, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, String.valueOf(score));
         g.setFont(Fonts.NORMAL);
     }
 

@@ -11,7 +11,6 @@ import nl.avans.wordcrex.util.StreamUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class ObservingController extends AbstractGameController {
     private int round;
@@ -27,7 +26,7 @@ public class ObservingController extends AbstractGameController {
 
     @Override
     public List<Played> getBoard() {
-        var board = new ArrayList<>(super.getBoard());
+        var board = super.getBoard();
 
         board.addAll(this.getPlayed());
 
