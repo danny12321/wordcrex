@@ -3,6 +3,7 @@ package nl.avans.wordcrex.widget.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
+import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
@@ -18,6 +19,7 @@ public class ListWidget<T> extends Widget {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll);
     private final int y;
     private final int height;
+    private final String fallback;
     private final Function<T, String> id;
     private final BiFunction<T, T, String> header;
     private final BiConsumer<Graphics2D, T> draw;
@@ -28,13 +30,14 @@ public class ListWidget<T> extends Widget {
     private int scroll;
     private String selected;
 
-    public ListWidget(int y, int height, Function<T, String> id, BiFunction<T, T, String> header, BiConsumer<Graphics2D, T> draw) {
-        this(y, height, id, header, draw, (item) -> false, null);
+    public ListWidget(int y, int height, String fallback, Function<T, String> id, BiFunction<T, T, String> header, BiConsumer<Graphics2D, T> draw) {
+        this(y, height, fallback, id, header, draw, (item) -> false, null);
     }
 
-    public ListWidget(int y, int height, Function<T, String> id, BiFunction<T, T, String> header, BiConsumer<Graphics2D, T> draw, Function<T, Boolean> clickable, Consumer<T> click) {
+    public ListWidget(int y, int height, String fallback, Function<T, String> id, BiFunction<T, T, String> header, BiConsumer<Graphics2D, T> draw, Function<T, Boolean> clickable, Consumer<T> click) {
         this.y = y;
         this.height = height;
+        this.fallback = fallback;
         this.id = id;
         this.header = header;
         this.draw = draw;
@@ -46,6 +49,11 @@ public class ListWidget<T> extends Widget {
     public void draw(Graphics2D g) {
         var offset = this.y;
         var count = 0;
+
+        if (this.items.isEmpty()) {
+            g.setColor(Color.WHITE);
+            StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE + offset, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE - offset, this.fallback);
+        }
 
         for (var i = 0; i < this.items.size(); i++) {
             var item = this.items.get(i);

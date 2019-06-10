@@ -25,6 +25,7 @@ public class InviteView extends View<InviteController> {
         this.list = new ListWidget<>(
             96,
             96,
+            "Geen tegenstanders",
             (pair) -> pair.a,
             (previous, next) -> null,
             (g, pair) -> {

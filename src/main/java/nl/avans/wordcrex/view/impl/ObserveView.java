@@ -22,6 +22,7 @@ public class ObserveView extends View<ObserveController> {
         this.list = new ListWidget<>(
             0,
             96,
+            "Geen spellen",
             (game) -> String.valueOf(game.id),
             (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (g, game) -> {

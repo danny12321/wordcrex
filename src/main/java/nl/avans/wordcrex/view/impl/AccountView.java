@@ -27,6 +27,7 @@ public class AccountView extends View<AccountController> {
         this.list = new ListWidget<>(
             176,
             64,
+            "Geen rollen",
             (role) -> role.role,
             (previous, next) -> null,
             (g, role) -> {

@@ -27,6 +27,7 @@ public class SuggestView extends View<SuggestController> {
         this.list = new ListWidget<>(
             80,
             96,
+            "Geen suggesties",
             (word) -> word.word,
             (previous, next) -> previous == null || previous.dictionary != next.dictionary ? next.dictionary.name.toUpperCase() : null,
             (g, word) -> {
@@ -42,12 +43,6 @@ public class SuggestView extends View<SuggestController> {
 
     @Override
     public void draw(Graphics2D g) {
-        if (!this.controller.getWords().isEmpty()) {
-            return;
-        }
-
-        g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen suggesties");
     }
 
     @Override

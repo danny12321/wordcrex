@@ -25,6 +25,7 @@ public class ManageView extends View<ManageController> {
         this.list = new ListWidget<>(
             48,
             96,
+            "Geen gebruikers",
             (user) -> user.username,
             (previous, next) -> null,
             (g, user) -> {

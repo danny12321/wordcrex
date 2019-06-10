@@ -6,7 +6,6 @@ import nl.avans.wordcrex.model.Word;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
-import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.DialogWidget;
@@ -25,6 +24,7 @@ public class ApproveView extends View<ApproveController> {
         this.list = new ListWidget<>(
             0,
             96,
+            "Geen suggesties",
             (word) -> word.word,
             (previous, next) -> null,
             (g, word) -> {
@@ -56,12 +56,6 @@ public class ApproveView extends View<ApproveController> {
 
     @Override
     public void draw(Graphics2D g) {
-        if (!this.controller.getWords().isEmpty()) {
-            return;
-        }
-
-        g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen suggesties");
     }
 
     @Override

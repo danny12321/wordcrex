@@ -28,6 +28,7 @@ public class GamesView extends View<GamesController> {
         this.list = new ListWidget<>(
             64,
             96,
+            "Geen spellen of uitdagingen",
             (game) -> String.valueOf(game.id),
             (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
             (g, game) -> {
@@ -79,12 +80,6 @@ public class GamesView extends View<GamesController> {
 
     @Override
     public void draw(Graphics2D g) {
-        if (!this.controller.getGames().isEmpty()) {
-            return;
-        }
-
-        g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen spellen of uitdagingen");
     }
 
     @Override
