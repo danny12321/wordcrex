@@ -2,15 +2,13 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.model.Game;
-import nl.avans.wordcrex.model.Round;
-import nl.avans.wordcrex.model.Tile;
-import nl.avans.wordcrex.model.Wordcrex;
+import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -35,6 +33,22 @@ public abstract class AbstractGameController extends Controller<Game> {
         return this.getRoot().tiles;
     }
 
+    public List<Played> getBoard() {
+        var board = new ArrayList<Played>();
+
+        for (var round : this.getModel().rounds) {
+            if (round == this.getRound()) {
+                break;
+            }
+
+            board.addAll(round.board);
+        }
+
+        return List.copyOf(board);
+    }
+
+    public abstract List<Played> getPlayed();
+
     public abstract Round getRound();
 
     public int getTotalRounds() {
@@ -58,5 +72,9 @@ public abstract class AbstractGameController extends Controller<Game> {
             default:
                 return Color.BLACK;
         }
+    }
+
+    public int getScore() {
+        return this.getModel().getScore(this.getBoard(), this.getPlayed());
     }
 }

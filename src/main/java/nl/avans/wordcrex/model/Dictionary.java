@@ -2,10 +2,13 @@ package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Dictionary {
     private final Database database;
+    private final Map<String, Boolean> cache = new HashMap<>();
 
     public final String id;
     public final String name;
@@ -19,7 +22,11 @@ public class Dictionary {
     }
 
     public boolean isWord(String word) {
-        return this.database.select(
+        if (this.cache.containsKey(word)) {
+            return this.cache.get(word);
+        }
+
+        var valid = this.database.select(
             "SELECT d.word FROM dictionary d WHERE d.letterset_code = ? AND d.word = ? AND d.state = ?",
             (statement) -> {
                 statement.setString(1, this.id);
@@ -28,5 +35,9 @@ public class Dictionary {
             },
             (result) -> {}
         ) > 0;
+
+        this.cache.put(word, valid);
+
+        return valid;
     }
 }

@@ -291,12 +291,11 @@ public class Game implements Persistable {
         );
     }
 
-    public int getScore(List<Played> played) {
+    public int getScore(List<Played> board, List<Played> played) {
         if (played.isEmpty()) {
             return 0;
         }
 
-        var board = this.getLastRound().board;
         var horizontal = this.checkDirection(played, board, Pair::new);
         var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
 
@@ -314,6 +313,10 @@ public class Game implements Persistable {
             if (!this.dictionary.isWord(word)) {
                 return 0;
             }
+        }
+
+        if (played.size() == 7) {
+            score += 100;
         }
 
         return score;
@@ -338,7 +341,7 @@ public class Game implements Persistable {
 
                 var current = this.getPlayed(pair.a, pair.b, board);
                 var play = this.getPlayed(pair.a, pair.b, played);
-                var tile = current == null ? play == null ? null : play.tile : current.tile;
+                var tile = current != null ? current.tile : play != null ? play.tile : null;
                 var letterMultiplier = 1;
 
                 if (tile == null) {
@@ -380,7 +383,7 @@ public class Game implements Persistable {
                     hasCurrent = true;
                     builder.append(current.playable.character.character);
                     tempScore += current.playable.character.value;
-                } else if (play != null) {
+                } else {
                     hasPlay = true;
                     builder.append(play.playable.character.character);
                     tempScore += (play.playable.character.value * letterMultiplier);
@@ -401,10 +404,6 @@ public class Game implements Persistable {
                     }
                 }
             }
-        }
-
-        if (played.size() == 7) {
-            score += 100;
         }
 
         return new Pair<>(words, score);

@@ -1,21 +1,28 @@
 package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.controller.impl.AbstractGameController;
+import nl.avans.wordcrex.model.Character;
+import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.model.TileType;
 import nl.avans.wordcrex.particle.Particle;
-import nl.avans.wordcrex.util.Assets;
-import nl.avans.wordcrex.util.Pair;
-import nl.avans.wordcrex.util.StringUtil;
+import nl.avans.wordcrex.util.*;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class GameView extends View<AbstractGameController> {
+    private final ButtonWidget winnerButton = new ButtonWidget(Assets.read("winner"), "winnende bord", 22, 76, 32, 32, () -> {});
+    private final ButtonWidget hostButton = new ButtonWidget(Assets.read("host"), "bord van uitdager", 22, 124, 32, 32, () -> {});
+    private final ButtonWidget opponentButton = new ButtonWidget(Assets.read("opponent"), "bord van tegenstander", 22, 172, 32, 32, () -> {});
+    private final ButtonWidget nextButton = new ButtonWidget(Assets.read("next"), "volgende ronde", 22, 356, 32, 32, this.controller::nextRound);
+    private final ButtonWidget previousButton = new ButtonWidget(Assets.read("back"), "vorige ronde", 22, 404, 32, 32, this.controller::previousRound);
+
     public GameView(AbstractGameController controller) {
         super(controller);
     }
@@ -37,10 +44,51 @@ public class GameView extends View<AbstractGameController> {
                 StringUtil.drawCenteredString(g, 52 + tile.x * 24, 52 + tile.y * 24, 24, 24, tile.multiplier + tile.type.type);
             }
         }
+
+        var played = this.controller.getPlayed();
+
+        if (played == null) {
+            return;
+        }
+
+        this.controller.getBoard().forEach((b) -> {
+            var position = this.getAbsolutePos(b.tile.x, b.tile.y);
+
+            g.translate(position.a, position.b);
+            this.drawTile(g, b.playable.character, played.stream().noneMatch((p) -> p.tile == b.tile));
+            g.translate(-position.a, -position.b);
+        });
+    }
+
+    @Override
+    public void drawForeground(Graphics2D g) {
+        var played = this.controller.getPlayed();
+
+        if (played == null) {
+            return;
+        }
+
+        g.setFont(Fonts.SMALL);
+
+        var last = played.stream()
+            .max(Comparator.comparingInt((Played a) -> a.tile.x).thenComparingInt(a -> a.tile.y))
+            .orElse(null);
+        var abs = this.getAbsolutePos(last.tile.x, last.tile.y);
+        var score = String.valueOf(this.controller.getScore());
+        var metrics = g.getFontMetrics();
+        var width = metrics.stringWidth(score) + 6;
+
+        g.setColor(Colors.DARK_YELLOW);
+        g.fillRoundRect(abs.a + 14, abs.b + 14, width, 14, 6, 6);
+        g.setColor(Colors.DARKER_BLUE);
+        StringUtil.drawCenteredString(g, abs.a + 14, abs.b + 14, width, 14, score);
+        g.setFont(Fonts.NORMAL);
     }
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        this.nextButton.setEnabled(this.controller.getRound().id < this.controller.getTotalRounds());
+        this.previousButton.setEnabled(this.controller.getRound().id > 1);
     }
 
     @Override
@@ -54,14 +102,24 @@ public class GameView extends View<AbstractGameController> {
             children.add(new ButtonWidget(Assets.read("reset"), "resetten", 22, 220, 32, 32, () -> {}));
             children.add(new ButtonWidget(Assets.read("shuffle"), "shudden", 22, 458, 32, 32, () -> {}));
         } else {
-            children.add(new ButtonWidget(Assets.read("winner"), "winnende bord", 22, 76, 32, 32, () -> {}));
-            children.add(new ButtonWidget(Assets.read("host"), "bord van uitdager", 22, 124, 32, 32, () -> {}));
-            children.add(new ButtonWidget(Assets.read("opponent"), "bord van tegenstander", 22, 172, 32, 32, () -> {}));
-            children.add(new ButtonWidget(Assets.read("next"), "volgende ronde", 22, 356, 32, 32, () -> {}));
-            children.add(new ButtonWidget(Assets.read("back"), "vorige ronde", 22, 404, 32, 32, () -> {}));
+            children.add(this.winnerButton);
+            children.add(this.hostButton);
+            children.add(this.opponentButton);
+            children.add(this.nextButton);
+            children.add(this.previousButton);
         }
 
         return children;
+    }
+
+    private void drawTile(Graphics2D g, Character character, boolean hover) {
+        g.setColor(hover ? Color.LIGHT_GRAY : Color.WHITE);
+        g.fillRoundRect(0, 0, 24, 24, 6, 6);
+        g.setColor(Colors.DARK_BLUE);
+        g.drawString(character.character, 3, 21);
+        g.setFont(Fonts.SMALL);
+        StringUtil.drawCenteredString(g, 12, 0, 12, 14, String.valueOf(character.value));
+        g.setFont(Fonts.NORMAL);
     }
 
     private Pair<Integer, Integer> getAbsolutePos(int x, int y) {

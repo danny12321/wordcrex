@@ -137,7 +137,9 @@ public class Main extends JPanel {
     }
 
     public void tabFocus(boolean reverse) {
-        var widgets = this.getFocusable();
+        var widgets = this.getWidgets(false).stream()
+            .filter(Widget::focusable)
+            .collect(Collectors.toList());
         var updated = false;
 
         for (int i = 0; i < widgets.size(); i++) {
@@ -225,9 +227,8 @@ public class Main extends JPanel {
             return;
         }
 
-        var widgets = this.getFocusable();
-        var requester = widgets.stream()
-            .filter(Widget::requestingFocus)
+        var requester = this.getWidgets(false).stream()
+            .filter((widget) -> widget.requestingFocus() && widget.focusable())
             .findFirst()
             .orElse(null);
 
@@ -252,12 +253,6 @@ public class Main extends JPanel {
             .map(View.class::cast)
             .findFirst()
             .orElse(null);
-    }
-
-    private List<Widget> getFocusable() {
-        return this.getWidgets(false).stream()
-            .filter(Widget::focusable)
-            .collect(Collectors.toList());
     }
 
     public static void main(String[] args) {

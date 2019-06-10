@@ -2,9 +2,11 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.model.Game;
+import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.model.Round;
 import nl.avans.wordcrex.model.Wordcrex;
 
+import java.util.List;
 import java.util.function.Function;
 
 public class GameController extends AbstractGameController {
@@ -18,8 +20,13 @@ public class GameController extends AbstractGameController {
     }
 
     @Override
+    public List<Played> getPlayed() {
+        return List.of();
+    }
+
+    @Override
     public Round getRound() {
-        throw new RuntimeException();
+        return this.getModel().getLastRound();
     }
 
     @Override
@@ -30,5 +37,10 @@ public class GameController extends AbstractGameController {
     @Override
     public void previousRound() {
         throw new RuntimeException();
+    }
+
+    @Override
+    public int getScore() {
+        return 0;
     }
 }

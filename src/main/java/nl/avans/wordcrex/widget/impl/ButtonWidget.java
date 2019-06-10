@@ -91,7 +91,7 @@ public class ButtonWidget extends Widget {
 
     @Override
     public void mouseMove(int x, int y) {
-        this.hover = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+        this.hover = this.enabled && this.visible && x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
     }
 
     @Override
@@ -99,9 +99,7 @@ public class ButtonWidget extends Widget {
         if (this.hover && this.enabled && this.visible) {
             this.requestFocus();
             this.runnable.run();
-        }
-
-        if (!this.hover) {
+        } else if (!this.hover) {
             this.setFocus(false);
         }
     }
@@ -136,6 +134,7 @@ public class ButtonWidget extends Widget {
 
         if (!this.enabled) {
             this.hover = false;
+            this.setFocus(false);
         }
     }
 
@@ -144,6 +143,7 @@ public class ButtonWidget extends Widget {
 
         if (!this.enabled) {
             this.hover = false;
+            this.setFocus(false);
         }
     }
 }
