@@ -8,7 +8,6 @@ import nl.avans.wordcrex.model.Wordcrex;
 import nl.avans.wordcrex.util.BoardView;
 import nl.avans.wordcrex.util.StreamUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -47,8 +46,17 @@ public class ObservingController extends AbstractGameController {
     }
 
     @Override
+    public void setPlayed(List<Played> played) {
+    }
+
+    @Override
     public Round getRound() {
         return this.getModel().rounds.get(this.round);
+    }
+
+    @Override
+    public int getPool() {
+        return this.getModel().pool.size() - super.getBoard().size() - this.getRound().deck.size();
     }
 
     @Override

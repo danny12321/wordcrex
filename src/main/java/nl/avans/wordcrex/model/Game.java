@@ -99,7 +99,7 @@ public class Game implements Persistable {
                     for (var i = 0; i < ids.length; i++) {
                         var character = characters[i];
 
-                        pool.add(new Playable(Integer.parseInt(ids[i]), Boolean.parseBoolean(availables[i]), ListUtil.find(dictionary.characters, (c) -> c.character.equals(character))));
+                        pool.add(new Playable(Integer.parseInt(ids[i]), Integer.parseInt(availables[i]) == 1, ListUtil.find(dictionary.characters, (c) -> c.character.equals(character))));
                     }
                 }
 
@@ -270,7 +270,7 @@ public class Game implements Persistable {
     }
 
     public int getScore(List<Played> board, List<Played> played) {
-        if (played.isEmpty()) {
+        if (played == null || played.isEmpty()) {
             return 0;
         }
 
@@ -286,6 +286,10 @@ public class Game implements Persistable {
 
         words.addAll(horizontal.a);
         words.addAll(vertical.a);
+
+        if (words.isEmpty()) {
+            return 0;
+        }
 
         for (var word : words) {
             if (!this.dictionary.isWord(word)) {
@@ -305,6 +309,7 @@ public class Game implements Persistable {
         var score = 0;
         var words = new ArrayList<String>();
         var playFound = false;
+        var tiles = new ArrayList<Tile>();
 
         for (var y = 1; y <= size + 1; y++) {
             var playCount = 0;
@@ -323,7 +328,7 @@ public class Game implements Persistable {
 
                 if (tile == null) {
                     if (playCount > 0 && (builder.length() > 1 || !surrounded)) {
-                        if (playCount > 1 && playFound) {
+                        if ((playCount > 1 || !surrounded) && playFound) {
                             return null;
                         }
 
@@ -366,6 +371,7 @@ public class Game implements Persistable {
                     playCount++;
                     builder.append(play.playable.character.character);
                     tempScore += (play.playable.character.value * multiplier);
+                    tiles.add(tile);
 
                     if (tile.type == TileType.CENTER) {
                         hasCurrent = true;
@@ -375,6 +381,7 @@ public class Game implements Persistable {
                     for (var side : TileSide.values()) {
                         if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
                             hasCurrent = true;
+                            surrounded = true;
                         }
 
                         if (this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
@@ -383,6 +390,16 @@ public class Game implements Persistable {
                     }
                 }
             }
+        }
+
+        if (tiles.isEmpty()) {
+            return null;
+        }
+
+        var tile = tiles.get(0);
+
+        if (!tiles.stream().allMatch((t) -> t.x == tile.x) && !tiles.stream().allMatch((t) -> t.y == tile.y)) {
+            return null;
         }
 
         return new Pair<>(words, score);

@@ -7,12 +7,12 @@ import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-public class DragWidget extends Widget {
+public class DragWidget<T> extends Widget {
+    public final T data;
     public final int initialX;
     public final int initialY;
     public final int width;
@@ -22,7 +22,6 @@ public class DragWidget extends Widget {
     private final BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute;
     private final BiFunction<Integer, Integer, Pair<Integer, Integer>> relative;
     private final BiFunction<Integer, Integer, Boolean> check;
-    private final BiConsumer<Pair<Integer, Integer>, Boolean> state;
 
     private int x;
     private int y;
@@ -32,7 +31,8 @@ public class DragWidget extends Widget {
     private boolean dragging;
     private boolean enabled;
 
-    public DragWidget(int x, int y, int width, int height, boolean enabled, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute, BiFunction<Integer, Integer, Pair<Integer, Integer>> relative, BiFunction<Integer, Integer, Boolean> check, BiConsumer<Pair<Integer, Integer>, Boolean> state) {
+    public DragWidget(T data, int x, int y, int width, int height, boolean enabled, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute, BiFunction<Integer, Integer, Pair<Integer, Integer>> relative, BiFunction<Integer, Integer, Boolean> check) {
+        this.data = data;
         this.x = this.initialX = x;
         this.y = this.initialY = y;
         this.width = width;
@@ -42,7 +42,6 @@ public class DragWidget extends Widget {
         this.absolute = absolute;
         this.relative = relative;
         this.check = check;
-        this.state = state;
     }
 
     @Override
@@ -73,23 +72,12 @@ public class DragWidget extends Widget {
     }
 
     @Override
-    public List<Widget> children() {
-        return List.of();
-    }
-
-    @Override
     public void mousePress(int x, int y) {
         this.dragging = this.hover;
 
         if (this.dragging) {
             this.offsetX = x - this.x;
             this.offsetY = y - this.y;
-
-            var r = this.relative.apply(this.x, this.y);
-
-            if (r != null) {
-                this.state.accept(r, false);
-            }
         }
     }
 
@@ -114,7 +102,6 @@ public class DragWidget extends Widget {
 
                 this.x = a.a;
                 this.y = a.b;
-                this.state.accept(r, true);
             }
         }
 
@@ -134,5 +121,13 @@ public class DragWidget extends Widget {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Pair<Integer, Integer> getPosition() {
+        if (this.dragging) {
+            return null;
+        }
+
+        return this.relative.apply(this.x, this.y);
     }
 }

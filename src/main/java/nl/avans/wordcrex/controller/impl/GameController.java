@@ -7,10 +7,13 @@ import nl.avans.wordcrex.model.Round;
 import nl.avans.wordcrex.model.Wordcrex;
 import nl.avans.wordcrex.util.StreamUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
 public class GameController extends AbstractGameController {
+    private List<Played> played = new ArrayList<>();
+
     public GameController(Main main, Function<Wordcrex, Game> fn) {
         super(main, fn);
     }
@@ -22,12 +25,24 @@ public class GameController extends AbstractGameController {
 
     @Override
     public List<Played> getPlayed() {
-        return List.of();
+        return this.played;
+    }
+
+    @Override
+    public void setPlayed(List<Played> played) {
+        this.played = List.copyOf(played);
     }
 
     @Override
     public Round getRound() {
         return this.getModel().getLastRound();
+    }
+
+    @Override
+    public int getPool() {
+        return (int) this.getModel().pool.stream()
+            .filter((c) -> c.available)
+            .count();
     }
 
     @Override
