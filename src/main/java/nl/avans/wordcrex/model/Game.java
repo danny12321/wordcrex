@@ -445,10 +445,13 @@ public class Game implements Persistable {
     private void nextRound(List<Playable> pool, List<Played> board) {
         var turn = this.rounds.size() + 1;
         var round = this.getLastRound();
+        var deck = new ArrayList<Playable>();
 
-        var deck = round.deck.stream()
-            .filter((a) -> board.stream().noneMatch((p) -> p.playable.id == a.id))
-            .collect(Collectors.toList());
+        if (round != null) {
+            deck.addAll(round.deck.stream()
+                .filter((a) -> board.stream().noneMatch((p) -> p.playable.id == a.id))
+                .collect(Collectors.toList()));
+        }
 
         var add = Math.min(7 - deck.size(), pool.size());
 
