@@ -46,6 +46,10 @@ public abstract class Widget {
         return false;
     }
 
+    public boolean top() {
+        return false;
+    }
+
     public boolean childOf(Widget widget) {
         return widget == this || this.parents.contains(widget);
     }

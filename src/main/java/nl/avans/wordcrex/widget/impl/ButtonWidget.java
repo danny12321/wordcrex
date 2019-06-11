@@ -116,6 +116,11 @@ public class ButtonWidget extends Widget {
         return this.enabled && this.visible;
     }
 
+    @Override
+    public boolean top() {
+        return this.hover;
+    }
+
     public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;

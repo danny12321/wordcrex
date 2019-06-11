@@ -404,6 +404,10 @@ public class Game implements Persistable {
     }
 
     private void startGame() {
+        if (!this.rounds.isEmpty()) {
+            return;
+        }
+
         this.database.update(
             "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",
             (statement) -> {
@@ -435,23 +439,16 @@ public class Game implements Persistable {
             }
         );
 
-        this.nextRound(playable);
+        this.nextRound(playable, List.of());
     }
 
-    private void nextRound(List<Playable> pool) {
-        if (!this.rounds.isEmpty() && (this.getLastRound().hostTurn == null || this.getLastRound().opponentTurn == null)) {
-            return;
-        }
-
+    private void nextRound(List<Playable> pool, List<Played> board) {
         var turn = this.rounds.size() + 1;
-        var deck = new ArrayList<Playable>();
         var round = this.getLastRound();
 
-        if (round != null) {
-            deck.addAll(round.deck.stream()
-                .filter((a) -> round.board.stream().noneMatch((p) -> p.playable.id == a.id))
-                .collect(Collectors.toList()));
-        }
+        var deck = round.deck.stream()
+            .filter((a) -> board.stream().noneMatch((p) -> p.playable.id == a.id))
+            .collect(Collectors.toList());
 
         var add = Math.min(7 - deck.size(), pool.size());
 
@@ -492,7 +489,98 @@ public class Game implements Persistable {
     }
 
     public void playTurn(String username, List<Played> played) {
-        throw new RuntimeException();
+        if (!this.host.equals(username) && !this.opponent.equals(username)) {
+            return;
+        }
+
+        var board = new ArrayList<Played>();
+        var round = this.getLastRound();
+
+        for (var r : this.rounds) {
+            if (r == round) {
+                break;
+            }
+
+            if (r.board != null) {
+                board.addAll(r.board);
+            }
+        }
+
+        var host = this.host.equals(username);
+        var other = host ? round.opponentTurn : round.hostTurn;
+        var player = host ? "1" : "2";
+        var score = this.getScore(board, played);
+
+        this.database.insert(
+            "INSERT INTO turnplayer" + player + " VALUES (?, ?, ?, ?, ?, ?)",
+            (statement) -> {
+                statement.setInt(1, this.id);
+                statement.setInt(2, round.id);
+                statement.setString(3, username);
+                statement.setInt(4, 0);
+                statement.setInt(5, score);
+                statement.setString(6, played.isEmpty() ? TurnAction.PASSED.action : TurnAction.PLAYED.action);
+            }
+        );
+
+        if (!played.isEmpty()) {
+            var placeholders = played.stream()
+                .map((p) -> "(" + StringUtil.getPlaceholders(6) + ")")
+                .collect(Collectors.joining(", "));
+
+            this.database.insert(
+                "INSERT INTO boardplayer" + player + " VALUES " + placeholders,
+                (statement) -> {
+                    var i = 0;
+
+                    for (var p : played) {
+                        statement.setInt(++i, this.id);
+                        statement.setString(++i, username);
+                        statement.setInt(++i, round.id);
+                        statement.setInt(++i, p.playable.id);
+                        statement.setInt(++i, p.tile.x);
+                        statement.setInt(++i, p.tile.y);
+                    }
+                }
+            );
+        }
+
+        if (other == null) {
+            return;
+        }
+
+        var winning = score > other.score ? played : other.played;
+
+        if (other.score == score) {
+            this.database.update(
+                "UPDATE turnplayer" + (host ? "2" : "1") + " SET bonus = 5 WHERE game_id=? AND turn_id=?",
+                (statement) -> {
+                    statement.setInt(1, this.id);
+                    statement.setInt(2, round.id);
+                }
+            );
+        }
+
+        var placeholders = winning.stream()
+            .map((p) -> "(" + StringUtil.getPlaceholders(5) + ")")
+            .collect(Collectors.joining(", "));
+
+        this.database.insert(
+            "INSERT INTO turnboardletter VALUES " + placeholders,
+            (statement) -> {
+                int i = 0;
+
+                for (var w : winning) {
+                    statement.setInt(++i, w.playable.id);
+                    statement.setInt(++i, this.id);
+                    statement.setInt(++i, round.id);
+                    statement.setInt(++i, w.tile.x);
+                    statement.setInt(++i, w.tile.y);
+                }
+            }
+        );
+
+        this.nextRound(this.pool, winning);
     }
 
     public void resign(String username) {

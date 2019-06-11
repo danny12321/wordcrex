@@ -94,6 +94,14 @@ public class ObservingController extends AbstractGameController {
     }
 
     @Override
+    public void play() {
+    }
+
+    @Override
+    public void resign() {
+    }
+
+    @Override
     public void navigateHistory() {
         this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.user.observable, (game) -> game.id == this.getModel().id));
     }

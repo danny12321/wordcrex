@@ -108,6 +108,11 @@ public class DragWidget<T> extends Widget {
         this.dragging = false;
     }
 
+    @Override
+    public boolean top() {
+        return this.dragging;
+    }
+
     public void setPosition(int x, int y) {
         var pos = this.absolute.apply(x, y);
 

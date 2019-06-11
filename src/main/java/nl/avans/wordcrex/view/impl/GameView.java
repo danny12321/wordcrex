@@ -11,6 +11,7 @@ import nl.avans.wordcrex.util.*;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
 import nl.avans.wordcrex.widget.impl.ButtonWidget;
+import nl.avans.wordcrex.widget.impl.DialogWidget;
 import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
@@ -20,6 +21,17 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class GameView extends View<AbstractGameController> {
+    private final DialogWidget dialog = new DialogWidget();
+    private final ButtonWidget playButton = new ButtonWidget(Assets.read("next"), "spelen", 22, 76, 32, 32, this::play);
+    private final ButtonWidget resignButton = new ButtonWidget(Assets.read("close"), "opgeven", 22, 172, 32, 32, this::resign);
+    private final ButtonWidget resetButton = new ButtonWidget(Assets.read("reset"), "resetten", 22, 220, 32, 32, () -> {
+        this.controller.setPlayed(List.of());
+        this.updatePositions();
+    });
+    private final ButtonWidget shuffleButton = new ButtonWidget(Assets.read("shuffle"), "schudden", 22, 458, 32, 32, () -> {
+        this.controller.shuffle();
+        this.requestInitialize();
+    });
     private final ButtonWidget winnerButton = new ButtonWidget(Assets.read("winner"), "winnende bord", 22, 76, 32, 32, () -> this.controller.setView(BoardView.WINNER));
     private final ButtonWidget hostButton = new ButtonWidget(Assets.read("host"), "bord van uitdager", 22, 124, 32, 32, () -> this.controller.setView(BoardView.HOST));
     private final ButtonWidget opponentButton = new ButtonWidget(Assets.read("opponent"), "bord van tegenstander", 22, 172, 32, 32, () -> this.controller.setView(BoardView.OPPONENT));
@@ -29,6 +41,7 @@ public class GameView extends View<AbstractGameController> {
 
     private boolean hover;
     private int scoreWidth = 0;
+    private int lastRound;
 
     public GameView(AbstractGameController controller) {
         super(controller);
@@ -148,7 +161,22 @@ public class GameView extends View<AbstractGameController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        if (!this.controller.canPlay()) {
+        var round = this.controller.getRound();
+        var can = this.controller.isHost() ? round.hostTurn == null : round.opponentTurn == null;
+
+        if (this.lastRound != round.id) {
+            this.lastRound = round.id;
+
+            this.requestInitialize();
+        }
+
+        if (this.controller.canPlay()) {
+            this.playButton.setEnabled(can);
+            this.resignButton.setEnabled(can);
+            this.resetButton.setEnabled(can);
+            this.shuffleButton.setEnabled(can);
+            this.deck.forEach((d) -> d.setEnabled(can));
+        } else {
             this.winnerButton.setEnabled(this.controller.getView() != BoardView.WINNER);
             this.hostButton.setEnabled(this.controller.getView() != BoardView.HOST);
             this.opponentButton.setEnabled(this.controller.getView() != BoardView.OPPONENT);
@@ -192,17 +220,11 @@ public class GameView extends View<AbstractGameController> {
         var children = new ArrayList<Widget>();
 
         if (this.controller.canPlay()) {
-            children.add(new ButtonWidget(Assets.read("next"), "spelen", 22, 76, 32, 32, () -> {}));
+            children.add(this.playButton);
             children.add(new ButtonWidget(Assets.read("messages"), "berichten", 22, 124, 32, 32, this.controller::navigateChat));
-            children.add(new ButtonWidget(Assets.read("close"), "opgeven", 22, 172, 32, 32, () -> {}));
-            children.add(new ButtonWidget(Assets.read("reset"), "resetten", 22, 220, 32, 32, () -> {
-                this.controller.setPlayed(List.of());
-                this.updatePositions();
-            }));
-            children.add(new ButtonWidget(Assets.read("shuffle"), "shudden", 22, 458, 32, 32, () -> {
-                this.controller.shuffle();
-                this.requestInitialize();
-            }));
+            children.add(this.resignButton);
+            children.add(this.resetButton);
+            children.add(this.shuffleButton);
 
             var deck = this.controller.getDeck();
             this.deck.clear();
@@ -223,6 +245,8 @@ public class GameView extends View<AbstractGameController> {
             children.add(this.nextButton);
             children.add(this.previousButton);
         }
+
+        children.add(this.dialog);
 
         return children;
     }
@@ -275,7 +299,7 @@ public class GameView extends View<AbstractGameController> {
     }
 
     private boolean canDrop(int x, int y) {
-        return this.isFree(x, y, this.controller.getPlayed()) && this.isFree(x, y, this.controller.getRound().board);
+        return this.isFree(x, y, this.controller.getPlayed()) && this.isFree(x, y, this.controller.getBoard());
     }
 
     private boolean isFree(int x, int y, List<Played> played) {
@@ -290,5 +314,31 @@ public class GameView extends View<AbstractGameController> {
         }
 
         return true;
+    }
+
+    private void play() {
+        var can = this.controller.getScore() > 0;
+
+        if (!can && this.controller.getPlayed().isEmpty()) {
+            this.dialog.show("Passen?", "Ja", "Nee", (positive) -> {
+                if (!positive) {
+                    return;
+                }
+
+                this.controller.play();
+            });
+        } else if (can) {
+            this.controller.play();
+        }
+    }
+
+    private void resign() {
+        this.dialog.show("Opgeven?", "Ja", "Nee", (positive) -> {
+            if (!positive) {
+                return;
+            }
+
+            this.controller.resign();
+        });
     }
 }

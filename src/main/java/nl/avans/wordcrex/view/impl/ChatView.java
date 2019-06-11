@@ -32,11 +32,11 @@ public class ChatView extends View<ChatController> {
     public void draw(Graphics2D g) {
         var gap = 16;
         var size = 32;
-        var maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (gap * 4 + size * 2);
 
+        var maxWidth = (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2;
         var messages = this.controller.getMessages();
-        var y = Main.TASKBAR_SIZE + gap;
-        var contentHeight = messages.stream().mapToInt(m -> StringUtil.split(g, m.message, maxBubbleSize).size() * size + gap).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 48 + gap;
+        var offset = Main.TASKBAR_SIZE + 16;
+        var contentHeight = messages.stream().mapToInt(m -> StringUtil.split(g, m.message, maxWidth).size() * size + gap).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 64;
 
         for (var i = 0; i < messages.size(); i++) {
             var userMessage = false;
@@ -49,40 +49,41 @@ public class ChatView extends View<ChatController> {
 
             if (!(i != 0 && messages.get(i - 1).username.equals(messages.get(i).username))) {
                 g.setColor(Colors.DARK_YELLOW);
-                g.fillOval(x, y - contentHeight + this.scroll, size, size);
+                g.fillOval(x, offset - contentHeight + this.scroll, size, size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, y - contentHeight + this.scroll, size, size, messages.get(i).username.substring(0, 1).toUpperCase());
+                StringUtil.drawCenteredString(g, x, offset - contentHeight + this.scroll, size, size, messages.get(i).username.substring(0, 1).toUpperCase());
             }
 
             var message = messages.get(i).message;
-            var width = g.getFontMetrics().stringWidth(message);
-            var height = g.getFontMetrics().stringWidth(message);
+            var bounds = g.getFontMetrics().getStringBounds(message, g);
+            var width = (int) bounds.getWidth();
+            var height = (int) bounds.getHeight();
 
-            if (width > maxBubbleSize) {
-                width = maxBubbleSize;
+            if (width > maxWidth) {
+                width = maxWidth;
             }
 
             var stringX = userMessage ? x - width - gap : x + size + gap;
-            var lines = StringUtil.split(g, message, maxBubbleSize);
+            var lines = StringUtil.split(g, message, maxWidth);
 
             for (var line : lines) {
                 g.setColor(Colors.DARK_BLUE);
-                g.fillRect(stringX - gap / 2, y - contentHeight + this.scroll, width + gap, size);
+                g.fillRect(stringX - gap / 2, offset - contentHeight + this.scroll, width + gap, size);
 
                 g.setColor(Color.WHITE);
-                g.drawString(line.trim(), stringX, y + height - contentHeight + this.scroll);
+                g.drawString(line.trim(), stringX, offset + height - contentHeight + this.scroll);
 
-                y += size;
+                offset += size;
             }
 
-            y += gap;
+            offset += gap;
         }
 
         g.setColor(Colors.DARK_BLUE);
         g.fillRect(0, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48);
 
-        this.scrollbar.setHeight(y + gap);
+        this.scrollbar.setHeight(offset + gap);
     }
 
     @Override

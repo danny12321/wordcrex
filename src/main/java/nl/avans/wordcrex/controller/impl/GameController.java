@@ -46,6 +46,13 @@ public class GameController extends AbstractGameController {
 
     @Override
     public List<Played> getPlayed() {
+        var round = this.getRound();
+        var turn = this.isHost() ? round.hostTurn : round.opponentTurn;
+
+        if (turn != null) {
+            return List.of();
+        }
+
         return this.played;
     }
 
@@ -79,6 +86,20 @@ public class GameController extends AbstractGameController {
 
     @Override
     public void previousRound() {
+    }
+
+    @Override
+    public void play() {
+        if (this.getScore() <= 0 && !this.played.isEmpty()) {
+            return;
+        }
+
+        this.getModel().playTurn(this.getRoot().user.username, this.getPlayed());
+    }
+
+    @Override
+    public void resign() {
+        this.getModel().resign(this.getRoot().user.username);
     }
 
     @Override

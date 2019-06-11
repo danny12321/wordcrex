@@ -77,10 +77,11 @@ public class Main extends JPanel {
 
         var view = this.getView();
         var drawn = new ArrayList<Widget>();
+        var unblocked = this.getWidgets(false);
 
         if (view != null) {
             drawn.addAll(this.widgets.stream()
-                .filter((widget) -> widget.childOf(view))
+                .filter((widget) -> (!widget.top() || !unblocked.contains(widget)) && widget.childOf(view))
                 .peek((widget) -> widget.draw(g))
                 .collect(Collectors.toList()));
 

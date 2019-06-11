@@ -53,6 +53,10 @@ public abstract class AbstractGameController extends Controller<Game> {
         return board;
     }
 
+    public boolean isHost() {
+        return this.getRoot().user.username.equals(this.getHost());
+    }
+
     public abstract List<Playable> getDeck();
 
     public abstract void shuffle();
@@ -102,10 +106,6 @@ public abstract class AbstractGameController extends Controller<Game> {
         return this.getModel().getScore(this.getBoard(), this.getPlayed());
     }
 
-    public abstract void navigateHistory();
-
-    public abstract void navigateChat();
-
     public void setView(BoardView view) {
         this.view = view;
     }
@@ -117,4 +117,12 @@ public abstract class AbstractGameController extends Controller<Game> {
     public Character getPlaceholder() {
         return this.getModel().dictionary.characters.get(0);
     }
+
+    public abstract void play();
+
+    public abstract void resign();
+
+    public abstract void navigateHistory();
+
+    public abstract void navigateChat();
 }
