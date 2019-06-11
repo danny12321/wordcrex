@@ -97,4 +97,8 @@ public class ObservingController extends AbstractGameController {
     public void navigateHistory() {
         this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.user.observable, (game) -> game.id == this.getModel().id));
     }
+
+    @Override
+    public void navigateChat() {
+    }
 }

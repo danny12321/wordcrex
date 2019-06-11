@@ -85,4 +85,9 @@ public class GameController extends AbstractGameController {
     public void navigateHistory() {
         this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.user.games, (game) -> game.id == this.getModel().id));
     }
+
+    @Override
+    public void navigateChat() {
+        this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.user.games, (game) -> game.id == this.getModel().id));
+    }
 }

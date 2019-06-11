@@ -1,7 +1,10 @@
 package nl.avans.wordcrex.util;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class StringUtil {
     private static final String AUTH_REGEX = "^[a-zA-Z0-9]{5,25}$";
@@ -47,5 +50,46 @@ public class StringUtil {
         Arrays.fill(placeholders, "?");
 
         return String.join(",", placeholders);
+    }
+
+    public static List<String> split(Graphics2D g, String str, int length) {
+        var metrics = g.getFontMetrics();
+        var lines = new ArrayList<String>();
+        var builder = new StringBuilder();
+        var words = str.split("\\s+");
+        var last = "";
+
+        for (var i = 0; i < words.length; i++) {
+            builder.append(" ").append(words[i]);
+
+            if (metrics.getStringBounds(builder.toString(), g).getWidth() > length) {
+                if (metrics.getStringBounds(words[i], g).getWidth() > length) {
+                    builder.setLength(0);
+                    builder.append(last).append(" ");
+
+                    for (var j = 1; j < words[i].length(); j++) {
+                        builder.append(words[i], j - 1, j);
+
+                        if (metrics.getStringBounds(builder.toString(), g).getWidth() > length) {
+                            lines.add(last);
+                            builder.setLength(0);
+                        }
+
+                        last = builder.toString();
+                    }
+                } else {
+                    lines.add(last);
+                    builder.setLength(0);
+
+                    i--;
+                }
+            }
+
+            last = builder.toString();
+        }
+
+        lines.add(last);
+
+        return lines;
     }
 }

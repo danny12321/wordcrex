@@ -104,6 +104,8 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public abstract void navigateHistory();
 
+    public abstract void navigateChat();
+
     public void setView(BoardView view) {
         this.view = view;
     }

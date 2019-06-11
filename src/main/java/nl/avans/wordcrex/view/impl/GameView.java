@@ -193,7 +193,7 @@ public class GameView extends View<AbstractGameController> {
 
         if (this.controller.canPlay()) {
             children.add(new ButtonWidget(Assets.read("next"), "spelen", 22, 76, 32, 32, () -> {}));
-            children.add(new ButtonWidget(Assets.read("messages"), "berichten", 22, 124, 32, 32, () -> {}));
+            children.add(new ButtonWidget(Assets.read("messages"), "berichten", 22, 124, 32, 32, this.controller::navigateChat));
             children.add(new ButtonWidget(Assets.read("close"), "opgeven", 22, 172, 32, 32, () -> {}));
             children.add(new ButtonWidget(Assets.read("reset"), "resetten", 22, 220, 32, 32, () -> {
                 this.controller.setPlayed(List.of());
