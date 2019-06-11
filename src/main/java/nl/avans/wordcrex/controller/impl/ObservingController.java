@@ -1,10 +1,7 @@
 package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.model.Game;
-import nl.avans.wordcrex.model.Played;
-import nl.avans.wordcrex.model.Round;
-import nl.avans.wordcrex.model.Wordcrex;
+import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.util.BoardView;
 import nl.avans.wordcrex.util.StreamUtil;
 
@@ -30,6 +27,15 @@ public class ObservingController extends AbstractGameController {
         board.addAll(this.getPlayed());
 
         return board;
+    }
+
+    @Override
+    public List<Playable> getDeck() {
+        return this.getRound().deck;
+    }
+
+    @Override
+    public void shuffle() {
     }
 
     @Override

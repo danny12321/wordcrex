@@ -112,6 +112,9 @@ public class DragWidget<T> extends Widget {
         var pos = this.absolute.apply(x, y);
 
         if (pos == null) {
+            this.x = this.initialX;
+            this.y = this.initialY;
+
             return;
         }
 

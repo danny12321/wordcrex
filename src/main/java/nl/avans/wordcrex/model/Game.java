@@ -160,14 +160,8 @@ public class Game implements Persistable {
         }
 
         for (var game : games) {
-            if (!game.host.equals(username)) {
-                continue;
-            }
-
-            if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED) {
+            if (game.host.equals(username) && game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED) {
                 game.startGame();
-            } else if (game.state == GameState.PLAYING && game.getLastRound() != null && game.getLastRound().hostTurn != null && game.getLastRound().hostTurn != null) {
-                game.nextRound(game.pool);
             }
         }
 

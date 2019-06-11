@@ -98,7 +98,7 @@ public class GameView extends View<AbstractGameController> {
             return;
         }
 
-        var deck = this.controller.getRound().deck;
+        var deck = this.controller.getDeck();
 
         for (var i = 0; i < deck.size(); i++) {
             var p = deck.get(i);
@@ -195,10 +195,16 @@ public class GameView extends View<AbstractGameController> {
             children.add(new ButtonWidget(Assets.read("next"), "spelen", 22, 76, 32, 32, () -> {}));
             children.add(new ButtonWidget(Assets.read("messages"), "berichten", 22, 124, 32, 32, () -> {}));
             children.add(new ButtonWidget(Assets.read("close"), "opgeven", 22, 172, 32, 32, () -> {}));
-            children.add(new ButtonWidget(Assets.read("reset"), "resetten", 22, 220, 32, 32, () -> {}));
-            children.add(new ButtonWidget(Assets.read("shuffle"), "shudden", 22, 458, 32, 32, () -> {}));
+            children.add(new ButtonWidget(Assets.read("reset"), "resetten", 22, 220, 32, 32, () -> {
+                this.controller.setPlayed(List.of());
+                this.updatePositions();
+            }));
+            children.add(new ButtonWidget(Assets.read("shuffle"), "shudden", 22, 458, 32, 32, () -> {
+                this.controller.shuffle();
+                this.requestInitialize();
+            }));
 
-            var deck = this.controller.getRound().deck;
+            var deck = this.controller.getDeck();
             this.deck.clear();
 
             for (var i = 0; i < deck.size(); i++) {
@@ -206,6 +212,8 @@ public class GameView extends View<AbstractGameController> {
 
                 this.deck.add(new DragWidget<>(playable, 142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, playable.character, hover), this::getAbsolutePos, this::getRelativePos, this::canDrop));
             }
+
+            this.updatePositions();
 
             children.addAll(this.deck);
         } else {
@@ -217,6 +225,20 @@ public class GameView extends View<AbstractGameController> {
         }
 
         return children;
+    }
+
+    private void updatePositions() {
+        var played = this.controller.getPlayed();
+
+        for (var d : this.deck) {
+            d.setPosition(0, 0);
+
+            for (var p : played) {
+                if (p.playable == d.data) {
+                    d.setPosition(p.tile.x, p.tile.y);
+                }
+            }
+        }
     }
 
     private void drawTile(Graphics2D g, Character character, boolean hover) {

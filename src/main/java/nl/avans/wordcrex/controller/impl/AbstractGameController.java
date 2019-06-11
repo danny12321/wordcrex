@@ -45,11 +45,17 @@ public abstract class AbstractGameController extends Controller<Game> {
                 break;
             }
 
-            board.addAll(round.board);
+            if (round.board != null) {
+                board.addAll(round.board);
+            }
         }
 
         return board;
     }
+
+    public abstract List<Playable> getDeck();
+
+    public abstract void shuffle();
 
     public abstract List<Played> getPlayed();
 

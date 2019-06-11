@@ -1,17 +1,17 @@
 package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.model.Game;
-import nl.avans.wordcrex.model.Played;
-import nl.avans.wordcrex.model.Round;
-import nl.avans.wordcrex.model.Wordcrex;
+import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.util.StreamUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class GameController extends AbstractGameController {
+    private List<Playable> deck = new ArrayList<>();
     private List<Played> played = new ArrayList<>();
 
     public GameController(Main main, Function<Wordcrex, Game> fn) {
@@ -21,6 +21,27 @@ public class GameController extends AbstractGameController {
     @Override
     public boolean canPlay() {
         return true;
+    }
+
+    @Override
+    public List<Playable> getDeck() {
+        var next = this.getRound().deck;
+        var ids = this.deck.stream().map((d) -> d.id).collect(Collectors.toList());
+
+        if (this.deck.size() != next.size() || !next.stream().allMatch((n) -> ids.contains(n.id))) {
+            this.deck = List.copyOf(next);
+        }
+
+        return this.deck;
+    }
+
+    @Override
+    public void shuffle() {
+        var deck = new ArrayList<>(this.deck);
+
+        Collections.shuffle(deck);
+
+        this.deck = List.copyOf(deck);
     }
 
     @Override
@@ -54,12 +75,10 @@ public class GameController extends AbstractGameController {
 
     @Override
     public void nextRound() {
-        throw new RuntimeException();
     }
 
     @Override
     public void previousRound() {
-        throw new RuntimeException();
     }
 
     @Override
