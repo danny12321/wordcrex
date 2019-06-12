@@ -6,10 +6,8 @@ import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
-import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
-import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ListWidget;
 
 import java.awt.*;
@@ -22,11 +20,23 @@ public class ObserveView extends View<ObserveController> {
     public ObserveView(ObserveController controller) {
         super(controller);
         this.list = new ListWidget<>(
-            47,
+            0,
             96,
+            "Geen spellen",
+            (game) -> String.valueOf(game.id),
+            (previous, next) -> {
+                var label = this.controller.getLabel(next);
+
+                if (previous != null && this.controller.getLabel(previous).equals(label)) {
+                    return null;
+                }
+
+                return label;
+            },
             (g, game) -> {
+                var round = game.getLastRound();
+                var score = round == null ? " 0 - 0 " : (" " + round.hostScore + " - " + round.opponentScore + " ");
                 var metrics = g.getFontMetrics();
-                var score = " " + game.getLastRound().hostScore + " - " + game.getLastRound().opponentScore + " ";
                 var width = metrics.stringWidth(score);
 
                 g.setFont(Fonts.NORMAL);
@@ -43,19 +53,13 @@ public class ObserveView extends View<ObserveController> {
                 g.setColor(Color.WHITE);
                 g.drawString(score, 450 - width, 54);
             },
-            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
-            (game) -> String.valueOf(game.id),
-            (game) -> true,
-            this.controller::navigateGame
+            this.controller::canClick,
+            this.controller::clickGame
         );
     }
 
     @Override
     public void draw(Graphics2D g) {
-        if (this.controller.getGames().isEmpty()) {
-            g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen spellen of uitdagingen");
-        }
     }
 
     @Override
@@ -66,8 +70,7 @@ public class ObserveView extends View<ObserveController> {
     @Override
     public List<Widget> children() {
         return List.of(
-            this.list,
-            new InputWidget("ZOEKEN", 0, 30, 480, 48, this.controller::setSearch)
+            this.list
         );
     }
 }

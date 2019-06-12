@@ -12,13 +12,11 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class InputWidget extends Widget {
     private final StringBuilder input = new StringBuilder();
-
-    public final String label;
+    private final String label;
     private final Character placeholder;
     private final int x;
     private final int y;
@@ -44,7 +42,6 @@ public class InputWidget extends Widget {
         this.width = width;
         this.height = height;
         this.consumer = consumer;
-
         this.consumer.accept("");
     }
 
@@ -72,6 +69,11 @@ public class InputWidget extends Widget {
             g.drawString(this.label, this.x + 16, this.y + line);
         }
 
+        if (this.hasFocus()) {
+            g.setColor(Color.white);
+            g.drawRect(this.x, this.y, this.width - 2, this.height - 2);
+        }
+
         g.setClip(rect);
         g.setColor(Color.WHITE);
         g.drawString(text, this.x - this.offset, this.y + line);
@@ -95,9 +97,7 @@ public class InputWidget extends Widget {
 
     @Override
     public void mousePress(int x, int y) {
-        if (!this.hasFocus() && this.hover) {
-            this.update = 0;
-        }
+        this.update = 0;
 
         if (!this.hover) {
             this.setFocus(false);
@@ -156,12 +156,7 @@ public class InputWidget extends Widget {
     }
 
     @Override
-    public List<Widget> children() {
-        return List.of();
-    }
-
-    @Override
-    public boolean canFocus() {
+    public boolean focusable() {
         return true;
     }
 

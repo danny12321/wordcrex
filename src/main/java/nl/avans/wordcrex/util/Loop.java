@@ -1,48 +1,36 @@
 package nl.avans.wordcrex.util;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-public class Loop implements Runnable {
-    private final Map<Double, Runnable> loops;
+public class Loop {
+    private final List<ScheduledFuture<?>> futures;
 
-    private boolean running = true;
-
-    public Loop(Map<Double, Runnable> loops) {
-        this.loops = loops;
+    private Loop(List<ScheduledFuture<?>> futures) {
+        this.futures = futures;
     }
 
-    @Override
-    public void run() {
-        var last = System.nanoTime();
-        var delta = new HashMap<Double, Double>();
+    public static Loop start(Map<Integer, Runnable> loops) {
+        var pool = Executors.newScheduledThreadPool(loops.size());
+        var executors = new ArrayList<ScheduledFuture<?>>();
 
-        while (this.running) {
-            var now = System.nanoTime();
-            var diff = now - last;
-
-            this.loops.forEach((key, value) -> {
-                var current = delta.getOrDefault(key, 0.0d);
-                var next = current + diff / (1000000000.0d / key);
-
-                if (next >= 1.0d) {
-                    value.run();
-
-                    next--;
+        for (var loop : loops.entrySet()) {
+            executors.add(pool.scheduleAtFixedRate(() -> {
+                try {
+                    loop.getValue().run();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-                delta.put(key, next);
-            });
-
-            last = now;
+            }, 0, 1000 / loop.getKey(), TimeUnit.MILLISECONDS));
         }
-    }
 
-    public void start() {
-        new Thread(this).start();
+        return new Loop(executors);
     }
-
     public void stop() {
-        this.running = false;
+        this.futures.forEach((future) -> future.cancel(true));
     }
 }

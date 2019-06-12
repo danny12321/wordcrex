@@ -2,235 +2,173 @@ package nl.avans.wordcrex.model;
 
 import nl.avans.wordcrex.data.Database;
 import nl.avans.wordcrex.util.Pair;
-import nl.avans.wordcrex.util.Pollable;
+import nl.avans.wordcrex.util.Persistable;
 import nl.avans.wordcrex.util.StringUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class User implements Pollable<User> {
+public class User implements Persistable {
     private final Database database;
+    private final Wordcrex wordcrex;
+
     public final String username;
     public final List<UserRole> roles;
+    public final List<Word> words;
     public final List<Game> games;
-    public final List<Dictionary> dictionaries;
+    public final List<Game> observable;
+    public final List<User> manageable;
+    public final List<Word> approvable;
 
-    public User(Database database) {
-        this(database, "");
-    }
-
-    public User(Database database, String username) {
-        this(database, username, List.of(), List.of(), List.of());
-    }
-
-    public User(User user, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
-        this(user.database, user.username, roles, games, dictionaries);
-    }
-
-    public User(Database database, String username, List<UserRole> roles, List<Game> games, List<Dictionary> dictionaries) {
+    public User(Database database, Wordcrex wordcrex, String username, List<UserRole> roles, List<Word> words, List<Game> games, List<Game> observable, List<User> manageable, List<Word> approvable) {
         this.database = database;
+        this.wordcrex = wordcrex;
         this.username = username;
         this.roles = roles;
+        this.words = words;
         this.games = games;
-        this.dictionaries = dictionaries;
+        this.observable = observable;
+        this.manageable = manageable;
+        this.approvable = approvable;
     }
 
-    @Override
-    public User initialize() {
-        if (!this.dictionaries.isEmpty()) {
-            return this;
-        }
-
-        var roles = new ArrayList<UserRole>();
-
-        this.database.select(
-            "SELECT r.role FROM accountrole r WHERE r.username = ?",
-            (statement) -> statement.setString(1, this.username),
-            (result) -> roles.add(UserRole.byRole(result.getString("role")))
-        );
-
-        var characters = new HashMap<String, List<Character>>();
-
-        this.database.select(
-            "SELECT c.letterset_code code, c.symbol `character`, c.value, c.counted amount FROM symbol c",
-            (result) -> {
-                var code = result.getString("code");
-                var list = characters.getOrDefault(code, new ArrayList<>());
-
-                list.add(new Character(result.getString("character"), result.getInt("value"), result.getInt("amount")));
-
-                characters.put(code, list);
-            }
-        );
-
-        var dictionaries = new ArrayList<Dictionary>();
-
-        this.database.select(
-            "SELECT d.* FROM letterset d",
-            (result) -> {
-                var code = result.getString("code");
-                var character = characters.getOrDefault(code, new ArrayList<>());
-
-                if (character.isEmpty()) {
-                    return;
-                }
-
-                dictionaries.add(new Dictionary(this.database, code, result.getString("description"), List.copyOf(character)));
-            }
-        );
-
-        return new User(this, List.copyOf(roles), this.games, List.copyOf(dictionaries));
-    }
-
-    @Override
-    public User poll() {
-        if (this.username.isEmpty() || this.dictionaries.isEmpty()) {
-            return this;
-        }
-
-        var roles = new ArrayList<UserRole>();
-
-        this.database.select(
-            "SELECT r.role FROM accountrole r WHERE r.username = ?",
-            (statement) -> statement.setString(1, this.username),
-            (result) -> roles.add(UserRole.byRole(result.getString("role")))
-        );
-
-        var games = new ArrayList<Game>();
-
-        this.database.select(
-            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code, g.username_winner winner " +
-                "FROM game g " +
-                "WHERE (g.username_player1 = ? OR g.username_player2 = ?) " +
-                "AND g.answer_player2 != ?",
-            (statement) -> {
-                statement.setString(1, this.username);
-                statement.setString(2, this.username);
-                statement.setString(3, InviteState.REJECTED.state);
-            },
-            (result) -> {
-                var id = result.getInt("id");
-                var state = GameState.byState(result.getString("state"));
-                var inviteState = InviteState.byState(result.getString("invite_state"));
-                var host = result.getString("host");
-                var opponent = result.getString("opponent");
-                var code = result.getString("code");
-                var dictionary = this.dictionaries.stream()
-                    .filter((d) -> d.code.equals(code))
-                    .findAny()
-                    .orElse(null);
-                var winner = result.getString("winner");
-
-                if (dictionary == null) {
-                    return;
-                }
-
-                var game = new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary);
-
-                if (game.state == GameState.PENDING && game.inviteState == InviteState.ACCEPTED && this.username.equals(game.host)) {
-                    game.startGame();
-                    game.startNewRound();
-                }
-
-                games.add(game);
-            }
-        );
-
-        games.sort(Comparator.comparingInt((game) -> game.state.order));
-
-        return new User(this, List.copyOf(roles), List.copyOf(games), this.dictionaries);
-    }
-
-    @Override
-    public User persist(User user) {
-        return this;
-    }
-
-    public User register(String username, String password) {
-        if (!StringUtil.isAuthInput(username) || !StringUtil.isAuthInput(password)) {
-            return this;
-        }
-
-        var insertedUser = this.database.insert(
-            "INSERT INTO account VALUES (?, ?)",
-            (statement) -> {
-                statement.setString(1, username);
-                statement.setString(2, password);
-            }
-        );
-
-        var insertedRole = this.database.insert(
-            "INSERT INTO accountrole VALUES (?, ?)",
-            (statement) -> {
-                statement.setString(1, username);
-                statement.setString(2, UserRole.PLAYER.role);
-            }
-        );
-
-        if (insertedUser == -1 || insertedRole == -1) {
-            return this;
-        }
-
-        return this.login(username, password);
-    }
-
-    public User login(String username, String password) {
+    public static User initialize(Database database, Wordcrex wordcrex, String username, String password) {
         var ref = new Object() {
             String username;
+            List<UserRole> roles = new ArrayList<>();
         };
-        var selected = this.database.select(
-            "SELECT a.username FROM account a WHERE lower(a.username) = lower(?) AND lower(a.password) = lower(?)",
+
+        var selected = database.select(
+            "SELECT a.username, group_concat(r.role) roles FROM account a JOIN accountrole r ON a.username = r.username WHERE lower(a.username) = lower(?) AND lower(a.password) = lower(?) GROUP BY a.username",
             (statement) -> {
                 statement.setString(1, username);
                 statement.setString(2, password);
             },
-            (result) -> ref.username = result.getString("username")
+            (result) -> {
+                var rolesRaw = result.getString("roles").split(",");
+
+                ref.username = result.getString("username");
+
+                for (var role : rolesRaw) {
+                    ref.roles.add(UserRole.byRole(role));
+                }
+            }
         );
 
-        if (selected == 0) {
+        if (selected <= 0) {
+            return null;
+        }
+
+        return new User(database, wordcrex, ref.username, List.copyOf(ref.roles), List.of(), List.of(), List.of(), List.of(), List.of());
+    }
+
+    public static List<User> initialize(Database database, Wordcrex wordcrex) {
+        var ref = new Object() {
+            List<User> users = new ArrayList<>();
+        };
+
+        database.select(
+            "SELECT a.username, group_concat(r.role) roles FROM account a JOIN accountrole r ON a.username = r.username GROUP BY a.username",
+            (result) -> {
+                var username = result.getString("username");
+
+                var rolesRaw = result.getString("roles").split(",");
+                var roles = Arrays.stream(rolesRaw)
+                    .map(UserRole::byRole)
+                    .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+
+                ref.users.add(new User(database, wordcrex, username, roles, List.of(), List.of(), List.of(), List.of(), List.of()));
+            }
+        );
+
+        return List.copyOf(ref.users);
+    }
+
+    @Override
+    public Wordcrex persist(Wordcrex model) {
+        if (model.user == null) {
+            return model;
+        } else if (this.username.equals(model.user.username)) {
+            return new Wordcrex(this.database, this, model.tiles, model.dictionaries);
+        }
+
+        var user = model.user;
+        var manageable = user.manageable.stream()
+            .map((u) -> u.username.equals(this.username) ? this : u)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+        var next = new User(user.database, user.wordcrex, user.username, user.roles, user.approvable, user.observable, user.observable, manageable, user.approvable);
+
+        return new Wordcrex(this.database, next, model.tiles, model.dictionaries);
+    }
+
+    public User poll(UserPoll poll) {
+        if (poll != null && !this.hasRole(poll.role)) {
             return this;
         }
 
-        return new User(this.database, ref.username);
-    }
+        var roles = new ArrayList<UserRole>();
 
-    public User logout() {
-        return new User(this.database);
+        this.database.select(
+            "SELECT r.role FROM accountrole r WHERE r.username = ?",
+            (statement) -> statement.setString(1, this.username),
+            (result) -> roles.add(UserRole.byRole(result.getString("role")))
+        );
+
+        if (poll == UserPoll.GAMES) {
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, Game.initialize(this.database, this.wordcrex, this.username), this.observable, this.manageable, this.approvable);
+        } else if (poll == UserPoll.OBSERVABLE) {
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, Game.initialize(this.database, this.wordcrex, "", GameState.PLAYING, GameState.FINISHED, GameState.RESIGNED), this.manageable, this.approvable);
+        } else if (poll == UserPoll.WORDS) {
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), Word.initialize(this.database, this.wordcrex, this.username), this.games, this.observable, this.manageable, this.approvable);
+        } else if (poll == UserPoll.APPROVABLE) {
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, this.manageable, Word.initialize(this.database, this.wordcrex, "", WordState.PENDING));
+        } else if (poll == UserPoll.MANAGEABLE) {
+            var users = User.initialize(this.database, this.wordcrex).stream()
+                .filter((u) -> !u.username.equals(this.username))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+
+            return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, users, this.approvable);
+        }
+
+        return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, this.manageable, this.approvable);
     }
 
     public boolean hasRole(UserRole role) {
-        return this.roles.indexOf(role) != -1;
+        return this.roles.contains(role);
     }
 
     public List<Pair<String, Boolean>> findOpponents(String username) {
-        if (!this.hasRole(UserRole.PLAYER) || username.isEmpty()) {
+        if (!this.hasRole(UserRole.PLAYER)) {
             return List.of();
         }
 
-        var users = new ArrayList<Pair<String, Boolean>>();
+        var ref = new Object() {
+            List<Pair<String, Boolean>> opponents = new ArrayList<>();
+        };
 
         this.database.select(
-            "SELECT a.username," +
-                "       (SELECT count(*) = 0" +
-                "        FROM game g" +
-                "        WHERE ((g.username_player1 = ? AND g.username_player2 = a.username)" +
-                "            OR (g.username_player1 = a.username AND g.username_player2 = ?))" +
-                "          AND g.game_state IN ('pending', 'playing') AND g.answer_player2 != 'rejected') enabled " +
-                "FROM account a" +
-                "         JOIN accountrole r ON a.username = r.username AND r.role = ?" +
-                "WHERE a.username != ?" +
-                "  AND a.username LIKE ?",
+            "SELECT u.username, (SELECT count(*) = 0 FROM game g WHERE ((g.username_player1 = u.username AND g.username_player2 = ?) OR (g.username_player1 = ? AND g.username_player2 = u.username)) AND g.game_state IN (?, ?) AND g.answer_player2 != ?) available FROM account u JOIN accountrole r ON u.username = r.username WHERE u.username != ? AND u.username LIKE ? AND r.role = ?",
             (statement) -> {
                 statement.setString(1, this.username);
                 statement.setString(2, this.username);
-                statement.setString(3, UserRole.PLAYER.role);
-                statement.setString(4, this.username);
-                statement.setString(5, "%" + username + "%");
+                statement.setString(3, GameState.PENDING.state);
+                statement.setString(4, GameState.PLAYING.state);
+                statement.setString(5, InviteState.REJECTED.state);
+                statement.setString(6, this.username);
+                statement.setString(7, "%" + username + "%");
+                statement.setString(8, UserRole.PLAYER.role);
             },
-            (result) -> users.add(new Pair<>(result.getString("username"), result.getBoolean("enabled")))
+            (result) -> {
+                var opponent = result.getString("username");
+                var available = result.getBoolean("available");
+
+                ref.opponents.add(new Pair<>(opponent, available));
+            }
         );
 
-        return List.copyOf(users);
+        return List.copyOf(ref.opponents);
     }
 
     public void sendInvite(String username, Dictionary dictionary) {
@@ -242,7 +180,7 @@ public class User implements Pollable<User> {
             "INSERT INTO game (game_state, letterset_code, username_player1, username_player2, answer_player2) VALUES (?, ?, ?, ?, ?)",
             (statement) -> {
                 statement.setString(1, GameState.PENDING.state);
-                statement.setString(2, dictionary.code);
+                statement.setString(2, dictionary.id);
                 statement.setString(3, this.username);
                 statement.setString(4, username);
                 statement.setString(5, InviteState.PENDING.state);
@@ -250,7 +188,7 @@ public class User implements Pollable<User> {
         );
     }
 
-    public void respondToInvite(Game game, InviteState state) {
+    public void respondInvite(Game game, InviteState state) {
         if (!this.hasRole(UserRole.PLAYER) || !game.opponent.equals(this.username)) {
             return;
         }
@@ -264,32 +202,8 @@ public class User implements Pollable<User> {
         );
     }
 
-    public List<Word> getPendingWords() {
-        if (!this.hasRole(UserRole.MODERATOR)) {
-            return List.of();
-        }
-
-        var words = new ArrayList<Word>();
-
-        this.database.select(
-            "SELECT w.word, w.state, w.username, w.letterset_code code FROM dictionary w WHERE w.state = ? ",
-            (statement) -> statement.setString(1, WordState.PENDING.state),
-            (result) -> {
-                var code = result.getString("code");
-                var dictionary = this.dictionaries.stream()
-                    .filter((d) -> d.code.equals(code))
-                    .findFirst()
-                    .orElseThrow();
-
-                words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), result.getString("username"), dictionary));
-            }
-        );
-
-        return List.copyOf(words);
-    }
-
     public boolean suggestWord(String word, Dictionary dictionary) {
-        if (dictionary.isWord(word) || StringUtil.containsWhitespace(word) || word.length() == 0) {
+        if (!StringUtil.isWordInput(word)) {
             return false;
         }
 
@@ -297,7 +211,7 @@ public class User implements Pollable<User> {
             "INSERT INTO dictionary VALUES (?, ?, ?, ?)",
             (statement) -> {
                 statement.setString(1, word);
-                statement.setString(2, dictionary.code);
+                statement.setString(2, dictionary.id);
                 statement.setString(3, WordState.PENDING.state);
                 statement.setString(4, this.username);
             }
@@ -306,29 +220,18 @@ public class User implements Pollable<User> {
         return updated != -1;
     }
 
-    public List<Word> getSuggested(int page) {
-        var size = 100;
-        var words = new ArrayList<Word>();
+    public void respondSuggestion(Word word, WordState state) {
+        if (!this.hasRole(UserRole.MODERATOR) || word.state != WordState.PENDING) {
+            return;
+        }
 
-        this.database.select(
-            "SELECT w.word, w.letterset_code code, w.state FROM dictionary w WHERE w.username = ? ORDER BY w.letterset_code LIMIT ?, ?",
+        this.database.update(
+            "UPDATE dictionary w SET w.state = ? WHERE w.word = ?",
             (statement) -> {
-                statement.setString(1, this.username);
-                statement.setInt(2, page * size);
-                statement.setInt(3, size);
-            },
-            (result) -> {
-                var code = result.getString("code");
-                var dictionary = this.dictionaries.stream()
-                    .filter((d) -> d.code.equals(code))
-                    .findFirst()
-                    .orElseThrow();
-
-                words.add(new Word(result.getString("word"), WordState.byState(result.getString("state")), this.username, dictionary));
+                statement.setString(1, state.state);
+                statement.setString(2, word.word);
             }
         );
-
-        return List.copyOf(words);
     }
 
     public void changePassword(String password) {
@@ -344,7 +247,6 @@ public class User implements Pollable<User> {
             }
         );
     }
-
 
     public void toggleRole(User user, UserRole role) {
         if (!this.hasRole(UserRole.ADMINISTRATOR)) {
@@ -365,97 +267,12 @@ public class User implements Pollable<User> {
             );
         } else {
             this.database.insert(
-                "INSERT INTO accountrole (role, username) VALUES (?, ?)",
+                "INSERT INTO accountrole VALUES (?, ?)",
                 (statement) -> {
-                    statement.setString(1, role.role);
-                    statement.setString(2, user.username);
+                    statement.setString(1, user.username);
+                    statement.setString(2, role.role);
                 }
             );
         }
-    }
-
-    public List<User> findChangeable(String username) {
-        var users = new ArrayList<User>();
-
-        this.database.select(
-            "SELECT r.username, group_concat(r.role SEPARATOR ',') roles FROM accountrole r WHERE r.username LIKE ? AND r.username != ? GROUP BY r.username;\n",
-            (statement) -> {
-                statement.setString(1, "%" + username + "%");
-                statement.setString(2, this.username);
-            },
-            (result) -> {
-                var roles = new ArrayList<UserRole>();
-                var rolesSplitted = result.getString("roles").split(",");
-
-                for (var raw : rolesSplitted) {
-                    roles.add(UserRole.byRole(raw));
-                }
-
-                users.add(new User(this.database, result.getString("username"), List.copyOf(roles), List.of(), List.of()));
-            }
-        );
-
-        return users;
-    }
-
-    public void updateWord(Word word, WordState state) {
-        if (word.state != WordState.PENDING || !this.hasRole(UserRole.MODERATOR)) {
-            return;
-        }
-
-        this.database.update(
-            "UPDATE dictionary w SET w.state = ? WHERE w.word = ?",
-            (statement) -> {
-                statement.setString(1, state.state);
-                statement.setString(2, word.word);
-            }
-        );
-    }
-
-    public List<Game> findObservableGames(String search) {
-        if (!this.hasRole(UserRole.OBSERVER)) {
-            return List.of();
-        }
-
-        var games = new ArrayList<Game>();
-
-        this.database.select(
-            "SELECT g.game_id id, g.game_state state, g.answer_player2 invite_state, g.username_player1 host, g.username_player2 opponent, g.letterset_code code, g.username_winner winner " +
-                "FROM game g " +
-                "WHERE (g.game_state = ? OR g.game_state = ? OR g.game_state = ?) " +
-                "AND g.answer_player2 = ? " +
-                "AND (g.username_player1 LIKE ? OR g.username_player2 LIKE ?)",
-            (statement) -> {
-                statement.setString(1, GameState.PLAYING.state);
-                statement.setString(2, GameState.FINISHED.state);
-                statement.setString(3, GameState.RESIGNED.state);
-                statement.setString(4, InviteState.ACCEPTED.state);
-                statement.setString(5, "%" + search + "%");
-                statement.setString(6, "%" + search + "%");
-            },
-            (result) -> {
-                var id = result.getInt("id");
-                var state = GameState.byState(result.getString("state"));
-                var inviteState = InviteState.byState(result.getString("invite_state"));
-                var host = result.getString("host");
-                var opponent = result.getString("opponent");
-                var code = result.getString("code");
-                var dictionary = this.dictionaries.stream()
-                    .filter((d) -> d.code.equals(code))
-                    .findAny()
-                    .orElse(null);
-                var winner = result.getString("winner");
-
-                if (dictionary == null) {
-                    return;
-                }
-
-                games.add(new Game(this.database, id, host, opponent, winner, state, inviteState, dictionary, List.of(), null, null, List.of()));
-            }
-        );
-
-        return List.copyOf(games.stream()
-            .filter((g) -> g.rounds.size() > 0)
-            .collect(Collectors.toList()));
     }
 }

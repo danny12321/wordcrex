@@ -6,18 +6,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Asset {
+public class Assets {
     private static final Map<String, BufferedImage> ASSETS = new HashMap<>();
 
     public static BufferedImage read(String asset) {
-        if (Asset.ASSETS.containsKey(asset)) {
-            return Asset.ASSETS.get(asset);
+        if (Assets.ASSETS.containsKey(asset)) {
+            return Assets.ASSETS.get(asset);
         }
 
         try {
-            var loaded = ImageIO.read(Asset.class.getResourceAsStream("/assets/" + asset + ".png"));
+            var loaded = ImageIO.read(Assets.class.getResourceAsStream("/assets/" + asset + ".png"));
 
-            Asset.ASSETS.put(asset, loaded);
+            Assets.ASSETS.put(asset, loaded);
 
             return loaded;
         } catch (IOException e) {

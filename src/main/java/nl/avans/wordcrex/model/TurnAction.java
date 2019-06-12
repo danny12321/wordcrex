@@ -1,8 +1,8 @@
 package nl.avans.wordcrex.model;
 
 public enum TurnAction {
-    PASSED("pass"),
     PLAYED("play"),
+    PASSED("pass"),
     RESIGNED("resign");
 
     public final String action;
@@ -18,6 +18,6 @@ public enum TurnAction {
             }
         }
 
-        return null;
+        throw new RuntimeException("Invalid turn action: " + action);
     }
 }

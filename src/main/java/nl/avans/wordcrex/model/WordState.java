@@ -18,6 +18,6 @@ public enum WordState {
             }
         }
 
-        return null;
+        throw new RuntimeException("Invalid word state: " + state);
     }
 }
