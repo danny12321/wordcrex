@@ -622,27 +622,29 @@ public class Game implements Persistable {
             );
         }
 
-        var placeholders = winning.stream()
-            .map((p) -> "(" + StringUtil.getPlaceholders(5) + ")")
-            .collect(Collectors.joining(", "));
+        if (!winning.isEmpty()) {
+            var placeholders = winning.stream()
+                .map((p) -> "(" + StringUtil.getPlaceholders(5) + ")")
+                .collect(Collectors.joining(", "));
 
-        this.database.insert(
-            "INSERT INTO turnboardletter VALUES " + placeholders,
-            (statement) -> {
-                int i = 0;
+            this.database.insert(
+                "INSERT INTO turnboardletter VALUES " + placeholders,
+                (statement) -> {
+                    int i = 0;
 
-                for (var w : winning) {
-                    statement.setInt(++i, w.playable.id);
-                    statement.setInt(++i, this.id);
-                    statement.setInt(++i, round.id);
-                    statement.setInt(++i, w.tile.x);
-                    statement.setInt(++i, w.tile.y);
+                    for (var w : winning) {
+                        statement.setInt(++i, w.playable.id);
+                        statement.setInt(++i, this.id);
+                        statement.setInt(++i, round.id);
+                        statement.setInt(++i, w.tile.x);
+                        statement.setInt(++i, w.tile.y);
+                    }
                 }
-            }
-        );
+            );
+        }
 
         if (resign || other.action == TurnAction.RESIGNED) {
-            var winner = other.action == TurnAction.RESIGNED ? this.host : opponent;
+            var winner = other.action == TurnAction.RESIGNED ? username : opponent;
 
             this.database.update(
                 "UPDATE game g SET g.username_winner = ?, g.game_state = ? WHERE g.game_id = ?",
@@ -662,7 +664,7 @@ public class Game implements Persistable {
         var count = Math.max(played.size(), other.played.size());
 
         if (available.size() == count) {
-            var winner = round.opponentScore + other.score + (bonus ? 5 : 0) > round.hostScore + score ? opponent : this.host;
+            var winner = round.opponentScore + other.score + (bonus ? 5 : 0) > round.hostScore + score ? opponent : username;
 
             this.database.update(
                 "UPDATE game g SET g.username_winner = ?, g.game_state = ? WHERE g.game_id = ?",

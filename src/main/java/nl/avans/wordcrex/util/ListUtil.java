@@ -1,5 +1,6 @@
 package nl.avans.wordcrex.util;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -13,7 +14,7 @@ public class ListUtil {
     }
 
     public static <T> T find(List<T> list, Predicate<T> predicate) {
-        return list.stream()
+        return new ArrayList<>(list).stream()
             .filter(predicate)
             .findFirst()
             .orElse(null);
