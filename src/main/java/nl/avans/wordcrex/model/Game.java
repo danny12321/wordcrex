@@ -132,10 +132,14 @@ public class Game implements Persistable {
                 var board = Game.parsePlayed(result.getString("board"), temp.pool, wordcrex.tiles);
 
                 var deck = new ArrayList<Playable>();
-                var deckSplitted = result.getString("deck").split(",");
+                var deckRaw = result.getString("deck");
 
-                for (var s : deckSplitted) {
-                    deck.add(ListUtil.find(temp.pool, (p) -> String.valueOf(p.id).equals(s)));
+                if (deckRaw != null) {
+                    var deckSplitted = deckRaw.split(",");
+
+                    for (var s : deckSplitted) {
+                        deck.add(ListUtil.find(temp.pool, (p) -> String.valueOf(p.id).equals(s)));
+                    }
                 }
 
                 var host = Game.parseTurn(result, "host", temp.pool, wordcrex.tiles);
@@ -187,7 +191,7 @@ public class Game implements Persistable {
 
     private static List<Played> parsePlayed(String played, List<Playable> pool, List<Tile> tiles) {
         if (played == null) {
-            return null;
+            return List.of();
         }
 
         var list = new ArrayList<Played>();
@@ -443,6 +447,9 @@ public class Game implements Persistable {
     }
 
     private void nextRound(List<Playable> pool, List<Played> board) {
+        var available = pool.stream()
+            .filter((p) -> p.available)
+            .collect(Collectors.toList());
         var turn = this.rounds.size() + 1;
         var round = this.getLastRound();
         var deck = new ArrayList<Playable>();
@@ -453,14 +460,14 @@ public class Game implements Persistable {
                 .collect(Collectors.toList()));
         }
 
-        var add = Math.min(7 - deck.size(), pool.size());
+        var add = Math.min(7 - deck.size(), available.size());
 
         for (var i = 0; i < add; i++) {
             Playable playable;
 
             do {
-                playable = pool.get(Main.RANDOM.nextInt(pool.size()));
-            } while (!playable.available || this.hasPlayable(deck, playable));
+                playable = available.get(Main.RANDOM.nextInt(available.size()));
+            } while (this.hasPlayable(deck, playable));
 
             deck.add(playable);
         }
@@ -491,7 +498,7 @@ public class Game implements Persistable {
         return playable.stream().anyMatch((d) -> d.id == p.id);
     }
 
-    public void playTurn(String username, List<Played> played) {
+    public void playTurn(String username, List<Played> played, boolean resign) {
         if (!this.host.equals(username) && !this.opponent.equals(username)) {
             return;
         }
@@ -522,7 +529,7 @@ public class Game implements Persistable {
                 statement.setString(3, username);
                 statement.setInt(4, 0);
                 statement.setInt(5, score);
-                statement.setString(6, played.isEmpty() ? TurnAction.PASSED.action : TurnAction.PLAYED.action);
+                statement.setString(6, resign ? TurnAction.RESIGNED.action : played.isEmpty() ? TurnAction.PASSED.action : TurnAction.PLAYED.action);
             }
         );
 
@@ -552,9 +559,11 @@ public class Game implements Persistable {
             return;
         }
 
+        var opponent = host ? this.opponent : this.host;
         var winning = score > other.score ? played : other.played;
+        var bonus = other.score == score;
 
-        if (other.score == score) {
+        if (bonus) {
             this.database.update(
                 "UPDATE turnplayer" + (host ? "2" : "1") + " SET bonus = 5 WHERE game_id=? AND turn_id=?",
                 (statement) -> {
@@ -583,10 +592,41 @@ public class Game implements Persistable {
             }
         );
 
-        this.nextRound(this.pool, winning);
-    }
+        if (resign || other.action == TurnAction.RESIGNED) {
+            var winner = other.action == TurnAction.RESIGNED ? this.host : opponent;
 
-    public void resign(String username) {
-        throw new RuntimeException();
+            this.database.update(
+                "UPDATE game g SET g.username_winner = ?, g.game_state = ? WHERE g.game_id = ?",
+                (statement) -> {
+                    statement.setString(1, winner);
+                    statement.setString(2, GameState.RESIGNED.state);
+                    statement.setInt(3, this.id);
+                }
+            );
+
+            return;
+        }
+
+        var available = this.pool.stream()
+            .filter((p) -> p.available)
+            .collect(Collectors.toList());
+        var count = Math.max(played.size(), other.played.size());
+
+        if (available.size() == count) {
+            var winner = round.opponentScore + other.score + (bonus ? 5 : 0) > round.hostScore + score ? opponent : this.host;
+
+            this.database.update(
+                "UPDATE game g SET g.username_winner = ?, g.game_state = ? WHERE g.game_id = ?",
+                (statement) -> {
+                    statement.setString(1, winner);
+                    statement.setString(2, GameState.FINISHED.state);
+                    statement.setInt(3, this.id);
+                }
+            );
+
+            return;
+        }
+
+        this.nextRound(this.pool, winning);
     }
 }

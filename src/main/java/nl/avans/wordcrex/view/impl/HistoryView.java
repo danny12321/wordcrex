@@ -53,7 +53,11 @@ public class HistoryView extends View<HistoryController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        this.list.setItems(this.controller.getRounds());
+        var finishedRounds = this.controller.getRounds().stream()
+            .filter((round) -> round.hostTurn != null && round.opponentTurn != null)
+            .collect(Collectors.toList());
+
+        this.list.setItems(finishedRounds);
     }
 
     @Override
@@ -80,15 +84,13 @@ public class HistoryView extends View<HistoryController> {
 
     private void drawScore(Graphics2D g, Turn turn, int y, String username) {
         var metrics = g.getFontMetrics();
-        var status = "?";
+        var status = "-";
 
         g.setFont(Fonts.SMALL);
         g.setColor(Color.LIGHT_GRAY);
         g.drawString(username, Main.TASKBAR_SIZE, y + 43);
 
-        if (turn == null) {
-            status = "-";
-        } else if (turn.action == TurnAction.PLAYED) {
+        if (turn.action == TurnAction.PLAYED) {
             var score = "+" + turn.score;
 
             if (turn.bonus > 0) {
@@ -104,10 +106,6 @@ public class HistoryView extends View<HistoryController> {
             g.fillRect(450 - width, y + 18, width, 28);
             g.setColor(Color.WHITE);
             g.drawString(score, 450 - width + 8, y + 38);
-        } else if (turn.action == TurnAction.PASSED) {
-            status = "Gepast";
-        } else if (turn.action == TurnAction.RESIGNED) {
-            status = "Opgegeven";
         }
 
         g.setColor(Color.WHITE);

@@ -50,7 +50,7 @@ public class GameController extends AbstractGameController {
         var turn = this.isHost() ? round.hostTurn : round.opponentTurn;
 
         if (turn != null) {
-            return List.of();
+            return turn.played;
         }
 
         return this.played;
@@ -94,12 +94,12 @@ public class GameController extends AbstractGameController {
             return;
         }
 
-        this.getModel().playTurn(this.getRoot().user.username, this.getPlayed());
+        this.getModel().playTurn(this.getRoot().user.username, this.getPlayed(), false);
     }
 
     @Override
     public void resign() {
-        this.getModel().resign(this.getRoot().user.username);
+        this.getModel().playTurn(this.getRoot().user.username, List.of(), true);
     }
 
     @Override

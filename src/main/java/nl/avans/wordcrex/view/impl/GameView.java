@@ -171,7 +171,7 @@ public class GameView extends View<AbstractGameController> {
         }
 
         if (this.controller.canPlay()) {
-            this.playButton.setEnabled(can);
+            this.playButton.setEnabled(can && (this.controller.getPlayed().isEmpty() || this.controller.getScore() > 0));
             this.resignButton.setEnabled(can);
             this.resetButton.setEnabled(can);
             this.shuffleButton.setEnabled(can);

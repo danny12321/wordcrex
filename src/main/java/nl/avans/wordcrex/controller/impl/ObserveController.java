@@ -28,10 +28,10 @@ public class ObserveController extends Controller<User> {
     public String getLabel(Game game) {
         if (game.state == GameState.PENDING) {
             return "UITDAGINGEN";
-        } else if (game.state == GameState.FINISHED) {
-            return "AFGELOPEN";
-        } else {
+        } else if (game.state == GameState.PLAYING) {
             return "SPELLEN";
+        } else {
+            return "AFGELOPEN";
         }
     }
 

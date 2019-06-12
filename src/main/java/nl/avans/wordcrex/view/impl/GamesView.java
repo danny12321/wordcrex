@@ -30,7 +30,15 @@ public class GamesView extends View<GamesController> {
             96,
             "Geen spellen of uitdagingen",
             (game) -> String.valueOf(game.id),
-            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
+            (previous, next) -> {
+                var label = this.controller.getLabel(next);
+
+                if (previous != null && this.controller.getLabel(previous).equals(label)) {
+                    return null;
+                }
+
+                return label;
+            },
             (g, game) -> {
                 var other = this.controller.isCurrentUser(game.host) ? game.opponent : game.host;
 

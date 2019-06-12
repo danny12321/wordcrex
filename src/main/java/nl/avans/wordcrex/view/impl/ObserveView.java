@@ -24,7 +24,15 @@ public class ObserveView extends View<ObserveController> {
             96,
             "Geen spellen",
             (game) -> String.valueOf(game.id),
-            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
+            (previous, next) -> {
+                var label = this.controller.getLabel(next);
+
+                if (previous != null && this.controller.getLabel(previous).equals(label)) {
+                    return null;
+                }
+
+                return label;
+            },
             (g, game) -> {
                 var round = game.getLastRound();
                 var score = round == null ? " 0 - 0 " : (" " + round.hostScore + " - " + round.opponentScore + " ");
