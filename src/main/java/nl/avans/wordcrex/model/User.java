@@ -61,7 +61,7 @@ public class User implements Persistable {
             return null;
         }
 
-        return new User(database, wordcrex, username, List.copyOf(ref.roles), List.of(), List.of(), List.of(), List.of(), List.of());
+        return new User(database, wordcrex, ref.username, List.copyOf(ref.roles), List.of(), List.of(), List.of(), List.of(), List.of());
     }
 
     public static List<User> initialize(Database database, Wordcrex wordcrex) {

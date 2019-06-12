@@ -106,6 +106,7 @@ public class DragWidget<T> extends Widget {
         }
 
         this.dragging = false;
+        this.mouseMove(x, y);
     }
 
     @Override
@@ -114,6 +115,10 @@ public class DragWidget<T> extends Widget {
     }
 
     public void setPosition(int x, int y) {
+        if (this.dragging) {
+            return;
+        }
+
         var pos = this.absolute.apply(x, y);
 
         if (pos == null) {

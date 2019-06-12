@@ -105,6 +105,10 @@ public abstract class AbstractGameController extends Controller<Game> {
         return this.getModel().dictionary.characters.get(0);
     }
 
+    public boolean hasWon() {
+        return this.getRoot().user.username.equals(this.getModel().winner);
+    }
+
     public abstract void play();
 
     public abstract void resign();

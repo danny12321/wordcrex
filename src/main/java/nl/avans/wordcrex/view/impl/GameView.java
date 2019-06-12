@@ -7,6 +7,7 @@ import nl.avans.wordcrex.model.Playable;
 import nl.avans.wordcrex.model.Played;
 import nl.avans.wordcrex.model.TileType;
 import nl.avans.wordcrex.particle.Particle;
+import nl.avans.wordcrex.particle.impl.ExplodeParticle;
 import nl.avans.wordcrex.util.*;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
@@ -39,6 +40,8 @@ public class GameView extends View<AbstractGameController> {
     private final ButtonWidget previousButton = new ButtonWidget(Assets.read("back"), "vorige ronde", 22, 404, 32, 32, this.controller::previousRound);
     private final List<DragWidget<Playable>> deck = new ArrayList<>();
 
+    private int update;
+    private List<Pair<Integer, Integer>> exploded = new ArrayList<>();
     private boolean hover;
     private int scoreWidth = 0;
     private int lastRound;
@@ -100,6 +103,10 @@ public class GameView extends View<AbstractGameController> {
         }
 
         this.controller.getBoard().forEach((b) -> {
+            if (this.isExploded(b)) {
+                return;
+            }
+
             var position = this.getAbsolutePos(b.tile.x, b.tile.y);
 
             g.translate(position.a, position.b);
@@ -161,6 +168,31 @@ public class GameView extends View<AbstractGameController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
+        if (this.update++ % (10 + Main.RANDOM.nextInt(40)) == 0 && this.controller.canPlay() && this.controller.hasWon()) {
+            var board = this.controller.getBoard();
+
+            if (board.size() > this.exploded.size()) {
+                Played played;
+
+                do {
+                    played = board.get(Main.RANDOM.nextInt(board.size()));
+                } while (this.isExploded(played));
+
+                var abs = this.getAbsolutePos(played.tile.x, played.tile.y);
+
+                for (var i = 0; i < 50; i++) {
+                    var angle = Math.random() * 360.0f;
+                    var multiplier = (float) Math.random() * 40.0f;
+                    var velocityX = (float) Math.cos(angle) * multiplier;
+                    var velocityY = (float) Math.sin(angle) * multiplier;
+
+                    addParticle.accept(new ExplodeParticle(abs.a, abs.b, velocityX, velocityY, played.playable.character));
+                }
+
+                this.exploded.add(new Pair<>(played.tile.x, played.tile.y));
+            }
+        }
+
         var round = this.controller.getRound();
         var can = this.controller.isHost() ? round.hostTurn == null : round.opponentTurn == null;
 
@@ -251,6 +283,10 @@ public class GameView extends View<AbstractGameController> {
         return children;
     }
 
+    private boolean isExploded(Played played) {
+        return ListUtil.find(this.exploded, (t) -> played.tile.x == t.a && played.tile.y == t.b) != null;
+    }
+
     private void updatePositions() {
         var played = this.controller.getPlayed();
 
@@ -258,7 +294,7 @@ public class GameView extends View<AbstractGameController> {
             d.setPosition(0, 0);
 
             for (var p : played) {
-                if (p.playable == d.data) {
+                if (p.playable.id == d.data.id) {
                     d.setPosition(p.tile.x, p.tile.y);
                 }
             }

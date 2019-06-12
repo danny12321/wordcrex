@@ -610,7 +610,7 @@ public class Game implements Persistable {
 
         var opponent = host ? this.opponent : this.host;
         var winning = score > other.score ? played : other.played;
-        var bonus = other.score == score;
+        var bonus = other.score == score && other.action != TurnAction.PASSED;
 
         if (bonus) {
             this.database.update(

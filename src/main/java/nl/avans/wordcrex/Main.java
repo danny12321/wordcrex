@@ -88,11 +88,11 @@ public class Main extends JPanel {
             view.drawForeground(g);
         }
 
+        this.drawParticles(g, true);
+
         this.widgets.stream()
             .filter((widget) -> drawn.indexOf(widget) == -1)
             .forEach((widget) -> widget.draw(g));
-
-        this.drawParticles(g, true);
     }
 
     public void stop() {
