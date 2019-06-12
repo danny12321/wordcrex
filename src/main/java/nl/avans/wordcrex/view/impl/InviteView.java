@@ -25,6 +25,9 @@ public class InviteView extends View<InviteController> {
         this.list = new ListWidget<>(
             96,
             96,
+            "Geen tegenstanders",
+            (pair) -> pair.a,
+            (previous, next) -> null,
             (g, pair) -> {
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
@@ -42,9 +45,7 @@ public class InviteView extends View<InviteController> {
                     g.setFont(Fonts.NORMAL);
                 }
             },
-            (previous, next) -> null,
-            (pair) -> pair.a,
-            (pair) -> pair.b && this.controller.hasDictionary(),
+            this.controller::canClick,
             this.controller::invite
         );
     }
@@ -60,12 +61,10 @@ public class InviteView extends View<InviteController> {
 
     @Override
     public List<Widget> children() {
-        var dictionaries = this.controller.getDictionaries();
-
         return List.of(
             this.list,
             new InputWidget("GEBRUIKERSNAAM", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::findOpponents),
-            new DropdownWidget<>(dictionaries, "Selecteer taal", 0, Main.TASKBAR_SIZE + 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::setDictionary)
+            new DropdownWidget<>(this.controller.getDictionaries(), "Selecteer taal", 0, Main.TASKBAR_SIZE + 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::setDictionary)
         );
     }
 }

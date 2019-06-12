@@ -9,6 +9,8 @@ import java.sql.*;
 public class Database {
     private final DataSource source;
 
+    private int queries = 0;
+
     public Database(String config) {
         var hikari = new HikariConfig("/db/" + config + ".properties");
         hikari.setMaximumPoolSize(2);
@@ -26,6 +28,7 @@ public class Database {
 
     public int select(String sql, SqlConsumer<PreparedStatement> prepare, SqlConsumer<ResultSet> consumer) {
         var selected = 0;
+        this.queries++;
 
         try (var connection = this.getConnection();
              var statement = connection.prepareStatement(sql)) {
@@ -46,6 +49,7 @@ public class Database {
 
     public int update(String sql, SqlConsumer<PreparedStatement> prepare) {
         var updated = 0;
+        this.queries++;
 
         try (var connection = this.getConnection();
             var statement = connection.prepareStatement(sql)) {
@@ -60,6 +64,8 @@ public class Database {
     }
 
     public int insert(String sql, SqlConsumer<PreparedStatement> prepare) {
+        this.queries++;
+
         try (var connection = this.getConnection();
              var statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             prepare.accept(statement);
@@ -82,5 +88,13 @@ public class Database {
         }
 
         return -1;
+    }
+
+    public int flush() {
+        var queries = this.queries;
+
+        this.queries = 0;
+
+        return queries;
     }
 }

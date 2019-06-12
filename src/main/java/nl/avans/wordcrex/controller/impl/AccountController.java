@@ -4,20 +4,25 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.User;
 import nl.avans.wordcrex.model.UserRole;
+import nl.avans.wordcrex.model.Wordcrex;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.AccountView;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
 public class AccountController extends Controller<User> {
     private String password;
-    private User user;
 
-    public AccountController(Main main, Function<User, User> fn) {
-        super(main, Function.identity());
-        this.user = fn.apply(this.getRoot()).initialize();
+    public AccountController(Main main, Function<Wordcrex, User> fn) {
+        super(main, fn);
+    }
+
+    @Override
+    public void poll() {
+        this.update((model) -> model.poll(null));
     }
 
     @Override
@@ -25,48 +30,60 @@ public class AccountController extends Controller<User> {
         return new AccountView(this);
     }
 
-    @Override
-    public void poll() {
-        if (!this.user.username.equals(this.getModel().username)) {
-            this.user = this.user.poll();
+    public String getLabel(UserRole role) {
+        switch (role) {
+            case PLAYER:
+                return "Speler";
+            case OBSERVER:
+                return "Waarnemer";
+            case MODERATOR:
+                return "Controleur";
+            case ADMINISTRATOR:
+                return "Beheerder";
+            default:
+                return "?";
+        }
+    }
 
-            return;
+    public User getUser() {
+        return this.getModel();
+    }
+
+    public boolean isAdministrator() {
+        return this.getRoot().user.hasRole(UserRole.ADMINISTRATOR);
+    }
+
+    public boolean canClick(UserRole role) {
+        if (!this.isAdministrator()) {
+            return false;
+        } else if (this.getUser().roles.size() <= 1) {
+            return !this.getUser().hasRole(role);
         }
 
-        super.poll();
-
-        this.user = this.getModel();
+        return true;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public void changePassword() {
-        this.getModel().changePassword(this.password);
-    }
-
-    public boolean isValid(){
+    public boolean isValid() {
         return StringUtil.isAuthInput(this.password);
     }
 
-    public String getUsername() {
-        return this.user.username;
-    }
-
     public List<UserRole> getRoles() {
-        return this.user.roles;
-    }
-
-    public boolean canChangeRole(UserRole role) {
-        return !(this.user.roles.size() == 1 && this.user.hasRole(role));
+        return this.isAdministrator() ? Arrays.asList(UserRole.values()) : this.getUser().roles;
     }
 
     public void toggleRole(UserRole role) {
-        this.getModel().toggleRole(this.user, role);
+        this.getRoot().user.toggleRole(this.getUser(), role);
     }
 
-    public boolean canChangeRoles() {
-        return this.getModel().hasRole(UserRole.ADMINISTRATOR);
+    public void changePassword() {
+        if (!this.isValid()) {
+            return;
+        }
+
+        this.getUser().changePassword(this.password);
     }
 }

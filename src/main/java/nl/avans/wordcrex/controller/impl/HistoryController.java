@@ -4,18 +4,28 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.Round;
-import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.model.Turn;
+import nl.avans.wordcrex.model.Wordcrex;
 import nl.avans.wordcrex.util.ListUtil;
-import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.HistoryView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class HistoryController extends Controller<Game> {
-    public HistoryController(Main main, Function<User, Game> fn) {
+    private Map<String, String> played = new HashMap<>();
+
+    public HistoryController(Main main, Function<Wordcrex, Game> fn) {
         super(main, fn);
+    }
+
+    @Override
+    public void poll() {
+        this.update(Game::poll);
     }
 
     @Override
@@ -23,8 +33,26 @@ public class HistoryController extends Controller<Game> {
         return new HistoryView(this);
     }
 
+    public String getPlayedWord(Round round, Turn turn) {
+        var key = round.id + ";" + turn.score + ";" + turn.bonus;
+
+        if (this.played.containsKey(key)) {
+            return this.played.get(key);
+        }
+
+        var result = this.getModel().getPlayedWord(this.getModel().getBoard(round.id), turn.played);
+
+        this.played.put(key, result);
+
+        return result;
+    }
+
     public List<Round> getRounds() {
-        return ListUtil.reverseList(this.getModel().rounds);
+        var finishedRounds = this.getModel().rounds.stream()
+            .filter((round) -> round.hostTurn != null && round.opponentTurn != null)
+            .collect(Collectors.toList());
+
+        return ListUtil.reverseList(finishedRounds);
     }
 
     public String getHost() {
@@ -32,7 +60,10 @@ public class HistoryController extends Controller<Game> {
     }
 
     public int getHostScore() {
-        return this.getModel().getLastRound().hostScore;
+        var round = getModel().getLastRound();
+        var current = round.hostTurn != null ? round.hostTurn.score + round.hostTurn.bonus : 0;
+
+        return round.hostScore + current;
     }
 
     public String getOpponent() {
@@ -40,10 +71,9 @@ public class HistoryController extends Controller<Game> {
     }
 
     public int getOpponentScore() {
-        return this.getModel().getLastRound().opponentScore;
-    }
+        var round = getModel().getLastRound();
+        var current = round.opponentTurn != null ? round.opponentTurn.score + round.opponentTurn.bonus : 0;
 
-    public void navigateGame() {
-        this.main.openController(IngameController.class, StreamUtil.getModelProperty((user) -> user.games, (game) -> game.id == this.getModel().id));
+        return round.opponentScore + current;
     }
 }

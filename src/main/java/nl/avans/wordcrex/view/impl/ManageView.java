@@ -23,8 +23,11 @@ public class ManageView extends View<ManageController> {
     public ManageView(ManageController controller) {
         super(controller);
         this.list = new ListWidget<>(
-            Main.TASKBAR_SIZE + 12,
+            48,
             96,
+            "Geen gebruikers",
+            (user) -> user.username,
+            (previous, next) -> null,
             (g, user) -> {
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(Main.TASKBAR_SIZE, 27, 42, 42);
@@ -36,14 +39,12 @@ public class ManageView extends View<ManageController> {
                 g.drawString(user.username, Main.TASKBAR_SIZE * 2 + 42, 52);
 
                 for (var i = 0; i < UserRole.values().length; i++) {
-                    g.setColor(user.roles.contains(UserRole.values()[i]) ? Colors.DARK_YELLOW : Colors.DARK_BLUE);
+                    g.setColor(user.hasRole(UserRole.values()[i]) ? Colors.DARK_YELLOW : Colors.DARK_BLUE);
                     g.fillRect(330 + (i * 30), 32, 30, 30);
                     g.setColor(Colors.DARKERER_BLUE);
-                    StringUtil.drawCenteredString(g, 330 + (i * 30), 32, 30, 30, UserRole.values()[i].role.substring(0, 1).toUpperCase());
+                    StringUtil.drawCenteredString(g, 330 + (i * 30), 32, 30, 30, this.controller.getLabel(UserRole.values()[i]));
                 }
             },
-            (previous, next) -> null,
-            (user) -> user.username,
             (user) -> true,
             this.controller::navigateAccount
         );
@@ -62,7 +63,7 @@ public class ManageView extends View<ManageController> {
     public List<Widget> children() {
         return List.of(
             this.list,
-            new InputWidget("GEBRUIKERSNAAM", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::searchUsers)
+            new InputWidget("GEBRUIKERSNAAM", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::setFilter)
         );
     }
 }

@@ -18,6 +18,7 @@ public enum UserRole {
                 return r;
             }
         }
-        return null;
+
+        throw new RuntimeException("Invalid user role: " + role);
     }
 }

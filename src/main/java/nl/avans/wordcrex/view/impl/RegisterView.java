@@ -4,6 +4,7 @@ import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.RegisterController;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.particle.impl.TileParticle;
+import nl.avans.wordcrex.util.Assets;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class RegisterView extends View<RegisterController> {
-    private final ButtonWidget submitButton = new ButtonWidget("REGISTREER", 144, 312, 304, 48, this.controller::register);
+    private final ButtonWidget submitButton = new ButtonWidget("REGISTREER", 112, 312, 336, 32, this.controller::register);
 
     private int update;
 
@@ -30,9 +31,9 @@ public class RegisterView extends View<RegisterController> {
 
         if (this.controller.hasFailed()) {
             g.setColor(Colors.DARK_RED);
-            g.fillRect(144, 360, 304, 32);
+            g.fillRect(112, 344, 336, 32);
             g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 144, 360, 304, 32, "ongeldig");
+            StringUtil.drawCenteredString(g, 112, 344, 336, 32, "ongeldig");
         }
     }
 
@@ -50,7 +51,7 @@ public class RegisterView extends View<RegisterController> {
         return List.of(
             new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, this.controller::setUsername),
             new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, this.controller::setPassword),
-            new ButtonWidget("<", 64, 312, 64, 48, this.controller::navigateLogin),
+            new ButtonWidget(Assets.read("back"), null, 64, 312, 32, 32, this.controller::navigateLogin),
             this.submitButton
         );
     }

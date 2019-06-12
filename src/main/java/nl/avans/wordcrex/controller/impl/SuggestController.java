@@ -2,9 +2,8 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.model.Dictionary;
-import nl.avans.wordcrex.model.User;
-import nl.avans.wordcrex.model.Word;
+import nl.avans.wordcrex.model.*;
+import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.SuggestView;
 
@@ -14,12 +13,17 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class SuggestController extends Controller<User> {
-    private List<Word> words;
+    private String suggestion = "";
     private Dictionary dictionary;
+    private boolean failed;
 
-    public SuggestController(Main main, Function<User, User> fn) {
+    public SuggestController(Main main, Function<Wordcrex, User> fn) {
         super(main, fn);
-        this.words = this.getModel().getSuggested(0);
+    }
+
+    @Override
+    public void poll() {
+        this.update((model) -> model.poll(UserPoll.WORDS));
     }
 
     @Override
@@ -27,21 +31,32 @@ public class SuggestController extends Controller<User> {
         return new SuggestView(this);
     }
 
-    public Map<Dictionary, String> getDictionaries() {
-        var dictionaries = new LinkedHashMap<Dictionary, String>();
-
-        for (int i = 0; i < this.getModel().dictionaries.size(); i++) {
-            dictionaries.put(this.getModel().dictionaries.get(i), this.getModel().dictionaries.get(i).code);
-        }
-
-        return dictionaries;
+    public void setSuggestion(String suggestion) {
+        this.suggestion = suggestion;
+        this.failed = false;
     }
 
-    public boolean addWord(String word) {
-        var result = this.getModel().suggestWord(word, this.dictionary);
-        this.words = this.getModel().getSuggested(0);
+    public Map<Dictionary, String> getDictionaries() {
+        var dictionaries = this.getRoot().dictionaries;
+        var map = new LinkedHashMap<Dictionary, String>();
 
-        return result;
+        for (var dictionary : dictionaries) {
+            map.put(dictionary, dictionary.id);
+        }
+
+        return map;
+    }
+
+    public void setDictionary(Dictionary dictionary) {
+        this.dictionary = dictionary;
+    }
+
+    public boolean isValid() {
+        return this.dictionary != null && StringUtil.isWordInput(this.suggestion);
+    }
+
+    public boolean hasFailed() {
+        return this.failed;
     }
 
     public String getLabel(Word word) {
@@ -57,15 +72,15 @@ public class SuggestController extends Controller<User> {
         }
     }
 
-    public void setDictionary(Dictionary dictionary) {
-        this.dictionary = dictionary;
-    }
-
-    public boolean hasDictionary() {
-        return this.dictionary != null;
-    }
-
     public List<Word> getWords() {
-        return this.words;
+        return this.getModel().words;
+    }
+
+    public void suggest() {
+        if (!this.isValid()) {
+            return;
+        }
+
+        this.failed = !this.getModel().suggestWord(this.suggestion, this.dictionary);
     }
 }

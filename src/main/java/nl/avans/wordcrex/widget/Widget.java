@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 
 public abstract class Widget {
     private final List<Widget> parents = new ArrayList<>();
-    private List<Widget> children;
     private boolean focus;
     private boolean request;
 
@@ -39,26 +38,20 @@ public abstract class Widget {
     public void keyPress(int code, int modifiers) {
     }
 
-    public List<Widget> getChildren() {
-        if (this.children == null) {
-            this.children = this.children();
-        }
-
-        return this.children;
+    public List<Widget> children() {
+        return List.of();
     }
-
-    public abstract List<Widget> children();
 
     public boolean blocking() {
         return false;
     }
 
-    public boolean forceTop() {
+    public boolean top() {
         return false;
     }
 
-    public boolean isChild(Widget view) {
-        return this.parents.contains(view);
+    public boolean childOf(Widget widget) {
+        return widget == this || this.parents.contains(widget);
     }
 
     public boolean treeMatch(Predicate<Widget> predicate) {
@@ -70,7 +63,7 @@ public abstract class Widget {
         this.parents.add(parent);
     }
 
-    public boolean canFocus() {
+    public boolean focusable() {
         return false;
     }
 
@@ -83,11 +76,11 @@ public abstract class Widget {
     }
 
     public boolean requestingFocus() {
-        var r = this.request;
+        var requested = this.request;
 
         this.request = false;
 
-        return r;
+        return requested;
     }
 
     public void requestFocus() {

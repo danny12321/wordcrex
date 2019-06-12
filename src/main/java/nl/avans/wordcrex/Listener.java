@@ -9,6 +9,8 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
     private final Main main;
 
     private Point dragPoint;
+    private int lastX;
+    private int lastY;
 
     public Listener(JFrame frame, Main main) {
         this.frame = frame;
@@ -24,18 +26,18 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
     public void mousePressed(MouseEvent e) {
         if (e.getY() <= Main.TASKBAR_SIZE && e.getX() > Main.TASKBAR_SIZE && e.getX() < Main.FRAME_SIZE - Main.TASKBAR_SIZE) {
             this.dragPoint = e.getPoint();
-        } else {
-            this.main.getWidgets(false).forEach((widget) -> widget.mousePress(e.getX(), e.getY()));
         }
+
+        this.main.getWidgets(false).forEach((widget) -> widget.mousePress(e.getX(), e.getY()));
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         if (this.dragPoint != null) {
             this.dragPoint = null;
-        } else {
-            this.main.getWidgets(false).forEach((widget) -> widget.mouseRelease(e.getX(), e.getY()));
         }
+
+        this.main.getWidgets(false).forEach((widget) -> widget.mouseRelease(e.getX(), e.getY()));
     }
 
     @Override
@@ -59,7 +61,12 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        this.main.getWidgets(false).forEach((widget) -> widget.mouseMove(e.getX(), e.getY()));
+        if (e != null) {
+            this.lastX = e.getX();
+            this.lastY = e.getY();
+        }
+
+        this.main.getWidgets(false).forEach((widget) -> widget.mouseMove(this.lastX, this.lastY));
     }
 
     @Override
@@ -70,11 +77,7 @@ public class Listener implements MouseListener, MouseMotionListener, KeyListener
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getExtendedKeyCode() == KeyEvent.VK_TAB) {
-            var view = this.main.getView();
-
-            if (view != null) {
-                view.tabFocus(e.isShiftDown());
-            }
+            this.main.tabFocus(e.isShiftDown());
 
             return;
         }

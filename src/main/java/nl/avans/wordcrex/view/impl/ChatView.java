@@ -3,6 +3,7 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.ChatController;
 import nl.avans.wordcrex.particle.Particle;
+import nl.avans.wordcrex.util.Assets;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
@@ -13,19 +14,14 @@ import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class ChatView extends View<ChatController> {
     private final ScrollbarWidget scrollbar = new ScrollbarWidget((scroll) -> this.scroll = scroll, true);
-    private final InputWidget input = new InputWidget("BERICHT", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, (value) -> this.message = value);
-    private final ButtonWidget sendMessage = new ButtonWidget("+", Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, Main.FRAME_SIZE - 40, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this::chat);
-    private final int size = 32;
-    private final int gap = 16;
-    private final int maxBubbleSize = Main.FRAME_SIZE - Main.TASKBAR_SIZE - (this.gap * 4 + this.size * 2);
+    private final InputWidget input = new InputWidget("BERICHT", 48, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 96, 48, this.controller::setMessage);
+    private final ButtonWidget sendMessage = new ButtonWidget(Assets.read("next"), null, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, Main.FRAME_SIZE - 40, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this::sendMessage);
 
-    private String message;
     private int scroll = 0;
 
     public ChatView(ChatController controller) {
@@ -34,113 +30,79 @@ public class ChatView extends View<ChatController> {
 
     @Override
     public void draw(Graphics2D g) {
+        var gap = 16;
+        var size = 32;
+
+        var maxWidth = (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2;
         var messages = this.controller.getMessages();
-        var y = Main.TASKBAR_SIZE + this.gap;
-        int contentHeight = messages.stream().mapToInt(m -> this.splitMessage(g, m.message.split("\\s+")).size() * this.size + this.gap).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 48 + this.gap;
+        var offset = Main.TASKBAR_SIZE + 16;
+        var contentHeight = messages.stream().mapToInt(m -> StringUtil.split(g, m.message, maxWidth).size() * size + gap).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 64;
 
         for (var i = 0; i < messages.size(); i++) {
             var userMessage = false;
-            var x = this.gap;
+            var x = gap;
 
             if (messages.get(i).username.equals(this.controller.getUsername())) {
                 userMessage = true;
-                x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - this.size - this.gap;
+                x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - size - gap;
             }
 
             if (!(i != 0 && messages.get(i - 1).username.equals(messages.get(i).username))) {
                 g.setColor(Colors.DARK_YELLOW);
-                g.fillOval(x, y - contentHeight + this.scroll, this.size, this.size);
+                g.fillOval(x, offset - contentHeight + this.scroll, size, size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, y - contentHeight + this.scroll, this.size, this.size, messages.get(i).username.substring(0, 1).toUpperCase());
+                StringUtil.drawCenteredString(g, x, offset - contentHeight + this.scroll, size, size, messages.get(i).username.substring(0, 1).toUpperCase());
             }
 
             var message = messages.get(i).message;
-            var width = g.getFontMetrics().getStringBounds(message, g).getWidth();
-            var height = g.getFontMetrics().getStringBounds(message, g).getHeight();
+            var bounds = g.getFontMetrics().getStringBounds(message, g);
+            var width = (int) bounds.getWidth();
+            var height = (int) bounds.getHeight();
 
-            if (width > this.maxBubbleSize) {
-                width = this.maxBubbleSize;
+            if (width > maxWidth) {
+                width = maxWidth;
             }
 
-            var stringX = (int) (userMessage ? x - width - this.gap : x + this.size + this.gap);
-            var splitMessage = message.split("\\s+");
-            var lines = this.splitMessage(g, splitMessage);
+            var stringX = userMessage ? x - width - gap : x + size + gap;
+            var lines = StringUtil.split(g, message, maxWidth);
 
             for (var line : lines) {
                 g.setColor(Colors.DARK_BLUE);
-                g.fillRect(stringX - this.gap / 2, y - contentHeight + this.scroll, (int) width + this.gap, this.size);
+                g.fillRect(stringX - gap / 2, offset - contentHeight + this.scroll, width + gap, size);
 
                 g.setColor(Color.WHITE);
-                g.drawString(line.trim(), stringX, y + (int) height - contentHeight + this.scroll);
+                g.drawString(line.trim(), stringX, offset + height - contentHeight + this.scroll);
 
-                y += this.size;
+                offset += size;
             }
 
-            y += this.gap;
+            offset += gap;
         }
 
         g.setColor(Colors.DARK_BLUE);
         g.fillRect(0, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48);
 
-        this.scrollbar.setHeight(y + this.gap);
+        this.scrollbar.setHeight(offset + gap);
     }
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        this.sendMessage.setEnabled(this.message.trim().length() > 0);
+        this.sendMessage.setEnabled(this.controller.canSend());
     }
 
     @Override
     public List<Widget> children() {
         return List.of(
-            new ButtonWidget("<", 8, Main.FRAME_SIZE - 40, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame),
+            new ButtonWidget(Assets.read("back"), null, 8, Main.FRAME_SIZE - 40, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame),
+            this.scrollbar,
             this.input,
-            this.sendMessage,
-            this.scrollbar
+            this.sendMessage
         );
     }
 
-    private void chat() {
-        this.controller.sendChat(this.message);
+    private void sendMessage() {
+        this.controller.sendMessage();
         this.input.clearInput();
-    }
-
-    private List<String> splitMessage(Graphics2D g, String[] words) {
-        var lines = new ArrayList<String>();
-        var builder = new StringBuilder();
-        var lastString = "";
-
-        for (var i = 0; i < words.length; i++) {
-            builder.append(" ").append(words[i]);
-
-            if (g.getFontMetrics().getStringBounds(builder.toString(), g).getWidth() > this.maxBubbleSize) {
-                if (g.getFontMetrics().getStringBounds(words[i], g).getWidth() > this.maxBubbleSize) {
-                    builder = new StringBuilder(lastString);
-                    builder.append(" ");
-
-                    for (var j = 1; j < words[i].length(); j++) {
-                        builder.append(words[i], j - 1, j);
-
-                        if (g.getFontMetrics().getStringBounds(builder.toString(), g).getWidth() > this.maxBubbleSize) {
-                            lines.add(lastString);
-                            builder = new StringBuilder();
-                        }
-
-                        lastString = builder.toString();
-                    }
-                } else {
-                    lines.add(lastString);
-                    builder.setLength(0);
-                    i--;
-                }
-            }
-
-            lastString = builder.toString();
-        }
-
-        lines.add(lastString);
-
-        return lines;
     }
 }

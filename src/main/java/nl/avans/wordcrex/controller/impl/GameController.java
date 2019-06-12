@@ -1,56 +1,114 @@
 package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.*;
-import nl.avans.wordcrex.view.View;
-import nl.avans.wordcrex.view.impl.GameView;
+import nl.avans.wordcrex.util.StreamUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public abstract class GameController extends Controller<Game> {
-    public GameController(Main main, Function<User, Game> fn) {
+public class GameController extends AbstractGameController {
+    private List<Playable> deck = new ArrayList<>();
+    private List<Played> played = new ArrayList<>();
+
+    public GameController(Main main, Function<Wordcrex, Game> fn) {
         super(main, fn);
     }
 
     @Override
-    public View<? extends Controller<Game>> createView() {
-        return new GameView(this);
+    public boolean canPlay() {
+        return true;
     }
 
-    public abstract boolean canPlay();
+    @Override
+    public List<Playable> getDeck() {
+        var next = this.getRound().deck;
+        var ids = this.deck.stream().map((d) -> d.id).collect(Collectors.toList());
 
-    public abstract String getScore();
+        if (this.deck.size() != next.size() || !next.stream().allMatch((n) -> ids.contains(n.id))) {
+            this.deck = List.copyOf(next);
+        }
 
-    public abstract String getHostName();
+        return this.deck;
+    }
 
-    public abstract String getOpponentName();
+    @Override
+    public void shuffle() {
+        var deck = new ArrayList<>(this.deck);
 
-    public abstract Round getRound();
+        Collections.shuffle(deck);
 
-    public abstract int getTotalRounds();
+        this.deck = List.copyOf(deck);
+    }
 
-    public abstract List<Tile> getTiles();
+    @Override
+    public List<Played> getPlayed() {
+        var round = this.getRound();
+        var turn = this.isHost() ? round.hostTurn : round.opponentTurn;
 
-    public abstract void previousRound();
+        if (turn != null) {
+            return turn.played;
+        }
 
-    public abstract void nextRound();
+        return this.played;
+    }
 
-    public abstract int getPoolSize();
+    @Override
+    public void setPlayed(List<Played> played) {
+        this.played = List.copyOf(played);
+    }
 
-    public abstract void startNewRound();
+    @Override
+    public Round getRound() {
+        return this.getModel().getLastRound();
+    }
 
-    public abstract int getNewScore(List<Played> played);
+    @Override
+    public int getPool() {
+        return (int) this.getModel().pool.stream()
+            .filter((c) -> c.available)
+            .count();
+    }
 
-    public abstract Character getPlaceholder();
+    @Override
+    public String getFormattedScore() {
+        var round = this.getRound();
 
-    public abstract void navigateChat();
+        return round.hostScore + " - " + round.opponentScore;
+    }
 
-    public abstract void navigateHistory();
+    @Override
+    public void nextRound() {
+    }
 
-    public abstract void play(List<Played> played);
+    @Override
+    public void previousRound() {
+    }
 
-    public abstract void resign();
+    @Override
+    public void play() {
+        if (this.getScore() <= 0 && !this.played.isEmpty()) {
+            return;
+        }
+
+        this.getModel().playTurn(this.getRoot().user.username, this.getPlayed(), false);
+    }
+
+    @Override
+    public void resign() {
+        this.getModel().playTurn(this.getRoot().user.username, List.of(), true);
+    }
+
+    @Override
+    public void navigateHistory() {
+        this.main.openController(HistoryController.class, StreamUtil.getModelProperty((model) -> model.user.games, (game) -> game.id == this.getModel().id));
+    }
+
+    @Override
+    public void navigateChat() {
+        this.main.openController(ChatController.class, StreamUtil.getModelProperty((model) -> model.user.games, (game) -> game.id == this.getModel().id));
+    }
 }

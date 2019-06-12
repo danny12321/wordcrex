@@ -1,7 +1,7 @@
 package nl.avans.wordcrex.view.impl;
 
 import nl.avans.wordcrex.Main;
-import nl.avans.wordcrex.controller.impl.DashboardController;
+import nl.avans.wordcrex.controller.impl.GamesController;
 import nl.avans.wordcrex.model.Game;
 import nl.avans.wordcrex.model.GameState;
 import nl.avans.wordcrex.model.InviteState;
@@ -19,15 +19,26 @@ import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class DashboardView extends View<DashboardController> {
+public class GamesView extends View<GamesController> {
     private final ListWidget<Game> list;
     private final DialogWidget dialog = new DialogWidget();
 
-    public DashboardView(DashboardController controller) {
+    public GamesView(GamesController controller) {
         super(controller);
         this.list = new ListWidget<>(
-            72,
+            64,
             96,
+            "Geen spellen of uitdagingen",
+            (game) -> String.valueOf(game.id),
+            (previous, next) -> {
+                var label = this.controller.getLabel(next);
+
+                if (previous != null && this.controller.getLabel(previous).equals(label)) {
+                    return null;
+                }
+
+                return label;
+            },
             (g, game) -> {
                 var other = this.controller.isCurrentUser(game.host) ? game.opponent : game.host;
 
@@ -41,12 +52,13 @@ public class DashboardView extends View<DashboardController> {
                 g.drawString(this.controller.getBigExtra(game) + other, Main.TASKBAR_SIZE * 2 + 42, 44);
                 g.setFont(Fonts.SMALL);
                 g.setColor(Color.LIGHT_GRAY);
-                g.drawString(this.controller.getSmallExtra(game) + game.dictionary.description, Main.TASKBAR_SIZE * 2 + 42, 60);
+                g.drawString(this.controller.getSmallExtra(game) + game.dictionary.name, Main.TASKBAR_SIZE * 2 + 42, 60);
                 g.setFont(Fonts.NORMAL);
 
                 if (game.state != GameState.PENDING && game.getLastRound() != null) {
                     var metrics = g.getFontMetrics();
-                    var score = " " + game.getLastRound().hostScore + " - " + game.getLastRound().opponentScore + " ";
+                    var round = game.getLastRound();
+                    var score = " " + round.hostScore + " - " + round.opponentScore + " ";
                     var width = metrics.stringWidth(score);
 
                     g.setColor(Colors.DARK_BLUE);
@@ -55,9 +67,7 @@ public class DashboardView extends View<DashboardController> {
                     g.drawString(score, 450 - width, 54);
                 }
             },
-            (previous, next) -> previous == null || previous.state != next.state ? this.controller.getLabel(next) : null,
-            (game) -> String.valueOf(game.id),
-            this.controller::isSelectable,
+            this.controller::canClick,
             (game) -> {
                 if (game.inviteState == InviteState.PENDING) {
                     this.dialog.show("Accepteren?", "JA", "NEE", (positive) -> {
@@ -71,17 +81,13 @@ public class DashboardView extends View<DashboardController> {
                     return;
                 }
 
-                this.controller.navigateGame(game.id);
+                this.controller.navigateGame(game);
             }
         );
     }
 
     @Override
     public void draw(Graphics2D g) {
-        if (this.controller.getGames().isEmpty()) {
-            g.setColor(Color.WHITE);
-            StringUtil.drawCenteredString(g, 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, "Geen spellen of uitdagingen");
-        }
     }
 
     @Override
@@ -93,7 +99,7 @@ public class DashboardView extends View<DashboardController> {
     public List<Widget> children() {
         return List.of(
             this.list,
-            new ButtonWidget("NIEUW SPEL", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 72, this.controller::navigateInvite),
+            new ButtonWidget("NIEUW SPEL", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 64, this.controller::navigateInvite),
             this.dialog
         );
     }

@@ -2,22 +2,22 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.model.Game;
-import nl.avans.wordcrex.model.GameState;
-import nl.avans.wordcrex.model.User;
+import nl.avans.wordcrex.model.*;
+import nl.avans.wordcrex.util.StreamUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.ObserveView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
 public class ObserveController extends Controller<User> {
-    private String search = "";
-    private List<Game> games = new ArrayList<>();
-
-    public ObserveController(Main main, Function<User, User> fn) {
+    public ObserveController(Main main, Function<Wordcrex, User> fn) {
         super(main, fn);
+    }
+
+    @Override
+    public void poll() {
+        this.update((model) -> model.poll(UserPoll.OBSERVABLE));
     }
 
     @Override
@@ -25,30 +25,25 @@ public class ObserveController extends Controller<User> {
         return new ObserveView(this);
     }
 
-    @Override
-    public void poll() {
-        super.poll();
-
-        this.games = this.getModel().findObservableGames(this.search);
-    }
-
     public String getLabel(Game game) {
-        if (game.state == GameState.PLAYING) {
-            return "BEZIG";
+        if (game.state == GameState.PENDING) {
+            return "UITDAGINGEN";
+        } else if (game.state == GameState.PLAYING) {
+            return "SPELLEN";
         } else {
             return "AFGELOPEN";
         }
     }
 
     public List<Game> getGames() {
-        return this.games;
+        return this.getModel().observable;
     }
 
-    public void setSearch(String search) {
-        this.search = search;
+    public boolean canClick(Game game) {
+        return game.getLastRound() != null;
     }
 
-    public void navigateGame(Game game) {
-        this.main.openController(ObserveGameController.class, (model) -> game);
+    public void clickGame(Game game) {
+        this.main.openController(ObservingController.class, StreamUtil.getModelProperty((model) -> model.user.observable, (g) -> g.id == game.id));
     }
 }
