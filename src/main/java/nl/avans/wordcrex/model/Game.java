@@ -302,6 +302,55 @@ public class Game implements Persistable {
         return score;
     }
 
+    public List<Played> getBoard(int round) {
+        var board = new ArrayList<Played>();
+
+        for (var r : this.rounds) {
+            if (r.id == round) {
+                break;
+            }
+
+            if (r.board != null) {
+                board.addAll(r.board);
+            }
+        }
+
+        return List.copyOf(board);
+    }
+
+    public String getPlayedWord(List<Played> board, List<Played> played) {
+        if (played == null || played.isEmpty()) {
+            return "";
+        }
+
+        var horizontal = this.checkDirection(played, board, Pair::new);
+        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
+
+        if (horizontal == null || vertical == null) {
+            return "";
+        }
+
+        if (horizontal.a.size() == 1 && vertical.a.size() == 1) {
+            var words = new ArrayList<String>();
+            var longest = "";
+
+            words.addAll(horizontal.a);
+            words.addAll(vertical.a);
+
+            for (var word : words) {
+                if (word.length() > longest.length()) {
+                    longest = word;
+                }
+            }
+
+            return longest;
+        } else if (horizontal.a.size() == 1) {
+            return horizontal.a.get(0);
+        } else {
+            return vertical.a.get(0);
+        }
+    }
+
     private Pair<List<String>, Integer> checkDirection(List<Played> played, List<Played> board, BiFunction<Integer, Integer, Pair<Integer, Integer>> coords) {
         var size = Math.sqrt(this.wordcrex.tiles.size());
         var score = 0;

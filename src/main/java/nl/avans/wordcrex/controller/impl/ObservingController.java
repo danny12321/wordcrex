@@ -5,6 +5,7 @@ import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.util.BoardView;
 import nl.avans.wordcrex.util.StreamUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -22,11 +23,11 @@ public class ObservingController extends AbstractGameController {
 
     @Override
     public List<Played> getBoard() {
-        var board = super.getBoard();
+        var board = new ArrayList<>(super.getBoard());
 
         board.addAll(this.getPlayed());
 
-        return board;
+        return List.copyOf(board);
     }
 
     @Override

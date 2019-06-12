@@ -30,8 +30,8 @@ public class HistoryView extends View<HistoryController> {
             (round) -> String.valueOf(round.id),
             (previous, next) -> "RONDE " + next.id + " - " + next.deck.stream().map((c) -> c.character.character).collect(Collectors.joining()),
             (g, round) -> {
-                this.drawScore(g, round.hostTurn, 8, this.controller.getHost());
-                this.drawScore(g, round.opponentTurn, 56, this.controller.getOpponent());
+                this.drawScore(g, round, round.hostTurn, 8, this.controller.getHost());
+                this.drawScore(g, round, round.opponentTurn, 56, this.controller.getOpponent());
             }
         );
     }
@@ -53,11 +53,7 @@ public class HistoryView extends View<HistoryController> {
 
     @Override
     public void update(Consumer<Particle> addParticle) {
-        var finishedRounds = this.controller.getRounds().stream()
-            .filter((round) -> round.hostTurn != null && round.opponentTurn != null)
-            .collect(Collectors.toList());
-
-        this.list.setItems(finishedRounds);
+        this.list.setItems(this.controller.getRounds());
     }
 
     @Override
@@ -82,34 +78,38 @@ public class HistoryView extends View<HistoryController> {
         g.setFont(Fonts.NORMAL);
     }
 
-    private void drawScore(Graphics2D g, Turn turn, int y, String username) {
+    private void drawScore(Graphics2D g, Round round, Turn turn, int y, String username) {
         var metrics = g.getFontMetrics();
         var status = "-";
+        var score = "";
 
         g.setFont(Fonts.SMALL);
         g.setColor(Color.LIGHT_GRAY);
         g.drawString(username, Main.TASKBAR_SIZE, y + 43);
 
         if (turn.action == TurnAction.PLAYED) {
-            var score = "+" + turn.score;
+            score = "+" + turn.score;
 
             if (turn.bonus > 0) {
                 score += " (+" + turn.bonus + ")";
             }
 
-            var width = metrics.stringWidth(score) + 16;
-
-            status = turn.played.stream().map((c) -> c.playable.character.character).collect(Collectors.joining());
-
-            g.setFont(Fonts.NORMAL);
-            g.setColor(Colors.DARK_BLUE);
-            g.fillRect(450 - width, y + 18, width, 28);
-            g.setColor(Color.WHITE);
-            g.drawString(score, 450 - width + 8, y + 38);
+            status = this.controller.getPlayedWord(round, turn);
+        } else if (turn.action == TurnAction.PASSED) {
+            score = "gepast";
+        } else {
+            score = "opgegeven";
         }
+
+        var width = metrics.stringWidth(score) + 16;
 
         g.setColor(Color.WHITE);
         g.setFont(Fonts.NORMAL);
         g.drawString(status, Main.TASKBAR_SIZE, y + 31);
+        g.setFont(Fonts.NORMAL);
+        g.setColor(Colors.DARK_BLUE);
+        g.fillRect(450 - width, y + 18, width, 28);
+        g.setColor(Color.WHITE);
+        g.drawString(score, 450 - width + 8, y + 38);
     }
 }

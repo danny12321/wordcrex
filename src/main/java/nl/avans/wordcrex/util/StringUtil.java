@@ -4,7 +4,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class StringUtil {
     private static final String AUTH_REGEX = "^[a-zA-Z0-9]{5,25}$";

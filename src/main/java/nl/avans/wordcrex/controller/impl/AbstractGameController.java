@@ -10,7 +10,6 @@ import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.view.impl.GameView;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -38,19 +37,7 @@ public abstract class AbstractGameController extends Controller<Game> {
     }
 
     public List<Played> getBoard() {
-        var board = new ArrayList<Played>();
-
-        for (var round : this.getModel().rounds) {
-            if (round == this.getRound()) {
-                break;
-            }
-
-            if (round.board != null) {
-                board.addAll(round.board);
-            }
-        }
-
-        return board;
+        return this.getModel().getBoard(this.getRound().id);
     }
 
     public boolean isHost() {
