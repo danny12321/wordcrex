@@ -661,9 +661,8 @@ public class Game implements Persistable {
         var available = this.pool.stream()
             .filter((p) -> p.available)
             .collect(Collectors.toList());
-        var count = Math.max(played.size(), other.played.size());
 
-        if (available.isEmpty() && count == round.deck.size()) {
+        if (available.isEmpty() && winning.size() == round.deck.size()) {
             var winner = round.opponentScore + other.score + (bonus ? 5 : 0) > round.hostScore + score ? opponent : username;
 
             this.database.update(
