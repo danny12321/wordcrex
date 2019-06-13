@@ -503,7 +503,7 @@ public class Game implements Persistable {
         var round = this.getLastRound();
         var deck = new ArrayList<Playable>();
 
-        if (round != null) {
+        if (round != null && (round.hostTurn.action != TurnAction.PASSED || round.opponentTurn.action == TurnAction.PASSED)) {
             deck.addAll(round.deck.stream()
                 .filter((a) -> board.stream().noneMatch((p) -> p.playable.id == a.id))
                 .collect(Collectors.toList()));

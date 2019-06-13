@@ -290,7 +290,7 @@ public class GameView extends View<AbstractGameController> {
     private void updatePositions() {
         var played = this.controller.getPlayed();
 
-        for (var d : this.deck) {
+        for (var d : new ArrayList<>(this.deck)) {
             d.setPosition(0, 0);
 
             for (var p : played) {
