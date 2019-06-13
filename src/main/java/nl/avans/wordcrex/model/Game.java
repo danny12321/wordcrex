@@ -663,7 +663,7 @@ public class Game implements Persistable {
             .collect(Collectors.toList());
         var count = Math.max(played.size(), other.played.size());
 
-        if (available.size() == 0 && count == round.deck.size()) {
+        if (available.isEmpty() && count == round.deck.size()) {
             var winner = round.opponentScore + other.score + (bonus ? 5 : 0) > round.hostScore + score ? opponent : username;
 
             this.database.update(
