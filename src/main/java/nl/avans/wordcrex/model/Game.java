@@ -552,19 +552,8 @@ public class Game implements Persistable {
             return;
         }
 
-        var board = new ArrayList<Played>();
         var round = this.getLastRound();
-
-        for (var r : this.rounds) {
-            if (r == round) {
-                break;
-            }
-
-            if (r.board != null) {
-                board.addAll(r.board);
-            }
-        }
-
+        var board = this.getBoard(round.id);
         var host = this.host.equals(username);
         var other = host ? round.opponentTurn : round.hostTurn;
         var player = host ? "1" : "2";
@@ -661,9 +650,8 @@ public class Game implements Persistable {
         var available = this.pool.stream()
             .filter((p) -> p.available)
             .collect(Collectors.toList());
-        var count = Math.max(played.size(), other.played.size());
 
-        if (available.size() == count) {
+        if (available.isEmpty() && winning.size() == round.deck.size()) {
             var winner = round.opponentScore + other.score + (bonus ? 5 : 0) > round.hostScore + score ? opponent : username;
 
             this.database.update(
