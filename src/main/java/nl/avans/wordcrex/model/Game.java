@@ -552,19 +552,8 @@ public class Game implements Persistable {
             return;
         }
 
-        var board = new ArrayList<Played>();
         var round = this.getLastRound();
-
-        for (var r : this.rounds) {
-            if (r == round) {
-                break;
-            }
-
-            if (r.board != null) {
-                board.addAll(r.board);
-            }
-        }
-
+        var board = this.getBoard(round.id);
         var host = this.host.equals(username);
         var other = host ? round.opponentTurn : round.hostTurn;
         var player = host ? "1" : "2";
