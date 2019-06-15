@@ -196,12 +196,6 @@ public class GameView extends View<AbstractGameController> {
         var round = this.controller.getRound();
         var can = this.controller.isHost() ? round.hostTurn == null : round.opponentTurn == null;
 
-        if (this.lastRound != round.id) {
-            this.lastRound = round.id;
-
-            this.requestInitialize();
-        }
-
         if (this.controller.canPlay()) {
             this.playButton.setEnabled(can && (this.controller.getPlayed().isEmpty() || this.controller.getScore() > 0));
             this.resignButton.setEnabled(can);
@@ -228,7 +222,15 @@ public class GameView extends View<AbstractGameController> {
             played.add(new Played(widget.data, ListUtil.find(this.controller.getTiles(), (t) -> t.x == pos.a && t.y == pos.b)));
         }
 
-        this.controller.setPlayed(played);
+        if (this.lastRound != round.id) {
+            this.lastRound = round.id;
+            this.controller.setPlayed(List.of());
+
+            this.deck.forEach((d) -> d.setPosition(0, 0));
+            this.requestInitialize();
+        } else {
+            this.controller.setPlayed(played);
+        }
     }
 
     @Override
