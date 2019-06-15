@@ -652,7 +652,7 @@ public class Game implements Persistable {
             .collect(Collectors.toList());
 
         if (available.isEmpty() && winning.size() == round.deck.size()) {
-            var winner = round.opponentScore + other.score + (bonus ? 5 : 0) > round.hostScore + score ? opponent : username;
+            var winner = (host ? round.opponentScore : round.hostScore) + other.score + (bonus ? 5 : 0) > (host ? round.hostScore : round.opponentScore) + score ? opponent : username;
 
             this.database.update(
                 "UPDATE game g SET g.username_winner = ?, g.game_state = ? WHERE g.game_id = ?",
