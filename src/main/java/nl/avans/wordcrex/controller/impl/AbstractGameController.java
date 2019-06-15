@@ -90,7 +90,7 @@ public abstract class AbstractGameController extends Controller<Game> {
     }
 
     public int getScore() {
-        return this.getModel().getScore(this.getBoard(), this.getPlayed());
+        return this.getModel().getScore(this.getBoard(), this.getPlayed(), !this.main.debug);
     }
 
     public void setView(BoardView view) {
@@ -99,10 +99,6 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public BoardView getView() {
         return this.view;
-    }
-
-    public Character getPlaceholder() {
-        return this.getModel().dictionary.characters.get(0);
     }
 
     public boolean hasWon() {

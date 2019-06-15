@@ -267,7 +267,7 @@ public class Game implements Persistable {
         );
     }
 
-    public int getScore(List<Played> board, List<Played> played) {
+    public int getScore(List<Played> board, List<Played> played, boolean validate) {
         if (played == null || played.isEmpty()) {
             return 0;
         }
@@ -289,9 +289,11 @@ public class Game implements Persistable {
             return 0;
         }
 
-        for (var word : words) {
-            if (!this.dictionary.isWord(word)) {
-                return 0;
+        if (validate) {
+            for (var word : words) {
+                if (!this.dictionary.isWord(word)) {
+                    return 0;
+                }
             }
         }
 
@@ -555,7 +557,7 @@ public class Game implements Persistable {
         return playable.stream().anyMatch((d) -> d.id == p.id);
     }
 
-    public void playTurn(String username, List<Played> played, boolean resign) {
+    public void playTurn(String username, List<Played> played, boolean resign, boolean validate) {
         if (!this.host.equals(username) && !this.opponent.equals(username)) {
             return;
         }
@@ -565,7 +567,7 @@ public class Game implements Persistable {
         var host = this.host.equals(username);
         var other = host ? round.opponentTurn : round.hostTurn;
         var player = host ? "1" : "2";
-        var score = this.getScore(board, played);
+        var score = this.getScore(board, played, validate);
 
         this.database.start();
 
