@@ -10,9 +10,9 @@ public class Colors {
     public static final Color DARKER_YELLOW = new Color(173, 136, 19);
     public static final Color DARK_RED = new Color(205, 0, 0);
     public static final Color OVERLAY = new Color(0, 0, 0, 100);
-    public static final Color DARK_CYAN = new Color(52, 137, 128);
-    public static final Color DARKER_CYAN = new Color(41, 103, 96);
-    public static final Color DARKERER_CYAN = new Color(30, 75, 71);
-    public static final Color DARK_PURPLE = new Color(101, 58, 150);
-    public static final Color DARKER_PURPLE = new Color(82, 47, 122);
+    public static final Color TILE_2L = new Color(27, 130, 171);
+    public static final Color TILE_4L = new Color(30, 67, 151);
+    public static final Color TILE_6L = new Color(11, 102, 54);
+    public static final Color TILE_3W = new Color(148, 0, 80);
+    public static final Color TILE_4W = new Color(167, 84, 36);
 }

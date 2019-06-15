@@ -81,9 +81,9 @@ public abstract class AbstractGameController extends Controller<Game> {
             case CENTER:
                 return Colors.DARK_YELLOW;
             case LETTER:
-                return tile.multiplier == 2 ? Colors.DARK_CYAN : tile.multiplier == 4 ? Colors.DARKER_CYAN : Colors.DARKERER_CYAN;
+                return tile.multiplier == 2 ? Colors.TILE_2L : tile.multiplier == 4 ? Colors.TILE_4L : Colors.TILE_6L;
             case WORD:
-                return tile.multiplier == 3 ? Colors.DARK_PURPLE : Colors.DARKER_PURPLE;
+                return tile.multiplier == 3 ? Colors.TILE_3W : Colors.TILE_4W;
             default:
                 return Color.BLACK;
         }
