@@ -61,7 +61,7 @@ public class Main extends JPanel {
             5, this::poll,
             30, this::update,
             60, this::repaint
-        ));
+        ), this::handleError);
     }
 
     @Override
@@ -166,6 +166,11 @@ public class Main extends JPanel {
         if (!updated && !widgets.isEmpty()) {
             widgets.get(reverse ? widgets.size() - 1 : 0).requestFocus();
         }
+    }
+
+    public void handleError(Exception e) {
+        e.printStackTrace();
+        this.database.rollback();
     }
 
     private void openView(View<?> view) {

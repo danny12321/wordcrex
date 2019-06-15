@@ -461,6 +461,8 @@ public class Game implements Persistable {
             return;
         }
 
+        this.database.start();
+
         this.database.update(
             "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",
             (statement) -> {
@@ -492,10 +494,10 @@ public class Game implements Persistable {
             }
         );
 
-        this.nextRound(playable, List.of());
+        this.nextRound(playable, List.of(), TurnAction.PLAYED);
     }
 
-    private void nextRound(List<Playable> pool, List<Played> board) {
+    private void nextRound(List<Playable> pool, List<Played> board, TurnAction action) {
         var available = pool.stream()
             .filter((p) -> p.available)
             .collect(Collectors.toList());
@@ -504,9 +506,13 @@ public class Game implements Persistable {
         var deck = new ArrayList<Playable>();
 
         if (round != null) {
-            deck.addAll(round.deck.stream()
-                .filter((a) -> board.stream().noneMatch((p) -> p.playable.id == a.id))
-                .collect(Collectors.toList()));
+            var other = round.hostTurn != null ? round.hostTurn : round.opponentTurn;
+
+            if (other.action != TurnAction.PASSED || action != TurnAction.PASSED) {
+                deck.addAll(round.deck.stream()
+                    .filter((a) -> board.stream().noneMatch((p) -> p.playable.id == a.id))
+                    .collect(Collectors.toList()));
+            }
         }
 
         var add = Math.min(7 - deck.size(), available.size());
@@ -541,6 +547,8 @@ public class Game implements Persistable {
                 }
             }
         );
+
+        this.database.commit();
     }
 
     private boolean hasPlayable(List<Playable> playable, Playable p) {
@@ -558,6 +566,8 @@ public class Game implements Persistable {
         var other = host ? round.opponentTurn : round.hostTurn;
         var player = host ? "1" : "2";
         var score = this.getScore(board, played);
+
+        this.database.start();
 
         this.database.insert(
             "INSERT INTO turnplayer" + player + " VALUES (?, ?, ?, ?, ?, ?)",
@@ -594,6 +604,8 @@ public class Game implements Persistable {
         }
 
         if (other == null) {
+            this.database.commit();
+
             return;
         }
 
@@ -644,6 +656,8 @@ public class Game implements Persistable {
                 }
             );
 
+            this.database.commit();
+
             return;
         }
 
@@ -663,9 +677,11 @@ public class Game implements Persistable {
                 }
             );
 
+            this.database.commit();
+
             return;
         }
 
-        this.nextRound(this.pool, winning);
+        this.nextRound(this.pool, winning, played.isEmpty() ? TurnAction.PASSED : TurnAction.PLAYED);
     }
 }

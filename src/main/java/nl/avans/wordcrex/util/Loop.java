@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class Loop {
     private final List<ScheduledFuture<?>> futures;
@@ -14,7 +15,7 @@ public class Loop {
         this.futures = futures;
     }
 
-    public static Loop start(Map<Integer, Runnable> loops) {
+    public static Loop start(Map<Integer, Runnable> loops, Consumer<Exception> consumer) {
         var pool = Executors.newScheduledThreadPool(loops.size());
         var executors = new ArrayList<ScheduledFuture<?>>();
 
@@ -23,13 +24,14 @@ public class Loop {
                 try {
                     loop.getValue().run();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    consumer.accept(e);
                 }
             }, 0, 1000 / loop.getKey(), TimeUnit.MILLISECONDS));
         }
 
         return new Loop(executors);
     }
+
     public void stop() {
         this.futures.forEach((future) -> future.cancel(true));
     }
