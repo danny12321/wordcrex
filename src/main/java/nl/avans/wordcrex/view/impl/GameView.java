@@ -71,6 +71,7 @@ public class GameView extends View<AbstractGameController> {
         g.setColor(winner.equals(opponent) ? Colors.DARK_YELLOW : Color.WHITE);
         g.drawString(opponent, offset + this.scoreWidth + 8, 60);
 
+        g.setColor(Color.WHITE);
         StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 90, 72, "pot");
         StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 110, 72, String.valueOf(this.controller.getPool()));
         StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 140, 72, "ronde");
