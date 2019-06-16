@@ -5,8 +5,8 @@ import java.util.stream.Stream;
 public enum TileSide {
     NORTH(0, -1, TileAxis.VERTICAL),
     EAST(1, 0, TileAxis.HORIZONTAL),
-    SOUTH(0, 1, TileAxis.HORIZONTAL),
-    WEST(-1, 0, TileAxis.VERTICAL);
+    SOUTH(0, 1, TileAxis.VERTICAL),
+    WEST(-1, 0, TileAxis.HORIZONTAL);
 
     public final int x;
     public final int y;
