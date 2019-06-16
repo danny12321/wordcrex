@@ -1,15 +1,21 @@
 package nl.avans.wordcrex.widget.impl;
 
 import nl.avans.wordcrex.Main;
+import nl.avans.wordcrex.model.TileAxis;
+import nl.avans.wordcrex.model.TileSide;
 import nl.avans.wordcrex.particle.Particle;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Pair;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class DragWidget<T> extends Widget {
     public final T data;
@@ -18,7 +24,7 @@ public class DragWidget<T> extends Widget {
     public final int width;
     public final int height;
 
-    private final BiConsumer<Graphics2D, Boolean> draw;
+    private final BiConsumer<Graphics2D, Pair<Boolean, Boolean>> draw;
     private final BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute;
     private final BiFunction<Integer, Integer, Pair<Integer, Integer>> relative;
     private final BiFunction<Integer, Integer, Boolean> check;
@@ -31,7 +37,7 @@ public class DragWidget<T> extends Widget {
     private boolean dragging;
     private boolean enabled;
 
-    public DragWidget(T data, int x, int y, int width, int height, boolean enabled, BiConsumer<Graphics2D, Boolean> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute, BiFunction<Integer, Integer, Pair<Integer, Integer>> relative, BiFunction<Integer, Integer, Boolean> check) {
+    public DragWidget(T data, int x, int y, int width, int height, boolean enabled, BiConsumer<Graphics2D, Pair<Boolean, Boolean>> draw, BiFunction<Integer, Integer, Pair<Integer, Integer>> absolute, BiFunction<Integer, Integer, Pair<Integer, Integer>> relative, BiFunction<Integer, Integer, Boolean> check) {
         this.data = data;
         this.x = this.initialX = x;
         this.y = this.initialY = y;
@@ -58,7 +64,7 @@ public class DragWidget<T> extends Widget {
         }
 
         g.translate(this.x, this.y);
-        this.draw.accept(g, this.hover);
+        this.draw.accept(g, new Pair<>(this.hover, this.hasFocus()));
         g.translate(-this.x, -this.y);
     }
 
@@ -78,6 +84,10 @@ public class DragWidget<T> extends Widget {
         if (this.dragging) {
             this.offsetX = x - this.x;
             this.offsetY = y - this.y;
+
+            this.requestFocus();
+        } else {
+            this.setFocus(false);
         }
     }
 
@@ -110,8 +120,75 @@ public class DragWidget<T> extends Widget {
     }
 
     @Override
+    public void keyPress(int code, int modifiers) {
+        if (!this.hasFocus()) {
+            return;
+        }
+
+        TileSide side = null;
+
+        if (code == KeyEvent.VK_UP) {
+            side = TileSide.SOUTH;
+        } else if (code == KeyEvent.VK_RIGHT) {
+            side = TileSide.WEST;
+        } else if (code == KeyEvent.VK_DOWN) {
+            side = TileSide.NORTH;
+        } else if (code == KeyEvent.VK_LEFT) {
+            side = TileSide.EAST;
+        }
+
+        if (side == null) {
+            return;
+        }
+
+        this.hover = false;
+        this.dragging = false;
+
+        var width = this.getSize((i) -> new Pair<>(i, 1));
+        var height = this.getSize((i) -> new Pair<>(1, i));
+        var free = new ArrayList<Pair<Integer, Integer>>();
+
+        for (var i = 0; i < width * height; i++) {
+            var x = i % width + 1;
+            var y = i / width + 1;
+
+            if (!this.check.apply(x, y)) {
+                continue;
+            }
+
+            free.add(this.absolute.apply(x, y));
+        }
+
+        var s = side;
+        var closest = free.stream()
+            .filter((p) -> this.isSide(p, s))
+            .min(Comparator.comparingDouble((p) -> {
+                var x = p.a - this.x;
+                var y = p.b - this.y;
+
+                return Math.sqrt(x * x + y * y);
+            }))
+            .orElse(null);
+
+        if (closest == null) {
+            this.x = this.initialX;
+            this.y = this.initialY;
+
+            return;
+        }
+
+        this.x = closest.a;
+        this.y = closest.b;
+    }
+
+    @Override
     public boolean top() {
         return this.dragging;
+    }
+
+    @Override
+    public boolean focusable() {
+        return this.enabled;
     }
 
     public void setPosition(int x, int y) {
@@ -142,5 +219,25 @@ public class DragWidget<T> extends Widget {
         }
 
         return this.relative.apply(this.x, this.y);
+    }
+
+    private boolean isSide(Pair<Integer, Integer> pair, TileSide side) {
+        if (side.axis == TileAxis.HORIZONTAL) {
+            return ((int) Math.signum(this.x - pair.a)) == side.x;
+        } else {
+            return ((int) Math.signum(this.y - pair.b)) == side.y;
+        }
+    }
+
+    private int getSize(Function<Integer, Pair<Integer, Integer>> coords) {
+        var size = 0;
+        Pair<Integer, Integer> pair;
+
+        do {
+            size++;
+            pair = coords.apply(size);
+        } while (this.absolute.apply(pair.a, pair.b) != null);
+
+        return size - 1;
     }
 }

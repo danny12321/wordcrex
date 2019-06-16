@@ -106,7 +106,7 @@ public class GameView extends View<AbstractGameController> {
             var position = this.getAbsolutePos(b.tile.x, b.tile.y);
 
             g.translate(position.a, position.b);
-            this.drawTile(g, b.playable.character, played.stream().noneMatch((p) -> p.tile == b.tile));
+            this.drawTile(g, b.playable.character, new Pair<>(played.stream().noneMatch((p) -> p.tile == b.tile), false));
             g.translate(-position.a, -position.b);
         });
 
@@ -127,7 +127,7 @@ public class GameView extends View<AbstractGameController> {
             var y = 462;
 
             g.translate(x, y);
-            this.drawTile(g, p.character, false);
+            this.drawTile(g, p.character, new Pair<>(false, false));
             g.translate(-x, -y);
         }
     }
@@ -264,7 +264,7 @@ public class GameView extends View<AbstractGameController> {
             for (var i = 0; i < deck.size(); i++) {
                 var playable = deck.get(i);
 
-                this.deck.add(new DragWidget<>(playable, 142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, playable.character, hover), this::getAbsolutePos, this::getRelativePos, this::canDrop));
+                this.deck.add(new DragWidget<>(playable, 142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, state) -> this.drawTile(g, playable.character, state), this::getAbsolutePos, this::getRelativePos, this::canDrop));
             }
 
             this.updatePositions();
@@ -301,14 +301,19 @@ public class GameView extends View<AbstractGameController> {
         }
     }
 
-    private void drawTile(Graphics2D g, Character character, boolean hover) {
-        g.setColor(hover ? Color.LIGHT_GRAY : Color.WHITE);
+    private void drawTile(Graphics2D g, Character character, Pair<Boolean, Boolean> state) {
+        g.setColor(state.a ? Color.LIGHT_GRAY : Color.WHITE);
         g.fillRoundRect(0, 0, 24, 24, 6, 6);
         g.setColor(Colors.DARK_BLUE);
         g.drawString(character.character, 3, 21);
         g.setFont(Fonts.SMALL);
         StringUtil.drawCenteredString(g, 12, 0, 12, 14, String.valueOf(character.value));
         g.setFont(Fonts.NORMAL);
+
+        if (state.b) {
+            g.setColor(Colors.DARK_YELLOW);
+            g.drawRoundRect(0, 0, 23, 23, 6, 6);
+        }
     }
 
     private Pair<Integer, Integer> getAbsolutePos(int x, int y) {
