@@ -87,10 +87,8 @@ public class StringUtil {
             last = builder.toString();
         }
 
-        lines.add(last);
-        
-        if(lines.get(lines.size() - 1).trim().equals("")) {
-            lines.remove(lines.size() - 1);
+        if (!last.trim().isEmpty()) {
+            lines.add(last);
         }
 
         return lines;
