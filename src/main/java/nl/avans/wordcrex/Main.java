@@ -1,5 +1,6 @@
 package nl.avans.wordcrex;
 
+import joptsimple.OptionParser;
 import nl.avans.wordcrex.controller.Controller;
 import nl.avans.wordcrex.controller.impl.LoginController;
 import nl.avans.wordcrex.data.Database;
@@ -28,6 +29,8 @@ public class Main extends JPanel {
     private static final RenderingHints RENDERING_HINTS = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     private static final Stroke OUTLINE = new BasicStroke(2);
 
+    public final boolean debug;
+
     private final JFrame frame;
     private final Database database;
     private final List<Widget> widgets;
@@ -38,13 +41,14 @@ public class Main extends JPanel {
     private Controller<?> controller;
     private Wordcrex model;
 
-    private Main(JFrame frame, String config) {
+    private Main(JFrame frame, String config, boolean debug) {
         this.frame = frame;
-        this.database = new Database(config);
+        this.database = new Database(config, debug);
         this.widgets = new CopyOnWriteArrayList<>();
         this.particles = new CopyOnWriteArrayList<>();
         this.listener = new Listener(this.frame, this);
         this.model = Wordcrex.initialize(this.database);
+        this.debug = debug;
 
         this.setFont(Fonts.NORMAL);
         this.setForeground(Color.WHITE);
@@ -169,7 +173,10 @@ public class Main extends JPanel {
     }
 
     public void handleError(Exception e) {
-        e.printStackTrace();
+        if (this.debug) {
+            e.printStackTrace();
+        }
+
         this.database.rollback();
     }
 
@@ -209,7 +216,10 @@ public class Main extends JPanel {
         this.controller.poll();
 
         var count = this.database.flush();
-        System.out.println("Executed " + count + " quer" + (count == 1 ? "y" : "ies"));
+
+        if (this.debug) {
+            System.out.println("Executed " + count + " quer" + (count == 1 ? "y" : "ies"));
+        }
     }
 
     private void update() {
@@ -262,6 +272,11 @@ public class Main extends JPanel {
     }
 
     public static void main(String[] args) {
+        var parser = new OptionParser();
+        var config = parser.accepts("database").withRequiredArg().defaultsTo("prod");
+        var debug = parser.accepts("debug").withOptionalArg().ofType(Boolean.class).defaultsTo(true);
+
+        var parsed = parser.parse(args);
         var frame = new JFrame();
 
         frame.setTitle("Wordcrex");
@@ -271,7 +286,7 @@ public class Main extends JPanel {
         frame.setUndecorated(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setIconImage(Assets.read("icon"));
-        frame.add(new Main(frame, args.length > 0 ? args[0] : "prod"));
+        frame.add(new Main(frame, parsed.valueOf(config), parsed.has(debug) ? parsed.valueOf(debug) : false));
         frame.setVisible(true);
     }
 }

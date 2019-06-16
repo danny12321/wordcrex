@@ -91,7 +91,7 @@ public class ObservingController extends AbstractGameController {
 
     @Override
     public int getScore() {
-        return this.getModel().getScore(super.getBoard(), this.getPlayed());
+        return this.getModel().getScore(super.getBoard(), this.getPlayed(), !this.main.debug);
     }
 
     @Override
