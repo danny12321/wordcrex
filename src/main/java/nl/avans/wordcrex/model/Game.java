@@ -45,7 +45,13 @@ public class Game implements Persistable {
     }
 
     public static Game initialize(Database database, Wordcrex wordcrex, int id) {
-        return Game.initialize(database, wordcrex, "", id).get(0);
+        var games = Game.initialize(database, wordcrex, "", id);
+
+        if (games.isEmpty()) {
+            return null;
+        }
+
+        return games.get(0);
     }
 
     public static List<Game> initialize(Database database, Wordcrex wordcrex, String username, GameState... states) {
@@ -233,6 +239,11 @@ public class Game implements Persistable {
 
     public Game poll() {
         var game = Game.initialize(this.database, this.wordcrex, this.id);
+
+        if (game == null) {
+            return this;
+        }
+
         var messages = new ArrayList<Message>();
 
         this.database.select(

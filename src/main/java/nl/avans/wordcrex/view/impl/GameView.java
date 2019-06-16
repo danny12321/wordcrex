@@ -201,6 +201,8 @@ public class GameView extends View<AbstractGameController> {
             this.opponentButton.setEnabled(this.controller.getView() != BoardView.OPPONENT);
             this.nextButton.setEnabled(this.controller.getRound().id < this.controller.getTotalRounds());
             this.previousButton.setEnabled(this.controller.getRound().id > 1);
+
+            return;
         }
 
         var played = new ArrayList<Played>();
@@ -215,7 +217,7 @@ public class GameView extends View<AbstractGameController> {
             played.add(new Played(widget.data, ListUtil.find(this.controller.getTiles(), (t) -> t.x == pos.a && t.y == pos.b)));
         }
 
-        if (this.lastRound != round.id) {
+        if (this.lastRound != round.id || this.deck.isEmpty()) {
             this.lastRound = round.id;
             this.controller.setPlayed(List.of());
 
