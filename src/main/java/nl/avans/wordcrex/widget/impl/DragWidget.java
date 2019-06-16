@@ -141,6 +141,9 @@ public class DragWidget<T> extends Widget {
             return;
         }
 
+        this.hover = false;
+        this.dragging = false;
+
         var width = this.getSize((i) -> new Pair<>(i, 1));
         var height = this.getSize((i) -> new Pair<>(1, i));
         var free = new ArrayList<Pair<Integer, Integer>>();
