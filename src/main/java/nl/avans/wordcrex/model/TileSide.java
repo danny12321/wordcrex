@@ -19,6 +19,8 @@ public enum TileSide {
     }
 
     public static TileSide[] ofAxis(TileAxis axis) {
-        return Stream.of(TileSide.values()).filter((t) -> t.axis == axis).toArray(TileSide[]::new);
+        return Stream.of(TileSide.values())
+            .filter((t) -> t.axis == axis)
+            .toArray(TileSide[]::new);
     }
 }
