@@ -40,13 +40,21 @@ public class ObserveView extends View<ObserveController> {
                 var width = metrics.stringWidth(score);
 
                 g.setFont(Fonts.NORMAL);
-                g.setColor(Color.WHITE);
+                if(round.hostScore > round.opponentScore){
+                    g.setColor(Color.GREEN);
+                }else {
+                    g.setColor(Color.WHITE);
+                }
                 g.drawString(game.host, Main.TASKBAR_SIZE, 36);
                 g.setFont(Fonts.SMALL);
                 g.setColor(Color.LIGHT_GRAY);
                 g.drawString("tegen", Main.TASKBAR_SIZE, 52);
                 g.setFont(Fonts.NORMAL);
-                g.setColor(Color.WHITE);
+                if(round.opponentScore > round.hostScore){
+                    g.setColor(Color.GREEN);
+                }else {
+                    g.setColor(Color.WHITE);
+                }
                 g.drawString(game.opponent, Main.TASKBAR_SIZE, 70);
                 g.setColor(Colors.DARK_BLUE);
                 g.fillRect(450 - width, 34, width, 28);
