@@ -84,8 +84,6 @@ public class ChatView extends View<ChatController> {
                 offset += size;
             }
 
-            //g.fillPolygon(new int[]{stringX - gap / 2 - 7, stringX - gap / 2, stringX - gap / 2}, new int[]{stringX - gap / 2 + 16, offset - contentHeight + this.scroll + 9, offset - contentHeight + this.scroll + 23}, 3);
-
             offset += gap / 2;
         }
 
