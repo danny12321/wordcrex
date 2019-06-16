@@ -68,17 +68,10 @@ public class GameView extends View<AbstractGameController> {
         g.drawString(host, offset - metrics.stringWidth(host) - 8, 60);
         g.drawString(opponent, offset + this.scoreWidth + 8, 60);
 
-        var poolX = Main.FRAME_SIZE - 50;
-        var poolY = 76;
-
-        g.translate(poolX, poolY);
-        this.drawTile(g, this.controller.getPlaceholder(), false);
-        g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, -24, 44, 72, String.valueOf(this.controller.getPool()));
-        g.translate(-poolX, -poolY);
-
-        StringUtil.drawCenteredString(g, poolX - 24, 150, 72, "ronde");
-        StringUtil.drawCenteredString(g, poolX - 24, 170, 72, String.valueOf(this.controller.getRound().id));
+        StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 90, 72, "pot");
+        StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 110, 72, String.valueOf(this.controller.getPool()));
+        StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 140, 72, "ronde");
+        StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 160, 72, String.valueOf(this.controller.getRound().id));
 
         for (var tile : this.controller.getTiles()) {
             var position = this.getAbsolutePos(tile.x, tile.y);
@@ -208,6 +201,8 @@ public class GameView extends View<AbstractGameController> {
             this.opponentButton.setEnabled(this.controller.getView() != BoardView.OPPONENT);
             this.nextButton.setEnabled(this.controller.getRound().id < this.controller.getTotalRounds());
             this.previousButton.setEnabled(this.controller.getRound().id > 1);
+
+            return;
         }
 
         var played = new ArrayList<Played>();
@@ -222,7 +217,7 @@ public class GameView extends View<AbstractGameController> {
             played.add(new Played(widget.data, ListUtil.find(this.controller.getTiles(), (t) -> t.x == pos.a && t.y == pos.b)));
         }
 
-        if (this.lastRound != round.id) {
+        if (this.lastRound != round.id || this.deck.isEmpty()) {
             this.lastRound = round.id;
             this.controller.setPlayed(List.of());
 
