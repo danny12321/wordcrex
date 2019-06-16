@@ -64,7 +64,13 @@ public class HistoryView extends View<HistoryController> {
     }
 
     private void drawUser(Graphics2D g, int ovalX, int stringX, String username, int score) {
-        g.setColor(Colors.DARK_YELLOW);
+        if(this.controller.getHostScore() > this.controller.getOpponentScore() && username == this.controller.getHost()){
+            g.setColor(Color.GREEN);
+        } else if (this.controller.getOpponentScore() > this.controller.getHostScore() && username == this.controller.getOpponent()){
+            g.setColor(Color.GREEN);
+        } else {
+            g.setColor(Colors.DARK_YELLOW);
+        }
         g.fillOval(ovalX, 50, 42, 42);
         g.setFont(Fonts.BIG);
         g.setColor(Colors.DARKER_BLUE);
