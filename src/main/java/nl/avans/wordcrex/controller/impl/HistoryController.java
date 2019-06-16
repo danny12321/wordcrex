@@ -76,4 +76,10 @@ public class HistoryController extends Controller<Game> {
 
         return round.opponentScore + current;
     }
+
+    public String getWinner() {
+        var winner = this.getModel().winner;
+
+        return winner != null ? winner : "";
+    }
 }

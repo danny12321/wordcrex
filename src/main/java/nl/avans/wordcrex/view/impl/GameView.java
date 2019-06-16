@@ -53,6 +53,7 @@ public class GameView extends View<AbstractGameController> {
     @Override
     public void draw(Graphics2D g) {
         var metrics = g.getFontMetrics();
+        var winner = this.controller.getWinner();
         var score = this.controller.getFormattedScore();
         var host = this.controller.getHost();
         var opponent = this.controller.getOpponent();
@@ -65,7 +66,9 @@ public class GameView extends View<AbstractGameController> {
         g.fillRect(offset, 40, this.scoreWidth, 28);
         g.setColor(Color.WHITE);
         g.drawString(score, offset + 8, 60);
+        g.setColor(winner.equals(host) ? Colors.DARK_YELLOW : Color.WHITE);
         g.drawString(host, offset - metrics.stringWidth(host) - 8, 60);
+        g.setColor(winner.equals(opponent) ? Colors.DARK_YELLOW : Color.WHITE);
         g.drawString(opponent, offset + this.scoreWidth + 8, 60);
 
         StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 90, 72, "pot");

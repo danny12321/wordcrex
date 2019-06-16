@@ -34,19 +34,20 @@ public class ObserveView extends View<ObserveController> {
                 return label;
             },
             (g, game) -> {
+                var winner = game.winner != null ? game.winner : "";
                 var round = game.getLastRound();
                 var score = round == null ? " 0 - 0 " : (" " + round.hostScore + " - " + round.opponentScore + " ");
                 var metrics = g.getFontMetrics();
                 var width = metrics.stringWidth(score);
 
                 g.setFont(Fonts.NORMAL);
-                g.setColor(Color.WHITE);
+                g.setColor(winner.equals(game.host) ? Colors.DARK_YELLOW : Color.WHITE);
                 g.drawString(game.host, Main.TASKBAR_SIZE, 36);
                 g.setFont(Fonts.SMALL);
                 g.setColor(Color.LIGHT_GRAY);
                 g.drawString("tegen", Main.TASKBAR_SIZE, 52);
                 g.setFont(Fonts.NORMAL);
-                g.setColor(Color.WHITE);
+                g.setColor(winner.equals(game.opponent) ? Colors.DARK_YELLOW : Color.WHITE);
                 g.drawString(game.opponent, Main.TASKBAR_SIZE, 70);
                 g.setColor(Colors.DARK_BLUE);
                 g.fillRect(450 - width, 34, width, 28);
