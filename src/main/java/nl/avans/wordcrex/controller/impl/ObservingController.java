@@ -69,8 +69,8 @@ public class ObservingController extends AbstractGameController {
     @Override
     public String getFormattedScore() {
         var round = this.getRound();
-        var hostCurrent = round.hostTurn != null ? round.hostTurn.score + round.hostTurn.bonus : 0;
-        var opponentCurrent = round.opponentTurn != null ? round.opponentTurn.score + round.opponentTurn.bonus : 0;
+        var hostCurrent = round.hostTurn != null && round.opponentTurn != null ? round.hostTurn.score + round.hostTurn.bonus : 0;
+        var opponentCurrent = round.hostTurn != null && round.opponentTurn != null ? round.opponentTurn.score + round.opponentTurn.bonus : 0;
 
         return (round.hostScore + hostCurrent) + " - " + (round.opponentScore + opponentCurrent);
     }
@@ -91,7 +91,7 @@ public class ObservingController extends AbstractGameController {
 
     @Override
     public int getScore() {
-        return this.getModel().getScore(super.getBoard(), this.getPlayed());
+        return this.getModel().getScore(super.getBoard(), this.getPlayed(), !this.main.debug);
     }
 
     @Override

@@ -8,15 +8,17 @@ import java.sql.*;
 
 public class Database {
     private final DataSource source;
+    private final boolean debug;
 
     private Connection connection;
     private int queries = 0;
 
-    public Database(String config) {
+    public Database(String config, boolean debug) {
         var hikari = new HikariConfig("/db/" + config + ".properties");
         hikari.setMaximumPoolSize(2);
 
         this.source = new HikariDataSource(hikari);
+        this.debug = debug;
     }
 
     private Connection getConnection() throws SQLException {
@@ -74,7 +76,9 @@ public class Database {
                 }
             }, Statement.NO_GENERATED_KEYS);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (this.debug) {
+                e.printStackTrace();
+            }
         }
 
         return ref.selected;
@@ -92,7 +96,9 @@ public class Database {
                 ref.updated = statement.executeUpdate();
             }, Statement.NO_GENERATED_KEYS);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (this.debug) {
+                e.printStackTrace();
+            }
         }
 
         return ref.updated;
@@ -126,7 +132,9 @@ public class Database {
                 }
             }, Statement.RETURN_GENERATED_KEYS);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (this.debug) {
+                e.printStackTrace();
+            }
         }
 
         return ref.created;
@@ -143,7 +151,10 @@ public class Database {
             this.connection.commit();
             this.connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (this.debug) {
+                e.printStackTrace();
+            }
+
             System.err.println("Failed to commit transaction");
         } finally {
             this.connection = null;
@@ -161,7 +172,10 @@ public class Database {
             this.connection.rollback();
             this.connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (this.debug) {
+                e.printStackTrace();
+            }
+
             System.err.println("Failed to rollback transaction");
         } finally {
             this.connection = null;

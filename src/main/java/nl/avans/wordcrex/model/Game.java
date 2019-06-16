@@ -45,7 +45,13 @@ public class Game implements Persistable {
     }
 
     public static Game initialize(Database database, Wordcrex wordcrex, int id) {
-        return Game.initialize(database, wordcrex, "", id).get(0);
+        var games = Game.initialize(database, wordcrex, "", id);
+
+        if (games.isEmpty()) {
+            return null;
+        }
+
+        return games.get(0);
     }
 
     public static List<Game> initialize(Database database, Wordcrex wordcrex, String username, GameState... states) {
@@ -233,6 +239,11 @@ public class Game implements Persistable {
 
     public Game poll() {
         var game = Game.initialize(this.database, this.wordcrex, this.id);
+
+        if (game == null) {
+            return this;
+        }
+
         var messages = new ArrayList<Message>();
 
         this.database.select(
@@ -267,7 +278,7 @@ public class Game implements Persistable {
         );
     }
 
-    public int getScore(List<Played> board, List<Played> played) {
+    public int getScore(List<Played> board, List<Played> played, boolean validate) {
         if (played == null || played.isEmpty()) {
             return 0;
         }
@@ -289,9 +300,11 @@ public class Game implements Persistable {
             return 0;
         }
 
-        for (var word : words) {
-            if (!this.dictionary.isWord(word)) {
-                return 0;
+        if (validate) {
+            for (var word : words) {
+                if (!this.dictionary.isWord(word)) {
+                    return 0;
+                }
             }
         }
 
@@ -555,7 +568,7 @@ public class Game implements Persistable {
         return playable.stream().anyMatch((d) -> d.id == p.id);
     }
 
-    public void playTurn(String username, List<Played> played, boolean resign) {
+    public void playTurn(String username, List<Played> played, boolean resign, boolean validate) {
         if (!this.host.equals(username) && !this.opponent.equals(username)) {
             return;
         }
@@ -565,7 +578,7 @@ public class Game implements Persistable {
         var host = this.host.equals(username);
         var other = host ? round.opponentTurn : round.hostTurn;
         var player = host ? "1" : "2";
-        var score = this.getScore(board, played);
+        var score = this.getScore(board, played, validate);
 
         this.database.start();
 
@@ -611,7 +624,7 @@ public class Game implements Persistable {
 
         var opponent = host ? this.opponent : this.host;
         var winning = score > other.score ? played : other.played;
-        var bonus = other.score == score && other.action != TurnAction.PASSED;
+        var bonus = other.score == score && other.score > 0;
 
         if (bonus) {
             this.database.update(

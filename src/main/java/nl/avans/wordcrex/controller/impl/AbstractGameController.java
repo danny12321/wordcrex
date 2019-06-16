@@ -56,6 +56,12 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public abstract int getPool();
 
+    public String getWinner() {
+        var winner = this.getModel().winner;
+
+        return winner != null ? winner : "";
+    }
+
     public String getHost() {
         return this.getModel().host;
     }
@@ -90,7 +96,7 @@ public abstract class AbstractGameController extends Controller<Game> {
     }
 
     public int getScore() {
-        return this.getModel().getScore(this.getBoard(), this.getPlayed());
+        return this.getModel().getScore(this.getBoard(), this.getPlayed(), !this.main.debug);
     }
 
     public void setView(BoardView view) {
@@ -99,10 +105,6 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public BoardView getView() {
         return this.view;
-    }
-
-    public Character getPlaceholder() {
-        return this.getModel().dictionary.characters.get(0);
     }
 
     public boolean hasWon() {
