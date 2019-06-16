@@ -56,6 +56,12 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public abstract int getPool();
 
+    public String getWinner() {
+        var winner = this.getModel().winner;
+
+        return winner != null ? winner : "";
+    }
+
     public String getHost() {
         return this.getModel().host;
     }

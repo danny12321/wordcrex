@@ -70,7 +70,7 @@ public class HistoryView extends View<HistoryController> {
         g.setColor(Colors.DARKER_BLUE);
         StringUtil.drawCenteredString(g, ovalX, 50, 42, 42, username.substring(0, 1).toUpperCase());
         g.setFont(Fonts.NORMAL);
-        g.setColor(Color.WHITE);
+        g.setColor(this.controller.getWinner().equals(username) ? Colors.DARK_YELLOW : Color.WHITE);
         StringUtil.drawCenteredString(g, stringX, 120, (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2, username);
         g.setFont(Fonts.SMALL);
         g.setColor(Color.LIGHT_GRAY);
