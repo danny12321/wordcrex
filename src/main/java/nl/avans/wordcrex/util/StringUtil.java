@@ -88,6 +88,10 @@ public class StringUtil {
         }
 
         lines.add(last);
+        
+        if(lines.get(lines.size() - 1).trim().equals("")) {
+            lines.remove(lines.size() - 1);
+        }
 
         return lines;
     }

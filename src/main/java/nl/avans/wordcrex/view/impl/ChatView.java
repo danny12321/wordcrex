@@ -36,7 +36,7 @@ public class ChatView extends View<ChatController> {
         var maxWidth = (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2;
         var messages = this.controller.getMessages();
         var offset = Main.TASKBAR_SIZE + 16;
-        var contentHeight = messages.stream().mapToInt(m -> StringUtil.split(g, m.message, maxWidth).size() * size + gap).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 64;
+        var contentHeight = messages.stream().mapToInt(m -> StringUtil.split(g, m.message, maxWidth).size() * size + gap / 2).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 64;
 
         for (var i = 0; i < messages.size(); i++) {
             var userMessage = false;
@@ -48,6 +48,13 @@ public class ChatView extends View<ChatController> {
             }
 
             if (!(i != 0 && messages.get(i - 1).username.equals(messages.get(i).username))) {
+                g.setColor(Colors.DARK_BLUE);
+                if (userMessage) {
+                    g.fillPolygon(new int[]{x - size + gap / 2, x - size + gap / 2 + 13, x - size + gap / 2}, new int[]{offset - contentHeight + this.scroll, offset - contentHeight + this.scroll, offset - contentHeight + this.scroll + 17}, 3);
+                } else {
+                    g.fillPolygon(new int[]{x + size + gap / 2 + gap, x + size + gap / 2 + gap - 13, x + size + gap / 2 + gap}, new int[]{offset - contentHeight + this.scroll, offset - contentHeight + this.scroll, offset - contentHeight + this.scroll + 17}, 3);
+                }
+
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(x, offset - contentHeight + this.scroll, size, size);
                 g.setFont(Fonts.NORMAL);
@@ -64,7 +71,7 @@ public class ChatView extends View<ChatController> {
                 width = maxWidth;
             }
 
-            var stringX = userMessage ? x - width - gap : x + size + gap;
+            var stringX = userMessage ? x - width - gap * 2: x + size + gap * 2;
             var lines = StringUtil.split(g, message, maxWidth);
 
             for (var line : lines) {
@@ -77,13 +84,15 @@ public class ChatView extends View<ChatController> {
                 offset += size;
             }
 
-            offset += gap;
+            //g.fillPolygon(new int[]{stringX - gap / 2 - 7, stringX - gap / 2, stringX - gap / 2}, new int[]{stringX - gap / 2 + 16, offset - contentHeight + this.scroll + 9, offset - contentHeight + this.scroll + 23}, 3);
+
+            offset += gap / 2;
         }
 
         g.setColor(Colors.DARK_BLUE);
         g.fillRect(0, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48);
 
-        this.scrollbar.setHeight(offset + gap);
+        this.scrollbar.setHeight(offset + gap / 2);
     }
 
     @Override
