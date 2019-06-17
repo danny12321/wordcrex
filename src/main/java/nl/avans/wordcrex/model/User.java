@@ -77,7 +77,7 @@ public class User implements Persistable {
                 var rolesRaw = result.getString("roles").split(",");
                 var roles = Arrays.stream(rolesRaw)
                     .map(UserRole::byRole)
-                    .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+                    .collect(Collectors.toUnmodifiableList());
 
                 ref.users.add(new User(database, wordcrex, username, roles, List.of(), List.of(), List.of(), List.of(), List.of()));
             }
@@ -97,7 +97,7 @@ public class User implements Persistable {
         var user = model.user;
         var manageable = user.manageable.stream()
             .map((u) -> u.username.equals(this.username) ? this : u)
-            .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+            .collect(Collectors.toUnmodifiableList());
         var next = new User(user.database, user.wordcrex, user.username, user.roles, user.approvable, user.observable, user.observable, manageable, user.approvable);
 
         return new Wordcrex(this.database, next, model.tiles, model.dictionaries);
@@ -127,7 +127,7 @@ public class User implements Persistable {
         } else if (poll == UserPoll.MANAGEABLE) {
             var users = User.initialize(this.database, this.wordcrex).stream()
                 .filter((u) -> !u.username.equals(this.username))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+                .collect(Collectors.toUnmodifiableList());
 
             return new User(this.database, this.wordcrex, this.username, List.copyOf(roles), this.words, this.games, this.observable, users, this.approvable);
         }

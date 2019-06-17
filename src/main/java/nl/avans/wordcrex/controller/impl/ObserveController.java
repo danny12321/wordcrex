@@ -9,8 +9,11 @@ import nl.avans.wordcrex.view.impl.ObserveView;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ObserveController extends Controller<User> {
+    private String search = "";
+
     public ObserveController(Main main, Function<Wordcrex, User> fn) {
         super(main, fn);
     }
@@ -36,7 +39,13 @@ public class ObserveController extends Controller<User> {
     }
 
     public List<Game> getGames() {
-        return this.getModel().observable;
+        return this.getModel().observable.stream()
+            .filter((o) -> o.host.toLowerCase().contains(this.search) || o.opponent.toLowerCase().contains(this.search))
+            .collect(Collectors.toList());
+    }
+
+    public void searchGames(String search) {
+        this.search = search.toLowerCase();
     }
 
     public boolean canClick(Game game) {
