@@ -6,17 +6,18 @@ import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.widget.Widget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.function.Consumer;
 
 public class ScrollbarWidget extends Widget {
     private final Consumer<Integer> scroll;
+    private final boolean reverse;
 
     private int height;
-    private int offset = -1;
+    private int offset;
     private boolean hover;
     private boolean dragging;
     private int from;
-    private boolean reverse;
     private boolean lock;
 
     public ScrollbarWidget(Consumer<Integer> scroll) {
@@ -27,6 +28,10 @@ public class ScrollbarWidget extends Widget {
         this.scroll = scroll;
         this.reverse = reverse;
         this.lock = reverse;
+
+        if (this.lock) {
+            this.setOffset(-1);
+        }
     }
 
     @Override
@@ -42,6 +47,11 @@ public class ScrollbarWidget extends Widget {
         if (extra > 0) {
             g.setColor(this.hover ? Colors.DARKER_YELLOW : Colors.DARK_YELLOW);
             g.fillRect(Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.TASKBAR_SIZE + this.offset, Main.TASKBAR_SIZE, (int) scroller);
+        }
+
+        if (this.hasFocus()) {
+            g.setColor(Color.white);
+            g.drawRect(Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.TASKBAR_SIZE + this.offset, Main.TASKBAR_SIZE - 1, (int) scroller - 1);
         }
     }
 
@@ -67,9 +77,12 @@ public class ScrollbarWidget extends Widget {
     @Override
     public void mousePress(int x, int y) {
         if (!this.hover) {
+            this.setFocus(false);
+
             return;
         }
 
+        this.requestFocus();
         this.dragging = true;
         this.from = y - this.offset;
     }
@@ -80,22 +93,9 @@ public class ScrollbarWidget extends Widget {
             return;
         }
 
-        var extra = this.height - Main.FRAME_SIZE + Main.TASKBAR_SIZE;
         var height = Main.FRAME_SIZE - Main.TASKBAR_SIZE;
-        var scroller = (float) height / this.height * (float) height;
 
-        this.offset = (int) Math.min(height - scroller, Math.max(0, y - this.from));
-
-        var scroll = 0;
-
-        if (this.reverse) {
-            scroll = (this.height - height) - (int) (this.offset / (height - scroller) * extra);
-        } else {
-            scroll = (int) (this.offset / (height - scroller) * extra);
-        }
-
-        this.lock = !this.reverse || !(height - (this.offset + scroller) > 5);
-        this.scroll.accept(scroll);
+        this.setOffset((int) ((y - this.from) / (float) height * (float) this.height));
     }
 
     @Override
@@ -103,23 +103,48 @@ public class ScrollbarWidget extends Widget {
         this.dragging = false;
     }
 
+    @Override
+    public void keyPress(int code, int modifiers) {
+        if (!this.hasFocus()) {
+            return;
+        }
+
+        var height = Main.FRAME_SIZE - Main.TASKBAR_SIZE;
+        var next = (int) ((float) this.offset / (float) height * (float) this.height);
+
+        if (code == KeyEvent.VK_UP) {
+            next -= 20;
+        } else if (code == KeyEvent.VK_DOWN) {
+            next += 20;
+        }
+
+        this.setOffset(next);
+    }
+
+    @Override
+    public boolean focusable() {
+        return this.height - Main.FRAME_SIZE + Main.TASKBAR_SIZE > 0;
+    }
+
     public void setHeight(int height) {
+        var last = this.height;
+
         this.height = height;
 
-        if (this.reverse && this.lock) {
-            var e = Main.FRAME_SIZE - Main.TASKBAR_SIZE;
-            var scroller = (int) ((float) e / height * (float) e);
-
-            this.offset = e - scroller;
+        if (this.lock && last != height) {
+            this.setOffset(-1);
         }
     }
 
     public void setOffset(int offset) {
+        var extra = this.height - Main.FRAME_SIZE + Main.TASKBAR_SIZE;
         var height = Main.FRAME_SIZE - Main.TASKBAR_SIZE;
         var scroller = (float) height / this.height * (float) height;
-        var y = (float) offset / (float) this.height * (float) height;
+        var bottom = (int) (height - scroller);
+        var y = offset == -1 ? bottom : (float) offset / (float) this.height * (float) height;
 
-        this.offset = (int) Math.min(height - scroller, Math.max(0, y));
-        this.scroll.accept(offset);
+        this.offset = (int) Math.min(bottom, Math.max(0, y));
+        this.lock = this.offset == bottom && this.reverse;
+        this.scroll.accept((int) (this.offset / (float) bottom * extra));
     }
 }
