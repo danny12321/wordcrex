@@ -32,6 +32,7 @@ public class ChatView extends View<ChatController> {
     public void draw(Graphics2D g) {
         var gap = 16;
         var size = 32;
+        var messageSize = 25;
 
         var maxWidth = (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2;
         var messages = this.controller.getMessages();
@@ -47,6 +48,13 @@ public class ChatView extends View<ChatController> {
             }
 
             if (!(i != 0 && messages.get(i - 1).username.equals(messages.get(i).username))) {
+                g.setColor(Colors.DARK_BLUE);
+                if (userMessage) {
+                    g.fillPolygon(new int[]{x - size + gap / 2, x - size + gap / 2 + 13, x - size + gap / 2}, new int[]{offset - this.scroll, offset - this.scroll, offset - this.scroll + 17}, 3);
+                } else {
+                    g.fillPolygon(new int[]{x + size + gap / 2 + gap, x + size + gap / 2 + gap - 13, x + size + gap / 2 + gap}, new int[]{offset - this.scroll, offset - this.scroll, offset - this.scroll + 17}, 3);
+                }
+
                 g.setColor(Colors.DARK_YELLOW);
                 g.fillOval(x, offset - this.scroll, size, size);
                 g.setFont(Fonts.NORMAL);
@@ -63,20 +71,20 @@ public class ChatView extends View<ChatController> {
                 width = maxWidth;
             }
 
-            var stringX = userMessage ? x - width - gap : x + size + gap;
+            var stringX = userMessage ? x - width - gap * 2 : x + size + gap * 2;
             var lines = StringUtil.split(g, message, maxWidth);
 
             for (var line : lines) {
                 g.setColor(Colors.DARK_BLUE);
-                g.fillRect(stringX - gap / 2, offset - this.scroll, width + gap, size);
+                g.fillRect(stringX - gap / 2, offset - this.scroll, width + gap, messageSize);
 
                 g.setColor(Color.WHITE);
-                g.drawString(line.trim(), stringX, offset + height - this.scroll);
+                g.drawString(line.trim(), stringX, offset + height - this.scroll - 3);
 
-                offset += size;
+                offset += messageSize;
             }
 
-            offset += gap;
+            offset += gap / 2;
         }
 
         g.setColor(Colors.DARK_BLUE);
