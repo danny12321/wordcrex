@@ -77,6 +77,10 @@ public class GameController extends AbstractGameController {
     public String getFormattedScore() {
         var round = this.getRound();
 
+        if (round == null) {
+            return "? - ?";
+        }
+
         return round.hostScore + " - " + round.opponentScore;
     }
 
