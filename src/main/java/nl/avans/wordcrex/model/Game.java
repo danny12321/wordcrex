@@ -283,8 +283,8 @@ public class Game implements Persistable {
             return 0;
         }
 
-        var horizontal = this.checkDirection(played, board, Pair::new);
-        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
+        var horizontal = this.checkDirection(played, board, Pair::new, TileAxis.HORIZONTAL);
+        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x), TileAxis.VERTICAL);
 
         if (horizontal == null || vertical == null) {
             return 0;
@@ -336,8 +336,8 @@ public class Game implements Persistable {
             return "";
         }
 
-        var horizontal = this.checkDirection(played, board, Pair::new);
-        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
+        var horizontal = this.checkDirection(played, board, Pair::new, TileAxis.HORIZONTAL);
+        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x), TileAxis.VERTICAL);
 
         if (horizontal == null || vertical == null) {
             return "";
@@ -364,7 +364,7 @@ public class Game implements Persistable {
         }
     }
 
-    private Pair<List<String>, Integer> checkDirection(List<Played> played, List<Played> board, BiFunction<Integer, Integer, Pair<Integer, Integer>> coords) {
+    private Pair<List<String>, Integer> checkDirection(List<Played> played, List<Played> board, BiFunction<Integer, Integer, Pair<Integer, Integer>> coords, TileAxis axis) {
         var size = Math.sqrt(this.wordcrex.tiles.size());
         var score = 0;
         var words = new ArrayList<String>();
@@ -441,10 +441,11 @@ public class Game implements Persistable {
                     for (var side : TileSide.values()) {
                         if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
                             hasCurrent = true;
-                            surrounded = true;
                         }
+                    }
 
-                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
+                    for (var side : TileSide.ofAxis(axis)) {
+                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null || this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
                             surrounded = true;
                         }
                     }
