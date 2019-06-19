@@ -32,11 +32,12 @@ public class ChatView extends View<ChatController> {
     public void draw(Graphics2D g) {
         var gap = 16;
         var size = 32;
+        var messageSize = 25;
 
         var maxWidth = (Main.FRAME_SIZE - Main.TASKBAR_SIZE) / 2;
         var messages = this.controller.getMessages();
         var offset = Main.TASKBAR_SIZE + 16;
-        var contentHeight = messages.stream().mapToInt(m -> StringUtil.split(g, m.message, maxWidth).size() * size + gap / 2).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 64;
+        var contentHeight = messages.stream().mapToInt(m -> StringUtil.split(g, m.message, maxWidth).size() * messageSize + gap / 2).sum() - Main.FRAME_SIZE + Main.TASKBAR_SIZE + 64;
 
         for (var i = 0; i < messages.size(); i++) {
             var userMessage = false;
@@ -76,12 +77,12 @@ public class ChatView extends View<ChatController> {
 
             for (var line : lines) {
                 g.setColor(Colors.DARK_BLUE);
-                g.fillRect(stringX - gap / 2, offset - contentHeight + this.scroll, width + gap, size);
+                g.fillRect(stringX - gap / 2, offset - contentHeight + this.scroll, width + gap, messageSize);
 
                 g.setColor(Color.WHITE);
-                g.drawString(line.trim(), stringX, offset + height - contentHeight + this.scroll);
+                g.drawString(line.trim(), stringX, offset + height - contentHeight + this.scroll - 3);
 
-                offset += size;
+                offset += messageSize;
             }
 
             offset += gap / 2;
