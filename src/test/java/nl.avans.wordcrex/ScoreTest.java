@@ -1,16 +1,15 @@
 package nl.avans.wordcrex;
 
-import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.model.Character;
+import nl.avans.wordcrex.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ScoreTest {
     private List<Tile> createBoard() {
@@ -29,6 +28,7 @@ public class ScoreTest {
                     multiplier = x % 2 + 2;
                 } else if (x == 8 && y == 8) {
                     type = TileType.CENTER;
+                    multiplier = 3;
                 }
 
                 tiles.add(new Tile(x, y, type, multiplier));
@@ -87,7 +87,7 @@ public class ScoreTest {
             new Played(playables.get(1), this.findTile(9, 8, tiles))
         ));
 
-        assertEquals(2, score);
+        assertEquals(6, score);
 
         // Not connected to the center
         score = this.getScore((playables, tiles) -> List.of(), (playables, tiles) -> List.of(
@@ -166,7 +166,7 @@ public class ScoreTest {
             new Played(playables.get(2), this.findTile(10, 8, tiles))
         ));
 
-        assertEquals(3, score);
+        assertEquals(9, score);
     }
 
     @Test
@@ -198,14 +198,14 @@ public class ScoreTest {
     @Test
     @DisplayName("Score adjusts according to multipliers")
     public void testMultipliers() {
-        // Word is on no multipliers
+        // Center tile is a multiplier (3W)
         var score = this.getScore((playables, tiles) -> List.of(), (playables, tiles) -> List.of(
             new Played(playables.get(0), this.findTile(8, 8, tiles)),
             new Played(playables.get(1), this.findTile(9, 8, tiles)),
             new Played(playables.get(2), this.findTile(10, 8, tiles))
         ));
 
-        assertEquals(3, score);
+        assertEquals(9, score);
 
         // Test character multiplier (2L)
         score = this.getScore((playables, tiles) -> List.of(
@@ -259,5 +259,22 @@ public class ScoreTest {
         ));
 
         assertEquals(24, score);
+    }
+
+    @Test
+    @DisplayName("Full hand played bonus is applied")
+    public void testBonus() {
+        // Test if played size == 7 you get 100 bonus points
+        var score = this.getScore((playables, tiles) -> List.of(), (playables, tiles) -> List.of(
+            new Played(playables.get(0), this.findTile(5, 8, tiles)),
+            new Played(playables.get(1), this.findTile(6, 8, tiles)),
+            new Played(playables.get(2), this.findTile(7, 8, tiles)),
+            new Played(playables.get(3), this.findTile(8, 8, tiles)),
+            new Played(playables.get(4), this.findTile(9, 8, tiles)),
+            new Played(playables.get(5), this.findTile(10, 8, tiles)),
+            new Played(playables.get(6), this.findTile(11, 8, tiles))
+        ));
+
+        assertEquals(121, score);
     }
 }
