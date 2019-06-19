@@ -16,6 +16,7 @@ import nl.avans.wordcrex.widget.impl.DialogWidget;
 import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -64,6 +65,12 @@ public class GameView extends View<AbstractGameController> {
 
         g.setColor(this.hover ? Colors.DARKERER_BLUE : Colors.DARK_BLUE);
         g.fillRect(offset, 40, this.scoreWidth, 28);
+
+        if (this.hasFocus()) {
+            g.setColor(Color.white);
+            g.drawRect(offset, 40, this.scoreWidth - 1, 27);
+        }
+
         g.setColor(Color.WHITE);
         g.drawString(score, offset + 8, 60);
         g.setColor(winner.equals(host) ? Colors.DARK_YELLOW : Color.WHITE);
@@ -71,6 +78,7 @@ public class GameView extends View<AbstractGameController> {
         g.setColor(winner.equals(opponent) ? Colors.DARK_YELLOW : Color.WHITE);
         g.drawString(opponent, offset + this.scoreWidth + 8, 60);
 
+        g.setColor(Color.WHITE);
         StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 90, 72, "pot");
         StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 110, 72, String.valueOf(this.controller.getPool()));
         StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 140, 72, "ronde");
@@ -241,10 +249,19 @@ public class GameView extends View<AbstractGameController> {
     @Override
     public void mouseClick(int x, int y) {
         if (!this.hover) {
+            this.setFocus(false);
+
             return;
         }
 
         this.controller.navigateHistory();
+    }
+
+    @Override
+    public void keyPress(int code, int modifiers) {
+        if (code == KeyEvent.VK_ENTER && this.hasFocus()) {
+            this.controller.navigateHistory();
+        }
     }
 
     @Override
@@ -281,6 +298,11 @@ public class GameView extends View<AbstractGameController> {
         children.add(this.dialog);
 
         return children;
+    }
+
+    @Override
+    public boolean focusable() {
+        return true;
     }
 
     private boolean isExploded(Played played) {

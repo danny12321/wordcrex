@@ -128,13 +128,13 @@ public class DragWidget<T> extends Widget {
         TileSide side = null;
 
         if (code == KeyEvent.VK_UP) {
-            side = TileSide.SOUTH;
-        } else if (code == KeyEvent.VK_RIGHT) {
-            side = TileSide.WEST;
-        } else if (code == KeyEvent.VK_DOWN) {
             side = TileSide.NORTH;
-        } else if (code == KeyEvent.VK_LEFT) {
+        } else if (code == KeyEvent.VK_RIGHT) {
             side = TileSide.EAST;
+        } else if (code == KeyEvent.VK_DOWN) {
+            side = TileSide.SOUTH;
+        } else if (code == KeyEvent.VK_LEFT) {
+            side = TileSide.WEST;
         }
 
         if (side == null) {
@@ -223,9 +223,9 @@ public class DragWidget<T> extends Widget {
 
     private boolean isSide(Pair<Integer, Integer> pair, TileSide side) {
         if (side.axis == TileAxis.HORIZONTAL) {
-            return ((int) Math.signum(this.x - pair.a)) == side.x;
+            return ((int) Math.signum(this.x - pair.a)) == -side.x;
         } else {
-            return ((int) Math.signum(this.y - pair.b)) == side.y;
+            return ((int) Math.signum(this.y - pair.b)) == -side.y;
         }
     }
 
