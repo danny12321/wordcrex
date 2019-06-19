@@ -679,7 +679,7 @@ public class Game implements Persistable {
             .filter((p) -> p.available)
             .collect(Collectors.toList());
 
-        if (available.isEmpty() && winning.size() == round.deck.size()) {
+        if (available.isEmpty() && (winning.size() == round.deck.size() || (played.isEmpty() && other.action == TurnAction.PASSED))) {
             var winner = (host ? round.opponentScore : round.hostScore) + other.score + (bonus ? 5 : 0) > (host ? round.hostScore : round.opponentScore) + score ? opponent : username;
 
             this.database.update(
