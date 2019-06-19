@@ -177,7 +177,7 @@ public class InputWidget extends Widget {
         try {
             return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
         } catch (UnsupportedFlavorException | IOException e) {
-            e.printStackTrace();
+            System.err.println("Failed to get clipboard content");
         }
 
         return "";

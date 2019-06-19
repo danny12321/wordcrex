@@ -94,12 +94,12 @@ public class GameController extends AbstractGameController {
             return;
         }
 
-        this.getModel().playTurn(this.getRoot().user.username, this.getPlayed(), false);
+        this.getModel().playTurn(this.getRoot().user.username, this.getPlayed(), false, !this.main.debug);
     }
 
     @Override
     public void resign() {
-        this.getModel().playTurn(this.getRoot().user.username, List.of(), true);
+        this.getModel().playTurn(this.getRoot().user.username, List.of(), true, !this.main.debug);
     }
 
     @Override

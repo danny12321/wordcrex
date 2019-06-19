@@ -16,6 +16,7 @@ import nl.avans.wordcrex.widget.impl.DialogWidget;
 import nl.avans.wordcrex.widget.impl.DragWidget;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -53,6 +54,7 @@ public class GameView extends View<AbstractGameController> {
     @Override
     public void draw(Graphics2D g) {
         var metrics = g.getFontMetrics();
+        var winner = this.controller.getWinner();
         var score = this.controller.getFormattedScore();
         var host = this.controller.getHost();
         var opponent = this.controller.getOpponent();
@@ -63,22 +65,23 @@ public class GameView extends View<AbstractGameController> {
 
         g.setColor(this.hover ? Colors.DARKERER_BLUE : Colors.DARK_BLUE);
         g.fillRect(offset, 40, this.scoreWidth, 28);
+
+        if (this.hasFocus()) {
+            g.setColor(Color.white);
+            g.drawRect(offset, 40, this.scoreWidth - 1, 27);
+        }
+
         g.setColor(Color.WHITE);
         g.drawString(score, offset + 8, 60);
+        g.setColor(winner.equals(host) ? Colors.DARK_YELLOW : Color.WHITE);
         g.drawString(host, offset - metrics.stringWidth(host) - 8, 60);
+        g.setColor(winner.equals(opponent) ? Colors.DARK_YELLOW : Color.WHITE);
         g.drawString(opponent, offset + this.scoreWidth + 8, 60);
 
-        var poolX = Main.FRAME_SIZE - 50;
-        var poolY = 76;
-
-        g.translate(poolX, poolY);
-        this.drawTile(g, this.controller.getPlaceholder(), false);
-        g.setColor(Color.WHITE);
-        StringUtil.drawCenteredString(g, -24, 44, 72, String.valueOf(this.controller.getPool()));
-        g.translate(-poolX, -poolY);
-
-        StringUtil.drawCenteredString(g, poolX - 24, 150, 72, "ronde");
-        StringUtil.drawCenteredString(g, poolX - 24, 170, 72, String.valueOf(this.controller.getRound().id));
+        StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 90, 72, "pot");
+        StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 110, 72, String.valueOf(this.controller.getPool()));
+        StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 140, 72, "ronde");
+        StringUtil.drawCenteredString(g, Main.FRAME_SIZE - 74, 160, 72, String.valueOf(this.controller.getRound().id));
 
         for (var tile : this.controller.getTiles()) {
             var position = this.getAbsolutePos(tile.x, tile.y);
@@ -110,7 +113,7 @@ public class GameView extends View<AbstractGameController> {
             var position = this.getAbsolutePos(b.tile.x, b.tile.y);
 
             g.translate(position.a, position.b);
-            this.drawTile(g, b.playable.character, played.stream().noneMatch((p) -> p.tile == b.tile));
+            this.drawTile(g, b.playable.character, new Pair<>(played.stream().noneMatch((p) -> p.tile == b.tile), false));
             g.translate(-position.a, -position.b);
         });
 
@@ -131,7 +134,7 @@ public class GameView extends View<AbstractGameController> {
             var y = 462;
 
             g.translate(x, y);
-            this.drawTile(g, p.character, false);
+            this.drawTile(g, p.character, new Pair<>(false, false));
             g.translate(-x, -y);
         }
     }
@@ -196,12 +199,6 @@ public class GameView extends View<AbstractGameController> {
         var round = this.controller.getRound();
         var can = this.controller.isHost() ? round.hostTurn == null : round.opponentTurn == null;
 
-        if (this.lastRound != round.id) {
-            this.lastRound = round.id;
-
-            this.requestInitialize();
-        }
-
         if (this.controller.canPlay()) {
             this.playButton.setEnabled(can && (this.controller.getPlayed().isEmpty() || this.controller.getScore() > 0));
             this.resignButton.setEnabled(can);
@@ -214,6 +211,8 @@ public class GameView extends View<AbstractGameController> {
             this.opponentButton.setEnabled(this.controller.getView() != BoardView.OPPONENT);
             this.nextButton.setEnabled(this.controller.getRound().id < this.controller.getTotalRounds());
             this.previousButton.setEnabled(this.controller.getRound().id > 1);
+
+            return;
         }
 
         var played = new ArrayList<Played>();
@@ -228,7 +227,15 @@ public class GameView extends View<AbstractGameController> {
             played.add(new Played(widget.data, ListUtil.find(this.controller.getTiles(), (t) -> t.x == pos.a && t.y == pos.b)));
         }
 
-        this.controller.setPlayed(played);
+        if (this.lastRound != round.id || this.deck.isEmpty()) {
+            this.lastRound = round.id;
+            this.controller.setPlayed(List.of());
+
+            this.deck.forEach((d) -> d.setPosition(0, 0));
+            this.requestInitialize();
+        } else {
+            this.controller.setPlayed(played);
+        }
     }
 
     @Override
@@ -241,10 +248,19 @@ public class GameView extends View<AbstractGameController> {
     @Override
     public void mouseClick(int x, int y) {
         if (!this.hover) {
+            this.setFocus(false);
+
             return;
         }
 
         this.controller.navigateHistory();
+    }
+
+    @Override
+    public void keyPress(int code, int modifiers) {
+        if (code == KeyEvent.VK_ENTER && this.hasFocus()) {
+            this.controller.navigateHistory();
+        }
     }
 
     @Override
@@ -264,7 +280,7 @@ public class GameView extends View<AbstractGameController> {
             for (var i = 0; i < deck.size(); i++) {
                 var playable = deck.get(i);
 
-                this.deck.add(new DragWidget<>(playable, 142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, hover) -> this.drawTile(g, playable.character, hover), this::getAbsolutePos, this::getRelativePos, this::canDrop));
+                this.deck.add(new DragWidget<>(playable, 142 + i * 34, 462, 24, 24, this.controller.canPlay(), (g, state) -> this.drawTile(g, playable.character, state), this::getAbsolutePos, this::getRelativePos, this::canDrop));
             }
 
             this.updatePositions();
@@ -283,6 +299,11 @@ public class GameView extends View<AbstractGameController> {
         return children;
     }
 
+    @Override
+    public boolean focusable() {
+        return true;
+    }
+
     private boolean isExploded(Played played) {
         return ListUtil.find(this.exploded, (t) -> played.tile.x == t.a && played.tile.y == t.b) != null;
     }
@@ -290,7 +311,7 @@ public class GameView extends View<AbstractGameController> {
     private void updatePositions() {
         var played = this.controller.getPlayed();
 
-        for (var d : this.deck) {
+        for (var d : new ArrayList<>(this.deck)) {
             d.setPosition(0, 0);
 
             for (var p : played) {
@@ -301,14 +322,19 @@ public class GameView extends View<AbstractGameController> {
         }
     }
 
-    private void drawTile(Graphics2D g, Character character, boolean hover) {
-        g.setColor(hover ? Color.LIGHT_GRAY : Color.WHITE);
+    private void drawTile(Graphics2D g, Character character, Pair<Boolean, Boolean> state) {
+        g.setColor(state.a ? Color.LIGHT_GRAY : Color.WHITE);
         g.fillRoundRect(0, 0, 24, 24, 6, 6);
         g.setColor(Colors.DARK_BLUE);
         g.drawString(character.character, 3, 21);
         g.setFont(Fonts.SMALL);
         StringUtil.drawCenteredString(g, 12, 0, 12, 14, String.valueOf(character.value));
         g.setFont(Fonts.NORMAL);
+
+        if (state.b) {
+            g.setColor(Colors.DARK_YELLOW);
+            g.drawRoundRect(0, 0, 23, 23, 6, 6);
+        }
     }
 
     private Pair<Integer, Integer> getAbsolutePos(int x, int y) {

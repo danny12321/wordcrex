@@ -45,7 +45,13 @@ public class Game implements Persistable {
     }
 
     public static Game initialize(Database database, Wordcrex wordcrex, int id) {
-        return Game.initialize(database, wordcrex, "", id).get(0);
+        var games = Game.initialize(database, wordcrex, "", id);
+
+        if (games.isEmpty()) {
+            return null;
+        }
+
+        return games.get(0);
     }
 
     public static List<Game> initialize(Database database, Wordcrex wordcrex, String username, GameState... states) {
@@ -233,6 +239,11 @@ public class Game implements Persistable {
 
     public Game poll() {
         var game = Game.initialize(this.database, this.wordcrex, this.id);
+
+        if (game == null) {
+            return this;
+        }
+
         var messages = new ArrayList<Message>();
 
         this.database.select(
@@ -267,13 +278,13 @@ public class Game implements Persistable {
         );
     }
 
-    public int getScore(List<Played> board, List<Played> played) {
+    public int getScore(List<Played> board, List<Played> played, boolean validate) {
         if (played == null || played.isEmpty()) {
             return 0;
         }
 
-        var horizontal = this.checkDirection(played, board, Pair::new);
-        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
+        var horizontal = this.checkDirection(played, board, Pair::new, TileAxis.HORIZONTAL);
+        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x), TileAxis.VERTICAL);
 
         if (horizontal == null || vertical == null) {
             return 0;
@@ -289,9 +300,11 @@ public class Game implements Persistable {
             return 0;
         }
 
-        for (var word : words) {
-            if (!this.dictionary.isWord(word)) {
-                return 0;
+        if (validate) {
+            for (var word : words) {
+                if (!this.dictionary.isWord(word)) {
+                    return 0;
+                }
             }
         }
 
@@ -323,8 +336,8 @@ public class Game implements Persistable {
             return "";
         }
 
-        var horizontal = this.checkDirection(played, board, Pair::new);
-        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x));
+        var horizontal = this.checkDirection(played, board, Pair::new, TileAxis.HORIZONTAL);
+        var vertical = this.checkDirection(played, board, (x, y) -> new Pair<>(y, x), TileAxis.VERTICAL);
 
         if (horizontal == null || vertical == null) {
             return "";
@@ -351,7 +364,7 @@ public class Game implements Persistable {
         }
     }
 
-    private Pair<List<String>, Integer> checkDirection(List<Played> played, List<Played> board, BiFunction<Integer, Integer, Pair<Integer, Integer>> coords) {
+    private Pair<List<String>, Integer> checkDirection(List<Played> played, List<Played> board, BiFunction<Integer, Integer, Pair<Integer, Integer>> coords, TileAxis axis) {
         var size = Math.sqrt(this.wordcrex.tiles.size());
         var score = 0;
         var words = new ArrayList<String>();
@@ -428,10 +441,11 @@ public class Game implements Persistable {
                     for (var side : TileSide.values()) {
                         if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null) {
                             hasCurrent = true;
-                            surrounded = true;
                         }
+                    }
 
-                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
+                    for (var side : TileSide.ofAxis(axis)) {
+                        if (this.getPlayed(pair.a + side.x, pair.b + side.y, board) != null || this.getPlayed(pair.a + side.x, pair.b + side.y, played) != null) {
                             surrounded = true;
                         }
                     }
@@ -460,6 +474,8 @@ public class Game implements Persistable {
         if (!this.rounds.isEmpty()) {
             return;
         }
+
+        this.database.start();
 
         this.database.update(
             "UPDATE game g SET g.game_state = ? WHERE g.game_id = ?",
@@ -492,10 +508,10 @@ public class Game implements Persistable {
             }
         );
 
-        this.nextRound(playable, List.of());
+        this.nextRound(playable, List.of(), TurnAction.PLAYED);
     }
 
-    private void nextRound(List<Playable> pool, List<Played> board) {
+    private void nextRound(List<Playable> pool, List<Played> board, TurnAction action) {
         var available = pool.stream()
             .filter((p) -> p.available)
             .collect(Collectors.toList());
@@ -504,9 +520,13 @@ public class Game implements Persistable {
         var deck = new ArrayList<Playable>();
 
         if (round != null) {
-            deck.addAll(round.deck.stream()
-                .filter((a) -> board.stream().noneMatch((p) -> p.playable.id == a.id))
-                .collect(Collectors.toList()));
+            var other = round.hostTurn != null ? round.hostTurn : round.opponentTurn;
+
+            if (other.action != TurnAction.PASSED || action != TurnAction.PASSED) {
+                deck.addAll(round.deck.stream()
+                    .filter((a) -> board.stream().noneMatch((p) -> p.playable.id == a.id))
+                    .collect(Collectors.toList()));
+            }
         }
 
         var add = Math.min(7 - deck.size(), available.size());
@@ -541,34 +561,27 @@ public class Game implements Persistable {
                 }
             }
         );
+
+        this.database.commit();
     }
 
     private boolean hasPlayable(List<Playable> playable, Playable p) {
         return playable.stream().anyMatch((d) -> d.id == p.id);
     }
 
-    public void playTurn(String username, List<Played> played, boolean resign) {
+    public void playTurn(String username, List<Played> played, boolean resign, boolean validate) {
         if (!this.host.equals(username) && !this.opponent.equals(username)) {
             return;
         }
 
-        var board = new ArrayList<Played>();
         var round = this.getLastRound();
-
-        for (var r : this.rounds) {
-            if (r == round) {
-                break;
-            }
-
-            if (r.board != null) {
-                board.addAll(r.board);
-            }
-        }
-
+        var board = this.getBoard(round.id);
         var host = this.host.equals(username);
         var other = host ? round.opponentTurn : round.hostTurn;
         var player = host ? "1" : "2";
-        var score = this.getScore(board, played);
+        var score = this.getScore(board, played, validate);
+
+        this.database.start();
 
         this.database.insert(
             "INSERT INTO turnplayer" + player + " VALUES (?, ?, ?, ?, ?, ?)",
@@ -605,12 +618,14 @@ public class Game implements Persistable {
         }
 
         if (other == null) {
+            this.database.commit();
+
             return;
         }
 
         var opponent = host ? this.opponent : this.host;
         var winning = score > other.score ? played : other.played;
-        var bonus = other.score == score && other.action != TurnAction.PASSED;
+        var bonus = other.score == score && other.score > 0;
 
         if (bonus) {
             this.database.update(
@@ -655,16 +670,17 @@ public class Game implements Persistable {
                 }
             );
 
+            this.database.commit();
+
             return;
         }
 
         var available = this.pool.stream()
             .filter((p) -> p.available)
             .collect(Collectors.toList());
-        var count = Math.max(played.size(), other.played.size());
 
-        if (available.size() == count) {
-            var winner = round.opponentScore + other.score + (bonus ? 5 : 0) > round.hostScore + score ? opponent : username;
+        if (available.isEmpty() && winning.size() == round.deck.size()) {
+            var winner = (host ? round.opponentScore : round.hostScore) + other.score + (bonus ? 5 : 0) > (host ? round.hostScore : round.opponentScore) + score ? opponent : username;
 
             this.database.update(
                 "UPDATE game g SET g.username_winner = ?, g.game_state = ? WHERE g.game_id = ?",
@@ -675,9 +691,11 @@ public class Game implements Persistable {
                 }
             );
 
+            this.database.commit();
+
             return;
         }
 
-        this.nextRound(this.pool, winning);
+        this.nextRound(this.pool, winning, played.isEmpty() ? TurnAction.PASSED : TurnAction.PLAYED);
     }
 }

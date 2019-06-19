@@ -60,8 +60,8 @@ public class HistoryController extends Controller<Game> {
     }
 
     public int getHostScore() {
-        var round = getModel().getLastRound();
-        var current = round.hostTurn != null ? round.hostTurn.score + round.hostTurn.bonus : 0;
+        var round = this.getModel().getLastRound();
+        var current = round.hostTurn != null && round.opponentTurn != null ? round.hostTurn.score + round.hostTurn.bonus : 0;
 
         return round.hostScore + current;
     }
@@ -71,9 +71,15 @@ public class HistoryController extends Controller<Game> {
     }
 
     public int getOpponentScore() {
-        var round = getModel().getLastRound();
-        var current = round.opponentTurn != null ? round.opponentTurn.score + round.opponentTurn.bonus : 0;
+        var round = this.getModel().getLastRound();
+        var current = round.hostTurn != null && round.opponentTurn != null ? round.opponentTurn.score + round.opponentTurn.bonus : 0;
 
         return round.opponentScore + current;
+    }
+
+    public String getWinner() {
+        var winner = this.getModel().winner;
+
+        return winner != null ? winner : "";
     }
 }

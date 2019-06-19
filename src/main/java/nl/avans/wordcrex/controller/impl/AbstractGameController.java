@@ -2,7 +2,6 @@ package nl.avans.wordcrex.controller.impl;
 
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.Controller;
-import nl.avans.wordcrex.model.Character;
 import nl.avans.wordcrex.model.*;
 import nl.avans.wordcrex.util.BoardView;
 import nl.avans.wordcrex.util.Colors;
@@ -56,6 +55,12 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public abstract int getPool();
 
+    public String getWinner() {
+        var winner = this.getModel().winner;
+
+        return winner != null ? winner : "";
+    }
+
     public String getHost() {
         return this.getModel().host;
     }
@@ -81,16 +86,16 @@ public abstract class AbstractGameController extends Controller<Game> {
             case CENTER:
                 return Colors.DARK_YELLOW;
             case LETTER:
-                return tile.multiplier == 2 ? Colors.DARK_CYAN : tile.multiplier == 4 ? Colors.DARKER_CYAN : Colors.DARKERER_CYAN;
+                return tile.multiplier == 2 ? Colors.TILE_2L : tile.multiplier == 4 ? Colors.TILE_4L : Colors.TILE_6L;
             case WORD:
-                return tile.multiplier == 3 ? Colors.DARK_PURPLE : Colors.DARKER_PURPLE;
+                return tile.multiplier == 3 ? Colors.TILE_3W : Colors.TILE_4W;
             default:
                 return Color.BLACK;
         }
     }
 
     public int getScore() {
-        return this.getModel().getScore(this.getBoard(), this.getPlayed());
+        return this.getModel().getScore(this.getBoard(), this.getPlayed(), !this.main.debug);
     }
 
     public void setView(BoardView view) {
@@ -99,10 +104,6 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public BoardView getView() {
         return this.view;
-    }
-
-    public Character getPlaceholder() {
-        return this.getModel().dictionary.characters.get(0);
     }
 
     public boolean hasWon() {
