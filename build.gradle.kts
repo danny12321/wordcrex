@@ -24,12 +24,14 @@ dependencies {
     implementation("net.sf.jopt-simple:jopt-simple:5.0.4")
     implementation("org.mariadb.jdbc:mariadb-java-client:2.4.1")
     implementation("org.slf4j:slf4j-simple:1.7.26")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.4.2")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.4.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
 }
 
-tasks.named<Test>("test") {
+tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
 
 tasks.withType<Jar> {
