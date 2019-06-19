@@ -228,10 +228,10 @@ public class Game implements Persistable {
         var user = model.user.poll(null);
         var games = user.games.stream()
             .map((g) -> g.id == this.id ? this : g)
-            .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+            .collect(Collectors.toUnmodifiableList());
         var observable = user.observable.stream()
             .map((g) -> g.id == this.id ? this : g)
-            .collect(Collectors.collectingAndThen(Collectors.toList(), List::copyOf));
+            .collect(Collectors.toUnmodifiableList());
         var next = new User(this.database, this.wordcrex, user.username, user.roles, user.words, games, observable, user.manageable, user.approvable);
 
         return new Wordcrex(this.database, next, model.tiles, model.dictionaries);

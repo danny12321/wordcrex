@@ -8,6 +8,7 @@ import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
+import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ListWidget;
 
 import java.awt.*;
@@ -20,7 +21,7 @@ public class ObserveView extends View<ObserveController> {
     public ObserveView(ObserveController controller) {
         super(controller);
         this.list = new ListWidget<>(
-            0,
+            48,
             96,
             "Geen spellen",
             (game) -> String.valueOf(game.id),
@@ -64,6 +65,12 @@ public class ObserveView extends View<ObserveController> {
     }
 
     @Override
+    public void drawForeground(Graphics2D g) {
+        g.setColor(Colors.DARKER_BLUE);
+        g.fillRect(Main.TASKBAR_SIZE * 2 + 42, Main.TASKBAR_SIZE + 48, 268, 4);
+    }
+
+    @Override
     public void update(Consumer<Particle> addParticle) {
         this.list.setItems(this.controller.getGames());
     }
@@ -71,7 +78,8 @@ public class ObserveView extends View<ObserveController> {
     @Override
     public List<Widget> children() {
         return List.of(
-            this.list
+            this.list,
+            new InputWidget("ZOEKEN", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::searchGames)
         );
     }
 }
