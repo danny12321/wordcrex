@@ -65,6 +65,12 @@ public class ObserveView extends View<ObserveController> {
     }
 
     @Override
+    public void drawForeground(Graphics2D g) {
+        g.setColor(Colors.DARKER_BLUE);
+        g.fillRect(Main.TASKBAR_SIZE * 2 + 42, Main.TASKBAR_SIZE + 48, 268, 4);
+    }
+
+    @Override
     public void update(Consumer<Particle> addParticle) {
         this.list.setItems(this.controller.getGames());
     }
