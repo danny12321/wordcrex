@@ -20,7 +20,8 @@ import java.util.function.Consumer;
 
 public class AccountView extends View<AccountController> {
     private final ListWidget<UserRole> list;
-    private final ButtonWidget submitButton = new ButtonWidget(Assets.read("next"), null, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, 168, 32, 32, this.controller::changePassword);
+    private final InputWidget passwordInput = new InputWidget("NIEUW WACHTWOORD", '*', 0, 160, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 48, 48, this.controller::setPassword);
+    private final ButtonWidget submitButton = new ButtonWidget(Assets.read("next"), null, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 40, 168, 32, 32, this::changePassword);
 
     public AccountView(AccountController controller) {
         super(controller);
@@ -73,8 +74,13 @@ public class AccountView extends View<AccountController> {
     public List<Widget> children() {
         return List.of(
             this.list,
-            new InputWidget("NIEUW WACHTWOORD", '*', 0, 160, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 48, 48, this.controller::setPassword),
+            this.passwordInput,
             this.submitButton
         );
+    }
+
+    private void changePassword() {
+        this.controller.changePassword();
+        this.passwordInput.clearInput();
     }
 }
