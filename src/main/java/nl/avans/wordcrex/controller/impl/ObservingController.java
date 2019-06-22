@@ -17,6 +17,19 @@ public class ObservingController extends AbstractGameController {
     }
 
     @Override
+    public void poll() {
+        var current = this.getModel().getLastRound().id;
+
+        super.poll();
+
+        var next = this.getModel().getLastRound().id;
+
+        if (next != current && this.round == current - 1) {
+            this.round = next - 1;
+        }
+    }
+
+    @Override
     public boolean canPlay() {
         return false;
     }
