@@ -186,7 +186,7 @@ public class ScoreTest {
             new Played(playables.get(0), this.findTile(8, 8, tiles)),
             new Played(playables.get(1), this.findTile(9, 8, tiles)),
             new Played(playables.get(2), this.findTile(10, 8, tiles))
-            ), (playables, tiles) -> List.of(
+        ), (playables, tiles) -> List.of(
             new Played(playables.get(3), this.findTile(6, 8, tiles)),
             new Played(playables.get(4), this.findTile(7, 8, tiles)),
             new Played(playables.get(5), this.findTile(12, 8, tiles))
@@ -219,7 +219,6 @@ public class ScoreTest {
             new Played(playables.get(7), this.findTile(8, 3, tiles)),
             new Played(playables.get(8), this.findTile(8, 2, tiles)),
             new Played(playables.get(9), this.findTile(8, 1, tiles))
-
         ), (playables, tiles) -> List.of(
             new Played(playables.get(10), this.findTile(7, 1, tiles))
         ));
@@ -234,7 +233,6 @@ public class ScoreTest {
             new Played(playables.get(3), this.findTile(8, 7, tiles)),
             new Played(playables.get(4), this.findTile(8, 6, tiles)),
             new Played(playables.get(5), this.findTile(8, 5, tiles))
-
         ), (playables, tiles) -> List.of(
             new Played(playables.get(6), this.findTile(7, 5, tiles))
         ));
@@ -249,7 +247,6 @@ public class ScoreTest {
             new Played(playables.get(3), this.findTile(8, 7, tiles)),
             new Played(playables.get(4), this.findTile(8, 6, tiles)),
             new Played(playables.get(5), this.findTile(8, 5, tiles))
-
         ), (playables, tiles) -> List.of(
             new Played(playables.get(6), this.findTile(7, 1, tiles)),
             new Played(playables.get(7), this.findTile(7, 2, tiles)),
@@ -262,7 +259,7 @@ public class ScoreTest {
     }
 
     @Test
-    @DisplayName("Full hand played bonus is applied")
+    @DisplayName("Full deck played bonus is applied")
     public void testBonus() {
         // Test if played size == 7 you get 100 bonus points
         var score = this.getScore((playables, tiles) -> List.of(), (playables, tiles) -> List.of(
