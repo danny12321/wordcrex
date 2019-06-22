@@ -6,11 +6,13 @@ import nl.avans.wordcrex.model.Round;
 import nl.avans.wordcrex.model.Turn;
 import nl.avans.wordcrex.model.TurnAction;
 import nl.avans.wordcrex.particle.Particle;
+import nl.avans.wordcrex.util.Assets;
 import nl.avans.wordcrex.util.Colors;
 import nl.avans.wordcrex.util.Fonts;
 import nl.avans.wordcrex.util.StringUtil;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
+import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.ListWidget;
 
 import java.awt.*;
@@ -59,7 +61,8 @@ public class HistoryView extends View<HistoryController> {
     @Override
     public List<Widget> children() {
         return List.of(
-            this.list
+            this.list,
+            new ButtonWidget(Assets.read("back"), "terug", 0, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateBack)
         );
     }
 

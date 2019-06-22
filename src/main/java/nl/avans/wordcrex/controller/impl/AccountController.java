@@ -86,4 +86,16 @@ public class AccountController extends Controller<User> {
 
         this.getUser().changePassword(this.password);
     }
+
+    public boolean hasBackButton() {
+        return this.main.hasPrevious();
+    }
+
+    public void navigateBack() {
+        if (!this.hasBackButton()) {
+            return;
+        }
+
+        this.main.popController();
+    }
 }

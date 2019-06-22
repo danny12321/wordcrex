@@ -114,6 +114,10 @@ public abstract class AbstractGameController extends Controller<Game> {
 
     public abstract void resign();
 
+    public void navigateBack() {
+        this.main.popController();
+    }
+
     public abstract void navigateHistory();
 
     public abstract void navigateChat();

@@ -37,8 +37,8 @@ public class Main extends JPanel {
     private final List<Particle> particles;
     private final Loop loop;
     private final Listener listener;
+    private final Stack<Controller<?>> controllers;
 
-    private Controller<?> controller;
     private Wordcrex model;
 
     private Main(JFrame frame, String config, boolean debug) {
@@ -47,6 +47,7 @@ public class Main extends JPanel {
         this.widgets = new CopyOnWriteArrayList<>();
         this.particles = new CopyOnWriteArrayList<>();
         this.listener = new Listener(this.frame, this);
+        this.controllers = new Stack<>();
         this.model = Wordcrex.initialize(this.database);
         this.debug = debug;
 
@@ -105,8 +106,22 @@ public class Main extends JPanel {
     }
 
     public <T extends Persistable> void openController(Class<? extends Controller<T>> cls, Function<Wordcrex, T> fn) {
-        this.controller = this.createController(cls, fn);
-        this.openView(this.controller.createView());
+        this.controllers.clear();
+        this.pushController(cls, fn);
+    }
+
+    public <T extends Persistable> void popController() {
+        this.controllers.pop();
+        this.openView(this.controllers.peek().createView());
+    }
+
+    public <T extends Persistable> void pushController(Class<? extends Controller<T>> cls, Function<Wordcrex, T> fn) {
+        this.controllers.push(this.createController(cls, fn));
+        this.openView(this.controllers.peek().createView());
+    }
+
+    public boolean hasPrevious() {
+        return this.controllers.size() > 1;
     }
 
     public void addParticle(Particle particle) {
@@ -209,11 +224,11 @@ public class Main extends JPanel {
     }
 
     private void poll() {
-        if (this.controller == null) {
+        if (this.controllers.empty()) {
             return;
         }
 
-        this.controller.poll();
+        this.controllers.peek().poll();
 
         var count = this.database.flush();
 

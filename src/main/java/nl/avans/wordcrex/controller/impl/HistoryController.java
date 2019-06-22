@@ -82,4 +82,8 @@ public class HistoryController extends Controller<Game> {
 
         return winner != null ? winner : "";
     }
+
+    public void navigateBack() {
+        this.main.popController();
+    }
 }

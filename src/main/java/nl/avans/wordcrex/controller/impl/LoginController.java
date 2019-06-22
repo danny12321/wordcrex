@@ -65,6 +65,6 @@ public class LoginController extends Controller<Wordcrex> {
     }
 
     public void navigateRegister() {
-        this.main.openController(RegisterController.class, Function.identity());
+        this.main.pushController(RegisterController.class, Function.identity());
     }
 }

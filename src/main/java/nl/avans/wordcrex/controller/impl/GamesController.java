@@ -76,10 +76,10 @@ public class GamesController extends Controller<User> {
     }
 
     public void navigateGame(Game game) {
-        this.main.openController(GameController.class, StreamUtil.getModelProperty((model) -> model.user.games, (g) -> g.id == game.id));
+        this.main.pushController(GameController.class, StreamUtil.getModelProperty((model) -> model.user.games, (g) -> g.id == game.id));
     }
 
     public void navigateInvite() {
-        this.main.openController(InviteController.class, (model) -> model.user);
+        this.main.pushController(InviteController.class, (model) -> model.user);
     }
 }

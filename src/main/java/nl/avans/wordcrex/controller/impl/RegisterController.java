@@ -57,7 +57,7 @@ public class RegisterController extends Controller<Wordcrex> {
         return this.failed;
     }
 
-    public void navigateLogin() {
-        this.main.openController(LoginController.class, Function.identity());
+    public void navigateBack() {
+        this.main.popController();
     }
 }

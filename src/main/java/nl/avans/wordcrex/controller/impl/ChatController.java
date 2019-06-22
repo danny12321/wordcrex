@@ -49,7 +49,7 @@ public class ChatController extends Controller<Game> {
         return this.getModel().messages;
     }
 
-    public void navigateGame() {
-        this.main.openController(GameController.class, StreamUtil.getModelProperty((model) -> model.user.games, (game) -> game.id == this.getModel().id));
+    public void navigateBack() {
+        this.main.popController();
     }
 }
