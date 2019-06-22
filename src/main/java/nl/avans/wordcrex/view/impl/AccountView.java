@@ -15,6 +15,7 @@ import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ListWidget;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -71,10 +72,16 @@ public class AccountView extends View<AccountController> {
 
     @Override
     public List<Widget> children() {
-        return List.of(
+        var children = new ArrayList<>(List.of(
             this.list,
             new InputWidget("NIEUW WACHTWOORD", '*', 0, 160, Main.FRAME_SIZE - Main.TASKBAR_SIZE - 48, 48, this.controller::setPassword),
             this.submitButton
-        );
+        ));
+
+        if (this.controller.hasBackButton()) {
+            children.add(new ButtonWidget(Assets.read("back"), "terug", 0, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateBack));
+        }
+
+        return children;
     }
 }

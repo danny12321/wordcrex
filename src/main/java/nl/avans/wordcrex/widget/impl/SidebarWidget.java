@@ -50,7 +50,7 @@ public class SidebarWidget extends Widget {
                 return;
             }
 
-            key.setEnabled(!this.main.isOpen(value.view));
+            key.setEnabled(!this.main.isOpen(value.view) || this.main.hasPrevious());
 
             if (has) {
                 key.setPosition(32, 64 + 48 * index.getAndIncrement());

@@ -90,7 +90,7 @@ public class ChatView extends View<ChatController> {
         g.setColor(Colors.DARK_BLUE);
         g.fillRect(0, Main.FRAME_SIZE - 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48);
 
-        this.scrollbar.setHeight(offset + gap);
+        this.scrollbar.setHeight(offset + gap * 2);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class ChatView extends View<ChatController> {
     @Override
     public List<Widget> children() {
         return List.of(
-            new ButtonWidget(Assets.read("back"), null, 8, Main.FRAME_SIZE - 40, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateGame),
+            new ButtonWidget(Assets.read("back"), null, 8, Main.FRAME_SIZE - 40, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateBack),
             this.scrollbar,
             this.input,
             this.sendMessage

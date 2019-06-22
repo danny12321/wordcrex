@@ -295,6 +295,7 @@ public class GameView extends View<AbstractGameController> {
             children.add(this.previousButton);
         }
 
+        children.add(new ButtonWidget(Assets.read("back"), "terug", 22, this.controller.canPlay() ? 410 : 220, 32, 32, this.controller::navigateBack));
         children.add(this.dialog);
 
         return children;

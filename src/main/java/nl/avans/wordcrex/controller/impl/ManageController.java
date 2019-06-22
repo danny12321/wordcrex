@@ -57,6 +57,6 @@ public class ManageController extends Controller<User> {
     }
 
     public void navigateAccount(User user) {
-        this.main.openController(AccountController.class, StreamUtil.getModelProperty((model) -> model.user.manageable, (u) -> u.username.equals(user.username)));
+        this.main.pushController(AccountController.class, StreamUtil.getModelProperty((model) -> model.user.manageable, (u) -> u.username.equals(user.username)));
     }
 }

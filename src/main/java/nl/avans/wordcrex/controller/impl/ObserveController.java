@@ -53,6 +53,6 @@ public class ObserveController extends Controller<User> {
     }
 
     public void clickGame(Game game) {
-        this.main.openController(ObservingController.class, StreamUtil.getModelProperty((model) -> model.user.observable, (g) -> g.id == game.id));
+        this.main.pushController(ObservingController.class, StreamUtil.getModelProperty((model) -> model.user.observable, (g) -> g.id == game.id));
     }
 }

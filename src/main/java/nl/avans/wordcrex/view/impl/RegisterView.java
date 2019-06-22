@@ -51,7 +51,7 @@ public class RegisterView extends View<RegisterController> {
         return List.of(
             new InputWidget("GEBRUIKERSNAAM", 64, 184, 384, 48, this.controller::setUsername),
             new InputWidget("WACHTWOORD", '*', 64, 248, 384, 48, this.controller::setPassword),
-            new ButtonWidget(Assets.read("back"), null, 64, 312, 32, 32, this.controller::navigateLogin),
+            new ButtonWidget(Assets.read("back"), null, 64, 312, 32, 32, this.controller::navigateBack),
             this.submitButton
         );
     }

@@ -3,12 +3,10 @@ package nl.avans.wordcrex.view.impl;
 import nl.avans.wordcrex.Main;
 import nl.avans.wordcrex.controller.impl.InviteController;
 import nl.avans.wordcrex.particle.Particle;
-import nl.avans.wordcrex.util.Colors;
-import nl.avans.wordcrex.util.Fonts;
-import nl.avans.wordcrex.util.Pair;
-import nl.avans.wordcrex.util.StringUtil;
+import nl.avans.wordcrex.util.*;
 import nl.avans.wordcrex.view.View;
 import nl.avans.wordcrex.widget.Widget;
+import nl.avans.wordcrex.widget.impl.ButtonWidget;
 import nl.avans.wordcrex.widget.impl.DropdownWidget;
 import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ListWidget;
@@ -64,7 +62,8 @@ public class InviteView extends View<InviteController> {
         return List.of(
             this.list,
             new InputWidget("GEBRUIKERSNAAM", 0, Main.TASKBAR_SIZE, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::findOpponents),
-            new DropdownWidget<>(this.controller.getDictionaries(), "Selecteer taal", 0, Main.TASKBAR_SIZE + 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::setDictionary)
+            new DropdownWidget<>(this.controller.getDictionaries(), "Selecteer taal", 0, Main.TASKBAR_SIZE + 48, Main.FRAME_SIZE - Main.TASKBAR_SIZE, 48, this.controller::setDictionary),
+            new ButtonWidget(Assets.read("back"), "terug", 0, Main.FRAME_SIZE - Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, Main.TASKBAR_SIZE, this.controller::navigateBack)
         );
     }
 }

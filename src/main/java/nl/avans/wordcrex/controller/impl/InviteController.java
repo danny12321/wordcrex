@@ -66,6 +66,10 @@ public class InviteController extends Controller<User> {
         }
 
         this.getModel().sendInvite(opponent.a, this.dictionary);
-        this.main.openController(GamesController.class, (model) -> model.user);
+        this.main.popController();
+    }
+
+    public void navigateBack() {
+        this.main.popController();
     }
 }
