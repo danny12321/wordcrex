@@ -110,7 +110,7 @@ public class Main extends JPanel {
         this.pushController(cls, fn);
     }
 
-    public <T extends Persistable> void popController() {
+    public void popController() {
         this.controllers.pop();
         this.openView(this.controllers.peek().createView());
     }
