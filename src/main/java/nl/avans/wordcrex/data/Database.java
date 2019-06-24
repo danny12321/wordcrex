@@ -36,6 +36,8 @@ public class Database {
             execute.accept(statement);
         } catch (SQLException e) {
             this.rollback();
+
+            throw e;
         } finally {
             this.queries++;
             if (connection != this.connection) {
@@ -135,6 +137,8 @@ public class Database {
             if (this.debug) {
                 e.printStackTrace();
             }
+
+            ref.created = -1;
         }
 
         return ref.created;
