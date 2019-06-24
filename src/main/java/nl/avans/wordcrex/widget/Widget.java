@@ -54,11 +54,6 @@ public abstract class Widget {
         return widget == this || this.parents.contains(widget);
     }
 
-    public boolean treeMatch(Predicate<Widget> predicate) {
-        return predicate.test(this) || this.parents.stream()
-            .anyMatch(predicate);
-    }
-
     public void addParent(Widget parent) {
         this.parents.add(parent);
     }
