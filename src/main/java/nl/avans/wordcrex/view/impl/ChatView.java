@@ -51,6 +51,10 @@ public class ChatView extends View<ChatController> {
             var dateFormat = new SimpleDateFormat("HH:mm");
             var time = dateFormat.format(message.date);
 
+            if (width > maxWidth) {
+                width = maxWidth;
+            }
+
             if (messages.get(i).username.equals(this.controller.getUsername())) {
                 userMessage = true;
                 x = Main.FRAME_SIZE - Main.TASKBAR_SIZE - size - gap;
@@ -71,11 +75,7 @@ public class ChatView extends View<ChatController> {
                 g.setColor(Colors.DARKER_BLUE);
                 StringUtil.drawCenteredString(g, x, offset - this.scroll, size, size, message.username.substring(0, 1).toUpperCase());
                 g.setColor(Colors.DARK_BLUE);
-                g.drawString(time, x - width + (userMessage ? -100 : 140), offset - this.scroll + 18);
-            }
-
-            if (width > maxWidth) {
-                width = maxWidth;
+                g.drawString(time, x + (userMessage ? - 100 - width : 84 + width), offset - this.scroll + 18);
             }
 
             var stringX = userMessage ? x - width - gap * 2 : x + size + gap * 2;
