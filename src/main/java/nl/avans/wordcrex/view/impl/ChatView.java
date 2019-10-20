@@ -14,7 +14,10 @@ import nl.avans.wordcrex.widget.impl.InputWidget;
 import nl.avans.wordcrex.widget.impl.ScrollbarWidget;
 
 import java.awt.*;
+import java.text.AttributedCharacterIterator;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 public class ChatView extends View<ChatController> {
@@ -41,6 +44,16 @@ public class ChatView extends View<ChatController> {
         for (var i = 0; i < messages.size(); i++) {
             var userMessage = false;
             var x = gap;
+            var message = messages.get(i);
+            var bounds = g.getFontMetrics().getStringBounds(message.message, g);
+            var width = (int) bounds.getWidth();
+            var height = (int) bounds.getHeight();
+            var dateFormat = new SimpleDateFormat("HH:mm");
+            var time = dateFormat.format(message.date);
+
+            if (width > maxWidth) {
+                width = maxWidth;
+            }
 
             if (messages.get(i).username.equals(this.controller.getUsername())) {
                 userMessage = true;
@@ -49,6 +62,7 @@ public class ChatView extends View<ChatController> {
 
             if (!(i != 0 && messages.get(i - 1).username.equals(messages.get(i).username))) {
                 g.setColor(Colors.DARK_BLUE);
+
                 if (userMessage) {
                     g.fillPolygon(new int[]{x - size + gap / 2, x - size + gap / 2 + 13, x - size + gap / 2}, new int[]{offset - this.scroll, offset - this.scroll, offset - this.scroll + 17}, 3);
                 } else {
@@ -59,20 +73,13 @@ public class ChatView extends View<ChatController> {
                 g.fillOval(x, offset - this.scroll, size, size);
                 g.setFont(Fonts.NORMAL);
                 g.setColor(Colors.DARKER_BLUE);
-                StringUtil.drawCenteredString(g, x, offset - this.scroll, size, size, messages.get(i).username.substring(0, 1).toUpperCase());
-            }
-
-            var message = messages.get(i).message;
-            var bounds = g.getFontMetrics().getStringBounds(message, g);
-            var width = (int) bounds.getWidth();
-            var height = (int) bounds.getHeight();
-
-            if (width > maxWidth) {
-                width = maxWidth;
+                StringUtil.drawCenteredString(g, x, offset - this.scroll, size, size, message.username.substring(0, 1).toUpperCase());
+                g.setColor(Colors.DARK_BLUE);
+                g.drawString(time, x + (userMessage ? - 100 - width : 84 + width), offset - this.scroll + 18);
             }
 
             var stringX = userMessage ? x - width - gap * 2 : x + size + gap * 2;
-            var lines = StringUtil.split(g, message, maxWidth);
+            var lines = StringUtil.split(g, message.message, maxWidth);
 
             for (var line : lines) {
                 g.setColor(Colors.DARK_BLUE);
